@@ -6,7 +6,7 @@ enablePlugins(ScalaJSPlugin)
 
 libraryDependencies ++= Seq(
   "org.scala-js" %%% "scalajs-dom" % "0.9.2",
-  "com.lihaoyi" %%% "utest" % "0.6.0" % "test",
+  "com.lihaoyi" %%% "utest" % "0.6.0" % "test"
 )
 
 testFrameworks += new TestFramework("utest.runner.Framework")
