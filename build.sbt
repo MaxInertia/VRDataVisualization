@@ -11,7 +11,8 @@ libraryDependencies ++= Seq(
 
 testFrameworks += new TestFramework("utest.runner.Framework")
 
-resolvers += sbt.Resolver.bintrayRepo("denigma", "denigma-releases") //add resolver
-libraryDependencies += "org.denigma" %%% "threejs-facade" % "0.0.77-0.1.8" //add dependency
+resolvers += sbt.Resolver.bintrayRepo("scalajs-facades", "scalajs-facades-releases") //add resolver
+libraryDependencies += "org.scalajs" %%% "threejs-facade" % "0.0.88-0.1.9" //add dependency
 
 scalaJSUseMainModuleInitializer := false // Explicitly called from script in index.html
+scalacOptions += "-P:scalajs:sjsDefinedByDefault"
