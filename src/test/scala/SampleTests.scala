@@ -3,7 +3,7 @@ import utest._
 /**
   * See https://github.com/lihaoyi/utest for more examples
   */
-object SampleTests extends TestSuite{
+object SampleTests extends TestSuite {
   val tests = Tests{
     'sampleTest1 - {
       assert(true)
