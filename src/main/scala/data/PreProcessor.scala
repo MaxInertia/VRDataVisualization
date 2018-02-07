@@ -1,8 +1,6 @@
 package data
 
 import scala.scalajs.js
-import js.JSConverters._
-import scala.collection.mutable.ArrayBuffer
 
 /** Preprocessor for Time Series data from csv
   *
@@ -24,38 +22,39 @@ object PreProcessor {
     * @param data String representation of the csv
     * @return
     */
-  def process(data: String): Array[(String, Array[Double])] = {
+  def process(data: String): Array[(String, Array[Double])] = { // TODO: Write tests for this method
     println("PreProcessing Data...")
-    val temp: Array[String] = data.split("""(\r\n|\n|\r)/g""").map(_.trim)
-    println(temp.toJSArray)
+    val temp: Array[String] = data.split("""[^ -~]""").map(_.trim).filter(!_.isEmpty)
 
     // Store each line as an array of strings in an ArrayBuffer
-    val rows = ArrayBuffer[Array[String]]()
+    var rows = Array[Array[String]]()
     for(line <- temp) {
-      rows += line.split(",").map(_.trim)
+      rows = rows :+ line.split(",") //.map(_.trim)
     }
 
-    // Create an ArrayBuffer for each column
     val colCount = rows(0).length
-    var cols = Array[ArrayBuffer[Double]]()
-    for(i <- 0 to colCount) {
-      cols = cols :+ ArrayBuffer[Double]()
+    println(s"\tinferred column count: $colCount")
+    for(i <- rows(0).indices) println(s"\t\tcolumn $i id: ${rows(0)(i)}")
+
+    // Create an Array for each column
+    var cols = Array[Array[Double]]()
+    for(i <- 0 until colCount) {
+      cols = cols :+ Array[Double]()
     }
 
-    // Store the values in the ArrayBuffer corresponding to the values column
+    // Store the values in the Array corresponding to the values column
     for(r <- rows.indices) {
-      if(r != 0) for (c <- colCount until colCount) {
-        if(isNumber(rows(r)(c))) cols(c) += rows(r)(c).toDouble
-        else println(s"WARNING: r${r}c$c Is NAN: ${rows(r)(c)}")
+      if(r != 0) for (c <- rows(r).indices) {
+        if( isNumber( rows(r)(c) ) )
+          cols(c) = cols(c) :+ rows(r)(c).toDouble
+        else
+          println(s"WARNING: r${r}c$c Is NAN: ${rows(r)(c)}")
       }
     }
 
     // Wrap the processed data and column ID's into an Array of Tuples
     var processedData = Array[(String, Array[Double])]()
-    for(i <- rows(0).indices) {
-      processedData = processedData :+ (rows(0)(i), cols(i).toArray)
-    }
-
+    for(i <- 0 until colCount) processedData = processedData :+ (rows(0)(i), cols(i))
     processedData
   }
 

@@ -8,9 +8,8 @@
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <link rel="stylesheet" type="text/css" href="css/style.css"/>
-
     <!-- External Project Dependencies -->
-    <script src="js/lib/three.min.js"></script>
+    <script src="js/lib/three.js"></script>
     <script src="js/lib/WebVR.js"></script>
     <script src="js/lib/VREffect.js"></script>
     <script src="js/lib/VRControls.js"></script>
@@ -26,7 +25,6 @@
         <button id="fullscreen">Fullscreen</button>
         <button id="vr">VR (WebVR/Mobile only)</button>
     </div>
-    <div id="scene-container"></div>
 
     <script type="x-shader/x-vertex" id="vertexshader">
         attribute float size;
@@ -51,5 +49,6 @@
         }
     </script>
 
+    <div id="scene-container"></div>
 </body>
 </html>
