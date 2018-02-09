@@ -7,10 +7,12 @@ import utest._
   */
 object CSVParser_Tests extends TestSuite {
   val tests = Tests {
-    // Tests for the method 'isNumber'
-    'isNumberRegex - {
-      'validCases - {
-        'no_Decimal - {
+
+    'isNumberRegex { // Tests for method 'isNumber'
+
+      'validCases {
+
+        'no_Decimal {
           assert(CSVParser.isNumber("1"))
           assert(CSVParser.isNumber("-1"))
           assert(CSVParser.isNumber("+1"))
@@ -19,25 +21,25 @@ object CSVParser_Tests extends TestSuite {
           assert(CSVParser.isNumber("+123"))
         }
 
-        'decimal_Of_Zero - {
+        'decimal_Of_Zero {
           assert(CSVParser.isNumber("1.0"))
           assert(CSVParser.isNumber("-1.0"))
           assert(CSVParser.isNumber("+1.0"))
         }
 
-        'decimals - {
+        'decimals {
           assert(CSVParser.isNumber("12345.6789"))
           assert(CSVParser.isNumber("-12345.6789"))
           assert(CSVParser.isNumber("+12345.6789"))
         }
 
-        'decimal_With_No_Ones_Place - {
+        'decimal_With_No_Ones_Place {
           assert(CSVParser.isNumber(".6789"))
           assert(CSVParser.isNumber("-.6789"))
           assert(CSVParser.isNumber("+.6789"))
         }
 
-        'integers_With_Decimal_Point - {
+        'integers_With_Decimal_Point {
           assert(CSVParser.isNumber("12345."))
           assert(CSVParser.isNumber("-12345."))
           assert(CSVParser.isNumber("+12345."))
@@ -45,9 +47,8 @@ object CSVParser_Tests extends TestSuite {
       }
 
       'invalidCases {
-        'empty_String {
-          assert(!CSVParser.isNumber(""))
-        }
+
+        'empty_String - assert(!CSVParser.isNumber(""))
 
         'sign_With_No_Digits {
           assert(!CSVParser.isNumber("+"))
@@ -93,7 +94,7 @@ object CSVParser_Tests extends TestSuite {
           assert(!CSVParser.isNumber("a+12345.6789"))
         }
       }
-    }
-  }
 
+    } // end of 'isNumber' tests
+  }
 }
