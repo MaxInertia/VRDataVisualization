@@ -1,3 +1,4 @@
+import data.CSVParser
 import org.scalajs.{threejs => THREE}
 import org.scalajs.dom
 import org.scalajs.dom.ext.LocalStorage
@@ -11,6 +12,11 @@ class Environment(val scene: THREE.Scene, val camera: THREE.PerspectiveCamera, v
 }
 
 object Environment {
+
+  object Color {
+    val BLUE_HUE_SHIFT: Double = 0.5
+    val RED_HUE_SHIFT: Double = 0.01
+  }
 
   def setup(container: dom.Element): Environment = {
     println("Environment Setup Started...")
@@ -52,8 +58,8 @@ object Environment {
     */
   def addPlots(scene: THREE.Scene): Unit = {
     // create Shadow Manifolds and Time Series
-    val (sm1, ts1) = createPlots("SM1_timeSeries")
-    val (sm2, ts2) = createPlots("SM2_timeSeries")
+    val (sm1, ts1) = createPlots("SM1_timeSeries", Color.RED_HUE_SHIFT)
+    val (sm2, ts2) = createPlots("SM2_timeSeries", Color.BLUE_HUE_SHIFT)
 
     // Add plots to the environment
     if(sm1 != null) {
@@ -74,19 +80,13 @@ object Environment {
     * @return A 2Tuple of 2Tuples, each containing the Array of SM's and TS's produced from the input CSVs.
     *         Each inner-2Tuple corresponds to a
     */
-  def createPlots(localStorageID: String): (Array[ShadowManifold], Array[TimeSeries]) = {
-    val timeSeries = LocalStorage(localStorageID)
-    (createSM(timeSeries), null) // TODO: replace null with createTS(timeSeries)
+  def createPlots(localStorageID: String, hue: Double): (Array[ShadowManifold], Array[TimeSeries]) = {
+    val timeSeries = LocalStorage(localStorageID).map(CSVParser.parse)
+    if(timeSeries.isEmpty) return null
+    (ShadowManifold.createSet(timeSeries.get, hue), null) // TODO: replace null with createTS(timeSeries)
   }
 
-
-  def createSM(timeSeries: Option[String]): Array[ShadowManifold] =
-    timeSeries
-      .map(data.PreProcessor.process)
-      .map{ col => col.map{ case (id, values) => ShadowManifold.create(id, values) }}
-      .orNull
-
-
+  
   def createTS(timeSeries: Option[String]): Array[TimeSeries] = ??? // TODO: Implement TimeSeries class ('2D' plot)
 
 }

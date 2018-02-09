@@ -2,11 +2,12 @@ package data
 
 import scala.scalajs.js
 
-/** Preprocessor for Time Series data from csv
+/** Parser for CSVs whose first row contains identifiers for their respective columns,
+  * the rest of the elements must be numbers, not expressions (ex: 1+2).
   *
   * Created by Dorian Thiessen on 2018-02-05.
   */
-object PreProcessor {
+object CSVParser {
 
   // Regexp that matches numbers with or without decimal and sign.
   val numberRegex = """([-+]?)((\d+\.\d+)|(\d+\.)|(\.\d+)|(\d+))"""
@@ -22,7 +23,7 @@ object PreProcessor {
     * @param data String representation of the csv
     * @return
     */
-  def process(data: String): Array[(String, Array[Double])] = { // TODO: Write tests for this method
+  def parse(data: String): Array[(String, Array[Double])] = { // TODO: Write tests for this method
     println("PreProcessing Data...")
     val temp: Array[String] = data.split("""[^ -~]""").map(_.trim).filter(!_.isEmpty)
 
@@ -33,8 +34,9 @@ object PreProcessor {
     }
 
     val colCount = rows(0).length
-    println(s"\tinferred column count: $colCount")
+    println(s"\tcolumns: $colCount")
     for(i <- rows(0).indices) println(s"\t\tcolumn $i id: ${rows(0)(i)}")
+    println(s"\trows:    ${rows.length}")
 
     // Create an Array for each column
     var cols = Array[Array[Double]]()
