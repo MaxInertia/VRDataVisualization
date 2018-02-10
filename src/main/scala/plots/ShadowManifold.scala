@@ -4,12 +4,20 @@ import math.Stats
 import org.scalajs.{threejs => THREE}
 
 /**
+  * A reconstruction of an attractor manifold generated from data on a single variable.
+  * Each point can be thought of as the history of the variable over some interval of time,
+  * whereas the time series values represent measurements at discrete moments in time.
+  *
   * Created by Dorian Thiessen on 2018-01-13.
   */
 class ShadowManifold(geometry: THREE.Geometry, material: THREE.PointsMaterial)
   extends Plot(geometry, material) {
 }
 
+/**
+  * The companion object for the ShadowManifold class.
+  * Encapsulates SM initialization helper methods.
+ */
 object ShadowManifold {
 
   /**
@@ -39,9 +47,6 @@ object ShadowManifold {
       .map{ case (id, vs) => (id, lagzip3(vs)) }               // Convert values to point coordinates
       .map{ case (id, vs) => ShadowManifold(id, vs, hue) }     // Create a shadow manifold
 
-  def lagzip3(ts: Array[Double]): Array[Coordinate] = zip3(ts.drop(2), ts.tail, ts) // TODO: Generalize Tau
-
-  def zip3[A, B, C](fA: Array[A], fB: Array[B], fC: Array[C]): Array[(A, B, C)] =
-    (fA zip fB zip fC) map { case ((a, b), c) => (a, b, c)}
+  def lagzip3(ts: Array[Double]): Array[Coordinate] = Plot.zip3(ts.drop(2), ts.tail, ts) // TODO: Generalize Tau
 
 }

@@ -6,18 +6,23 @@ import js.typedarray.Float32Array
 import js.JSConverters._
 
 /**
+  * Instances of classes that extend Plot can be added to a THREE.Scene
+  *
   * Created by Dorian Thiessen on 2018-02-08.
   */
-class Plot(geometry: THREE.Geometry, material: THREE.PointsMaterial)
+abstract class Plot(geometry: THREE.Geometry, material: THREE.PointsMaterial)
   extends THREE.Points(geometry, material) {
 
   def printVertices(): Unit = for(v <- geometry.vertices) println(s"v(${v.x}, ${v.y}, ${v.z})")
 }
 
-
+/**
+  * The companion object for the Plot class.
+  * Encapsulates general Plot initialization methods.
+  */
 object Plot {
 
-  val PARTICLE_SIZE: Double = 0.025
+  val PARTICLE_SIZE: Double = 0.013
 
   def makeVertices(coordinates: Array[Coordinate]): Array[THREE.Vector3] =
     coordinates.map{case (x, y, z) => new THREE.Vector3(x, y, z)}
