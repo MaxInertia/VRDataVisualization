@@ -64,7 +64,6 @@ object Environment {
     light.position.set(1, 1, 1).normalize()
     light
   }
-  }
 
 
   /**
