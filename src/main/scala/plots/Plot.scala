@@ -1,13 +1,12 @@
 package plots
 
-import org.scalajs.{threejs => THREE}
+import org.scalajs.{dom, threejs => THREE}
 import scala.scalajs.js
 import js.typedarray.Float32Array
 import js.JSConverters._
 
 /**
   * Instances of classes that extend Plot can be added to a THREE.Scene
-  *
   * Created by Dorian Thiessen on 2018-02-08.
   */
 abstract class Plot(geometry: THREE.Geometry, material: THREE.PointsMaterial)
@@ -34,17 +33,20 @@ object Plot {
     val sizes = new Float32Array( vertices.length )
 
     val l = vertices.length
+    var vertex: THREE.Vector3 = null
     val color = new THREE.Color()
 
     for ( i <- vertices.indices) {
-      val vertex = vertices(i)
-      positions(i)   = vertex.x.toFloat
-      positions(i+1) = vertex.y.toFloat
-      positions(i+2) = vertex.z.toFloat
+      vertex = vertices(i)
+      positions(3*i)     = vertex.x.toFloat
+      positions(3*i + 1) = vertex.y.toFloat
+      positions(3*i + 2) = vertex.z.toFloat
+
       color.setHSL( hueShift + 0.1 * ( i / l ), 1.0, 0.5 )
-      colors(i)   = color.r.toFloat
-      colors(i+1) = color.g.toFloat
-      colors(i+2) = color.b.toFloat
+      colors(3*i)     = color.r.toFloat
+      colors(3*i + 1) = color.g.toFloat
+      colors(3*i + 2) = color.b.toFloat
+
       sizes(i) = PARTICLE_SIZE.toFloat
     }
 
@@ -59,6 +61,7 @@ object Plot {
 
   def makeMaterial(): THREE.PointsMaterial = {
     var material = new THREE.PointsMaterial()
+    material.color = new THREE.Color(0x880000)
     material.size = PARTICLE_SIZE
     material
   }
