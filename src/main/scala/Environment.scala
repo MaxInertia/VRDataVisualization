@@ -1,13 +1,22 @@
 import data.CSVParser
+import js.three.SceneExt
 import org.scalajs.{threejs => THREE}
 import org.scalajs.dom
 import org.scalajs.dom.ext.LocalStorage
-import plots.{ShadowManifold, TimeSeries}
+import org.scalajs.threejs.ShaderMaterial
+import plots._
 
 /**
   * Created by Dorian Thiessen on 2018-01-11.
   */
 class Environment(val scene: THREE.Scene, val camera: THREE.PerspectiveCamera, val renderer: THREE.WebGLRenderer) {
+  /** Regions are represent positions in the scene,
+    * used to anchor multiple objects to one another */
+  val regions: Array[THREE.Object3D] = Array(
+      new THREE.Object3D(),
+      new THREE.Object3D())
+  regions.foreach(r => scene.add(r))
+
   def render(): Unit = renderer.render(scene, camera)
 }
 
@@ -35,41 +44,53 @@ object Environment {
 
     // Create Scene & populate it with plots and such!
     val scene = new THREE.Scene()
+    //scene.background = new THREE.Color(0x333333)
     scene.add(camera)
-    addPlots(scene)
-    addLight(scene)
+    scene.add(makeLight())
     container.appendChild(renderer.domElement)
 
+    val env: Environment = new Environment(scene, camera, renderer)
+    env.regions(0).position.set(-1.1, 0, -2) // region on the left
+    env.regions(1).position.set( 1.1, 0, -2) // region on the right
+    addPlots(env.regions(0), env.regions(1)) // Add Plots to region 0 and 1
+
     println("Environment complete.")
-    new Environment(scene, camera, renderer)
+    env
   }
 
 
-  def addLight(scene: THREE.Scene): Unit = {
+  def makeLight(): THREE.Light = {
     var light = new THREE.DirectionalLight(0xffffff)
     light.position.set(1, 1, 1).normalize()
-    scene.add(light)
+    light
+  }
   }
 
 
   /**
     * Add Plots to the Scene
-    * @param scene The environments instance of THREE.Scene
+    * @param region1 The object3D to place the
+    * @param region2 The environments instance of THREE.Scene
     */
-  def addPlots(scene: THREE.Scene): Unit = {
+  def addPlots(region1: THREE.Object3D, region2: THREE.Object3D): Unit = {
     // create Shadow Manifolds and Time Series
-    val (sm1, ts1) = createPlots("SM1_timeSeries", Color.RED_HUE_SHIFT)
-    val (sm2, ts2) = createPlots("SM2_timeSeries", Color.BLUE_HUE_SHIFT)
+    lazy val (sm1, ts1) = createPlots("SM1_timeSeries", Color.RED_HUE_SHIFT)
+    lazy val (sm2, ts2) = createPlots("SM2_timeSeries", Color.BLUE_HUE_SHIFT)
 
-    // Add plots to the environment
     if(sm1 != null) {
-      scene.add(sm1(0))
+      region1.add(sm1(0))
       println("Added SM1 to the scene")
+
+      val axes = CoordinateAxes3D.create(length = 1, centeredOrigin = true)
+      region1.add(axes)
     } else println("WARNING: The SM1 is null!")
 
     if(sm2 != null) {
-      scene.add(sm2(1))
+      region2.add(sm2(0))
       println("Added SM2 to the scene")
+
+      val axes = CoordinateAxes3D.create(length = 1, centeredOrigin = false)
+      region2.add(axes)
     } else println("WARNING: The SM2 is null!")
   }
 
