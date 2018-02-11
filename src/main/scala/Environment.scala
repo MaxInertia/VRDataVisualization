@@ -109,4 +109,6 @@ object Environment {
   
   def createTS(timeSeries: Option[String]): Array[TimeSeries] = ??? // TODO: Implement TimeSeries class ('2D' plot)
 
+  implicit def convertScene(scene: THREE.Scene): SceneExt = scene.asInstanceOf[SceneExt]
+
 }
