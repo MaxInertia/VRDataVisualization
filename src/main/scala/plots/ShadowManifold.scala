@@ -3,6 +3,9 @@ package plots
 import math.Stats
 import org.scalajs.{threejs => THREE}
 
+import scala.scalajs.js
+import js.JSConverters._
+
 /**
   * A reconstruction of an attractor manifold generated from data on a single variable.
   * Each point can be thought of as the history of the variable over some interval of time,
@@ -10,9 +13,8 @@ import org.scalajs.{threejs => THREE}
   *
   * Created by Dorian Thiessen on 2018-01-13.
   */
-class ShadowManifold(geometry: THREE.Geometry, material: THREE.PointsMaterial)
-  extends Plot(geometry, material) {
-}
+class ShadowManifold(val tag: String, geometry: THREE.Geometry, material: THREE.PointsMaterial)
+  extends Plot(tag, geometry, material) {}
 
 /**
   * The companion object for the ShadowManifold class.
@@ -29,9 +31,12 @@ object ShadowManifold {
     */
   def apply(id: String, measurements: Array[Coordinate], hue: Double): ShadowManifold = {
     val vertices = Plot.makeVertices(measurements)
+    //for(v <- vertices) println(v.toArray().toJSArray)
     val geometry = Plot.makeGeometry(vertices, hue)
-    val material = Plot.makeMaterial()
-    new ShadowManifold(geometry, material)
+    val color = new THREE.Color(hue)
+    val material = Plot.makeMaterial(color)
+    //val material = Plot.makeShaderMaterial()
+    new ShadowManifold(id, geometry, material)
   }
 
   /**

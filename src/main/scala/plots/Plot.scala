@@ -9,9 +9,8 @@ import js.JSConverters._
   * Instances of classes that extend Plot can be added to a THREE.Scene
   * Created by Dorian Thiessen on 2018-02-08.
   */
-abstract class Plot(geometry: THREE.Geometry, material: THREE.PointsMaterial)
+abstract class Plot(tag: String, geometry: THREE.Geometry, material: THREE.PointsMaterial)
   extends THREE.Points(geometry, material) {
-
   def printVertices(): Unit = for(v <- geometry.vertices) println(s"v(${v.x}, ${v.y}, ${v.z})")
 }
 
@@ -59,9 +58,9 @@ object Plot {
   }
 
 
-  def makeMaterial(): THREE.PointsMaterial = {
+  def makeMaterial(color: THREE.Color): THREE.PointsMaterial = {
     var material = new THREE.PointsMaterial()
-    material.color = new THREE.Color(0x880000)
+    material.color = color
     material.size = PARTICLE_SIZE
     material
   }
@@ -72,28 +71,30 @@ object Plot {
 
 
   // TODO: Find out why THREE.ShaderMaterial cannot be used as the material for Points, that is what is used in the JS version.
-  /*def makeMaterial() : THREE.PointsMaterial = {
+  def makeShaderMaterial() : THREE.PointsMaterial = {
     println("\tCreating SM material")
 
     val material = new THREE.ShaderMaterial()
-    val myTexture = new THREE.TextureLoader()//.load( "img/disc.png" )
+    val myTexture = new THREE.TextureLoader()//.load("./disc.png")
 
-    myTexture.load("img/disc.png", (t)=>{
-      val tmap = mutable.Map(
-        "color" -> mutable.Map("value" -> new THREE.Color(0xffffff)),
-        "texture" -> mutable.Map("value" -> myTexture)
-      )
-      material.uniforms = tmap.toJSDictionary
+    //myTexture.load("D:/Projects/CCM-VR-Scala/src/main/www/img/disc2.png", (t)=>{
+    //myTexture.load("../../src/main/www/img/disc.png", (t)=>
+    myTexture.load("disc.png", (t)=>{
+      material.uniforms = new js.Object{
+        "color" -> new THREE.Color(0xffffff)
+        "texture" -> t
+      }
     })
 
-    val myVertexShader = dom.document.getElementById( "vertexshader" ).textContent
-    val myFragmentShader = dom.document.getElementById( "fragmentshader" ).textContent
+    val myVertexShader = dom.document.getElementById("vertexshader").textContent
+    val myFragmentShader = dom.document.getElementById("fragmentshader").textContent
 
-    //val material = new THREE.ShaderMaterial()
+    //println(s"Vertex Shader: $myVertexShader")
+    //println(s"Fragment Shader: $myFragmentShader")
 
     material.vertexShader = myVertexShader
     material.fragmentShader = myFragmentShader
-    material.alphaTest = 0.5
+    material.alphaTest = 0.9
     material.asInstanceOf[THREE.PointsMaterial]
-  }*/
+  }
 }

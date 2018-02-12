@@ -17,6 +17,31 @@ class Environment(val scene: THREE.Scene, val camera: THREE.PerspectiveCamera, v
       new THREE.Object3D())
   regions.foreach(r => scene.add(r))
 
+  val plots3D: Array[Array[ShadowManifold]] = Array(null, null)
+
+  /** Index of the active plots in each region */
+  val active: Array[Int] = Array(-1, -1)
+
+  /**
+    * Returns the ShadowManifold that is currently visible in the specified region
+    * @param regionID The region the plot belongs to. (either 0 or 1)
+    * @return The Shadow Manifold
+    */
+  def get3DPlot(regionID: Int): ShadowManifold = plots3D(regionID)(active(regionID))
+
+  /**
+    * Swaps out the currently visible plot for the specified plot.
+    * @param regionID Which region the plot belongs to. (either 0 or 1)
+    * @param plotID The index of the plot in plots3D.
+    */
+  def loadPlot(regionID: Int, plotID: Int): Unit = {
+    if(active(regionID) != -1) {
+      regions(regionID).remove( plots3D(regionID)(active(regionID)) ) // Remove previous plot
+    }
+    regions(regionID).add( plots3D(regionID)(plotID) ) // Add requested plot
+    active(regionID) = plotID // Update active plot index
+  }
+
   def render(): Unit = renderer.render(scene, camera)
 }
 
@@ -52,7 +77,18 @@ object Environment {
     val env: Environment = new Environment(scene, camera, renderer)
     env.regions(0).position.set(-1.1, 0, -2) // region on the left
     env.regions(1).position.set( 1.1, 0, -2) // region on the right
-    addPlots(env.regions(0), env.regions(1)) // Add Plots to region 0 and 1
+
+    // Add plots to the env
+    val (sm1, ts1) = createPlots("SM1_timeSeries", 0x880000)//Color.RED_HUE_SHIFT)
+    val (sm2, ts2) = createPlots("SM2_timeSeries", 0x000088)//Color.BLUE_HUE_SHIFT)
+    env.plots3D(0) = sm1
+    env.plots3D(1) = sm2
+    env.loadPlot(regionID = 0, plotID = 0)
+    env.loadPlot(regionID = 1, plotID = 0)
+
+    // Add coordinate axes
+    addAxes(env.regions(0), 1, centeredOrigin = false)
+    addAxes(env.regions(1), 1, centeredOrigin = true)
 
     println("Environment complete.")
     env
@@ -67,30 +103,12 @@ object Environment {
 
 
   /**
-    * Add Plots to the Scene
-    * @param region1 The object3D to place the
-    * @param region2 The environments instance of THREE.Scene
+    * Add coordinate axes to the plot in this region
+    * @param region The region of space in the scene to add the axes to
     */
-  def addPlots(region1: THREE.Object3D, region2: THREE.Object3D): Unit = {
-    // create Shadow Manifolds and Time Series
-    lazy val (sm1, ts1) = createPlots("SM1_timeSeries", Color.RED_HUE_SHIFT)
-    lazy val (sm2, ts2) = createPlots("SM2_timeSeries", Color.BLUE_HUE_SHIFT)
-
-    if(sm1 != null) {
-      region1.add(sm1(0))
-      println("Added SM1 to the scene")
-
-      val axes = CoordinateAxes3D.create(length = 1, centeredOrigin = true)
-      region1.add(axes)
-    } else println("WARNING: The SM1 is null!")
-
-    if(sm2 != null) {
-      region2.add(sm2(0))
-      println("Added SM2 to the scene")
-
-      val axes = CoordinateAxes3D.create(length = 1, centeredOrigin = false)
-      region2.add(axes)
-    } else println("WARNING: The SM2 is null!")
+  def addAxes(region: THREE.Object3D, length: Int, centeredOrigin: Boolean): Unit = {
+    val axes = CoordinateAxes3D.create(length, centeredOrigin)
+    region.add(axes)
   }
 
 
