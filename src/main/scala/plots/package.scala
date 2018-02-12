@@ -8,7 +8,7 @@ package object plots {
     new PointCoordinate(
       coordinate._1,
       coordinate._2,
-      coordinate._3,
+      coordinate._3
     )
 }
 

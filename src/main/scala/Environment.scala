@@ -102,11 +102,11 @@ object Environment {
     */
   def createPlots(localStorageID: String, hue: Double): (Array[ShadowManifold], Array[TimeSeries]) = {
     val timeSeries = LocalStorage(localStorageID).map(CSVParser.parse)
-    if(timeSeries.isEmpty) return null
-    (ShadowManifold.createSet(timeSeries.get, hue), null) // TODO: replace null with createTS(timeSeries)
+    if(timeSeries.isEmpty) null
+    else (ShadowManifold.createSet(timeSeries.get, hue), TimeSeries.createSet(timeSeries.get, hue)) // TODO: replace null with createTS(timeSeries)
   }
 
-  
+
   def createTS(timeSeries: Option[String]): Array[TimeSeries] = ??? // TODO: Implement TimeSeries class ('2D' plot)
 
   implicit def convertScene(scene: THREE.Scene): SceneExt = scene.asInstanceOf[SceneExt]
