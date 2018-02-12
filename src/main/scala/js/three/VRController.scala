@@ -1,5 +1,7 @@
 package js.three
 
+import org.scalajs.dom.raw.Event
+
 import scala.scalajs.js
 import scala.scalajs.js.annotation.JSGlobal
 
@@ -9,28 +11,10 @@ import scala.scalajs.js.annotation.JSGlobal
 @js.native
 @JSGlobal("THREE.VRController")
 class VRController extends js.Object {
+  val name: String = js.native
   def update(): Unit = js.native
+  def addEventListener[T <: Event](`type`: String, listener: js.Function1[T, _]): Unit = js.native
+
+
+
 }
-
-
-/* FROM Points.scala
-import org.scalajs.threejs.Geometry
-
-import scala.scalajs.js
-import scala.scalajs.js.annotation.JSGlobal
-*/
-/**
-  * Created by Dorian Thiessen on 2018-01-13.
-  */
-/*@js.native
-@JSGlobal("THREE.Points")
-class Points extends js.Object{
-  def this(geometry: Geometry, material: PointsMaterial = js.native) = this()
-}
-
-@js.native
-@JSGlobal("THREE.Points")
-class PointsMaterial extends js.Object{
-  def this(parameters: PointsMaterialParameters = js.native) = this();
-  var color: Color = js.native
-}*/
