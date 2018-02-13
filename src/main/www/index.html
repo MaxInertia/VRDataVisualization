@@ -56,7 +56,7 @@
 
 <script>
     WebVRConfig = {
-        BUFFER_SCALE: 1.0,
+        BUFFER_SCALE: 1.0
     };
 
     function onVRDisplayPresentChange() {
@@ -68,10 +68,10 @@
 
     // Button click handlers.
     document.querySelector('button#fullscreen').addEventListener('click', function() {
-        enterFullscreen(renderer.domElement);
+        enterFullscreen(CCMVR.renderer.domElement);
     });
     document.querySelector('button#vr').addEventListener('click', function() {
-        vrDisplay.requestPresent([{source: renderer.domElement}]);
+        vrDisplay.requestPresent([{source: CCMVR.renderer.domElement}]);
     });
 
     function enterFullscreen (el) {

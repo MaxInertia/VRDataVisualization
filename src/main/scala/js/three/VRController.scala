@@ -14,7 +14,4 @@ class VRController extends js.Object {
   val name: String = js.native
   def update(): Unit = js.native
   def addEventListener[T <: Event](`type`: String, listener: js.Function1[T, _]): Unit = js.native
-
-
-
 }

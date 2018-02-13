@@ -1,15 +1,19 @@
 import data.CSVParser
-import js.three.SceneExt
+import js.three.{SceneExt, VREffect}
+
 import org.scalajs.{threejs => THREE}
 import org.scalajs.dom
 import org.scalajs.dom.ext.LocalStorage
-import org.scalajs.threejs.ShaderMaterial
 import plots._
 
 /**
   * Created by Dorian Thiessen on 2018-01-11.
   */
-class Environment(val scene: THREE.Scene, val camera: THREE.PerspectiveCamera, val renderer: THREE.WebGLRenderer) {
+class Environment(val scene: THREE.Scene,
+                  val camera: THREE.PerspectiveCamera,
+                  val renderer: THREE.WebGLRenderer,
+                  val vrEffect: VREffect) {
+
   /** Regions are represent positions in the scene,
     * used to anchor multiple objects to one another */
   val regions: Array[THREE.Object3D] = Array(
@@ -42,7 +46,13 @@ class Environment(val scene: THREE.Scene, val camera: THREE.PerspectiveCamera, v
     active(regionID) = plotID // Update active plot index
   }
 
-  def render(): Unit = renderer.render(scene, camera)
+  def render(): Unit = {
+    //if (enterVR.isPresenting()) {
+      vrEffect.render(scene, camera)
+    //} else {
+      renderer.render(scene, camera)
+    //}
+  }
 }
 
 object Environment {
@@ -51,6 +61,7 @@ object Environment {
     val BLUE_HUE_SHIFT: Double = 0.5
     val RED_HUE_SHIFT: Double = 0.01
   }
+
 
   def setup(container: dom.Element): Environment = {
     println("Environment Setup Started...")
@@ -67,6 +78,10 @@ object Environment {
     renderer.setSize(dom.window.innerWidth, dom.window.innerHeight)
     renderer.devicePixelRatio = dom.window.devicePixelRatio
 
+    // Applies renderer to VR display (if available)
+    val vrEffect = new VREffect(renderer)
+    vrEffect.setSize(dom.window.innerWidth, dom.window.innerHeight)
+
     // Create Scene & populate it with plots and such!
     val scene = new THREE.Scene()
     //scene.background = new THREE.Color(0x333333)
@@ -74,7 +89,7 @@ object Environment {
     scene.add(makeLight())
     container.appendChild(renderer.domElement)
 
-    val env: Environment = new Environment(scene, camera, renderer)
+    val env: Environment = new Environment(scene, camera, renderer, vrEffect)
     env.regions(0).position.set(-1.1, 0, -2) // region on the left
     env.regions(1).position.set( 1.1, 0, -2) // region on the right
 
