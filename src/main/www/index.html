@@ -8,17 +8,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <link rel="stylesheet" type="text/css" href="css/style.css"/>
-    <!-- External Project Dependencies -->
-    <script src="js/lib/three.js"></script>
-    <script src="js/lib/WebVR.js"></script>
-    <script src="js/lib/VREffect.js"></script>
-    <script src="js/lib/VRControls.js"></script>
-    <script src="js/lib/VRController.js"></script>
-    <script src="js/lib/FirstPersonVRControls.js"></script>
-    <script src="js/lib/stats.min.js"></script>
-    <script src="js/lib/webvr-polyfill.min.js"></script>
-    <!-- Internal Project Dependency -->
-    <script src="../../../target/scala-2.12/ccm-vr-fastopt.js"></script>
+
 </head>
 <body onload="CCMVR.init()">
     <div id="buttons">
@@ -50,5 +40,55 @@
     </script>
 
     <div id="scene-container"></div>
+
+    <!-- External Project Dependencies -->
+    <script src="js/lib/three.js"></script>
+    <script src="js/lib/WebVR.js"></script>
+    <script src="js/lib/VREffect.js"></script>
+    <script src="js/lib/VRControls.js"></script>
+    <script src="js/lib/VRController.js"></script>
+    <script src="js/lib/FirstPersonVRControls.js"></script>
+    <script src="js/lib/stats.min.js"></script>
+    <script src="js/lib/webvr-polyfill.min.js"></script>
+    <!-- Internal Project Dependency -->
+    <script src="../../../target/scala-2.12/ccm-vr-fastopt.js"></script>
 </body>
+
+<script>
+    WebVRConfig = {
+        BUFFER_SCALE: 1.0,
+    };
+
+    function onVRDisplayPresentChange() {
+        console.log('onVRDisplayPresentChange');
+        onResize();
+    }
+
+    window.addEventListener('vrdisplaypresentchange', onVRDisplayPresentChange);
+
+    // Button click handlers.
+    document.querySelector('button#fullscreen').addEventListener('click', function() {
+        enterFullscreen(renderer.domElement);
+    });
+    document.querySelector('button#vr').addEventListener('click', function() {
+        vrDisplay.requestPresent([{source: renderer.domElement}]);
+    });
+
+    function enterFullscreen (el) {
+        if (el.requestFullscreen) el.requestFullscreen();
+        else if (el.mozRequestFullScreen) el.mozRequestFullScreen();
+        else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
+        else if (el.msRequestFullscreen) el.msRequestFullscreen();
+    }
+
+    let vrDisplay = null;
+    navigator.getVRDisplays().then(function(displays) {
+        if (displays.length > 0) {
+            vrDisplay = displays[0];
+            // Kick off the render loop.
+            vrDisplay.requestAnimationFrame(CCMVR.animate);
+        }
+    });
+</script>
+
 </html>

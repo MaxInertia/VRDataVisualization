@@ -35,6 +35,7 @@ object OculusControllerLeft extends OculusController {
 
   def setup(vrc: VRController): Unit = {
     // TODO: Add mesh
+    println(s"$name Connected!")
     /*vrc.addEventListener(Primary_PressBegan, (event: Event) => {})
     vrc.addEventListener(Primary_PressEnded, (event: Event) => {})
     vrc.addEventListener(Grip_PressBegan, (event: Event) => {})
@@ -65,6 +66,7 @@ object OculusControllerRight extends OculusController {
 
   def setup(vrc: VRController): Unit = {
     // TODO: Add mesh
+    println(s"$name Connected!")
     /*vrc.addEventListener(Primary_PressBegan, (event: Event) => {})
     vrc.addEventListener(Primary_PressEnded, (event: Event) => {})
     vrc.addEventListener(Grip_PressBegan, (event: Event) => {})

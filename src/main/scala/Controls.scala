@@ -12,7 +12,6 @@ class Controls {
   // Oculus Controllers; [0: Left, 1: Right]
   var controllers: Array[VRController] = Array(null, null)
 
-
   def update(timeStamp: Double): Unit = {
     vr.update()
     fp.update(timeStamp)
@@ -25,6 +24,17 @@ object Controls {
     val controls = new Controls()
 
     // Oculus & Headset Controls
+
+    /* // TODO: Convert to Scala
+    var vrDisplay = null;
+    navigator.getVRDisplays().then(function(displays) {
+      if (displays.length > 0) {
+        vrDisplay = displays[0];
+        // Kick off the render loop.
+        vrDisplay.requestAnimationFrame(animate);
+      }
+    });*/
+
     controls.vr = new VRControls(env.camera)
     document.addEventListener("vr controller connected", (event: raw.CustomEvent) => {
       val controller: VRController = event.detail.asInstanceOf[VRController]
@@ -46,10 +56,7 @@ object Controls {
     controls.fp = new FirstPersonVRControls(env.camera, env.scene)
     controls.mouse = new THREE.Vector2()
     Window.setupMouseEventListener(controls.mouse)
-
     //Window.setupControllerConnectionEventListener()
-
-
     controls
   }
 }

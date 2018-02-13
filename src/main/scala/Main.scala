@@ -12,27 +12,43 @@ import scala.scalajs.js.annotation.JSExportTopLevel
   */
 object Main {
 
+  var controls: Controls = _
+  var effect: VREffect = _
+  var env: Environment = _
+  var stats: Stats = _
+
+  var vrDisplay
+
   @JSExportTopLevel("CCMVR.init")
   def init(): Unit = {
     println("init called.")
 
     // Setup the Environment (Scene, Camera, Renderer) and the Controls (Mouse, Oculus Controllers and Headset)
     val container = dom.document.getElementById("scene-container")
-    val env = Environment.setup(container)
+    env = Environment.setup(container)
     Window.setupEventListeners(env.camera, env.renderer) // Setup event listeners on the Window
-    val controls = Controls.setup(env)
+    controls = Controls.setup(env)
+
+    effect = new VREffect(env.renderer)
+    effect.setSize(dom.window.innerWidth, dom.window.innerHeight)
 
     // Add FPS stats to the Window
-    val stats = new Stats()
+    stats = new Stats()
     container.appendChild(stats.dom)
 
-    def animate(timeStamp: Double): Unit = {
-      dom.window.requestAnimationFrame(animate)
-      controls.update(timeStamp)
-      env.render()
-      stats.update()
-    }
-
+    //animateVR = animate
     animate(0) // Trigger the animation cycle
   }
+
+  @JSExportTopLevel("CCMVR.animate")
+  def animate(timeStamp: Double): Unit = {
+    dom.window.requestAnimationFrame(animate)
+    controls.update(timeStamp)
+    stats.update()
+    effect.render(env.scene, env.camera)
+    env.render()
+  }
+
+  //@JSExportTopLevel("CCMVR.animate")
+  //var animateVR: Double => Unit = (_) => println("empty animate called!")
 }
