@@ -13,7 +13,7 @@ import js.JSConverters._
   *
   * Created by Dorian Thiessen on 2018-01-13.
   */
-class ShadowManifold(val tag: String, geometry: THREE.Geometry, material: THREE.PointsMaterial)
+class ShadowManifold(val tag: String, geometry: THREE.BufferGeometry, material: THREE.PointsMaterial)
   extends Plot(tag, geometry, material) {}
 
 /**

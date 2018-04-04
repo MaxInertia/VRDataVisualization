@@ -5,33 +5,34 @@ import org.scalajs.dom.raw.Event
   * Common traits of the left and right Oculus Controllers.
   * Created by Dorian Thiessen on 2018-02-12.
   */
-abstract class OculusController {
+sealed abstract class OculusController {
   val name: String
   // Event ID's
-  val Primary_PressBegan = "primary press began"
-  val Primary_PressEnded = "primary press ended"
-  val Grip_PressBegan = "grip press began"
-  val Grip_PressEnded = "grip press ended"
-  val Axes_Changed = "axes changed"
-  val Disconnected = "disconnected"
+  val Primary_PressBegan: String = "primary press began"
+  val Primary_PressEnded: String = "primary press ended"
+  val Grip_PressBegan: String = "grip press began"
+  val Grip_PressEnded: String = "grip press ended"
+  val Axes_Changed: String = "axes changed"
+  val Disconnected: String = "disconnected"
   // Color options for the controller mesh
-  val meshColorRed = 0xFF0000
-  val meshColorBlue = 0x0000FF
-  val meshColorWhite = 0xFFFFFF
+  val meshColorRed: Int = 0xFF0000
+  val meshColorBlue: Int = 0x0000FF
+  val meshColorWhite: Int = 0xFFFFFF
 
   def setup(vrc: VRController): Unit
 }
 
 /**
   * Contains the name, event id's and setup method for the left Oculus Controller.
+  * All event listeners for inputs to this controller are here.
   */
 object OculusControllerLeft extends OculusController {
-  override val name = "Oculus Touch (Left)"
+  override val name: String = "Oculus Touch (Left)"
   // Event ID's specific to the Left controller
-  val X_PressBegan = "X press began"
-  val X_PressEnded = "X press ended"
-  val Y_PressBegan = "Y press began"
-  val Y_PressEnded = "Y press ended"
+  val X_PressBegan: String = "X press began"
+  val X_PressEnded: String = "X press ended"
+  val Y_PressBegan: String = "Y press began"
+  val Y_PressEnded: String = "Y press ended"
 
   def setup(vrc: VRController): Unit = {
     // TODO: Add mesh
@@ -55,14 +56,15 @@ object OculusControllerLeft extends OculusController {
 
 /**
   * Contains the name, event id's and setup method for the right Oculus Controller.
+  * All event listeners for inputs to this controller are here.
   */
 object OculusControllerRight extends OculusController {
-  override val name = "Oculus Touch (Right)"
+  override val name: String = "Oculus Touch (Right)"
   // Event ID's specific to the Right controller
-  val A_PressBegan = "A press began"
-  val A_PressEnded = "A press ended"
-  val B_PressBegan = "B press began"
-  val B_PressEnded = "B press ended"
+  val A_PressBegan: String = "A press began"
+  val A_PressEnded: String = "A press ended"
+  val B_PressBegan: String = "B press began"
+  val B_PressEnded: String = "B press ended"
 
   def setup(vrc: VRController): Unit = {
     // TODO: Add mesh

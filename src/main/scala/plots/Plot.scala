@@ -9,8 +9,9 @@ import js.JSConverters._
   * Instances of classes that extend Plot can be added to a THREE.Scene
   * Created by Dorian Thiessen on 2018-02-08.
   */
-abstract class Plot(tag: String, geometry: THREE.Geometry, material: THREE.PointsMaterial)
+abstract class Plot(tag: String, geometry: THREE.BufferGeometry, material: THREE.PointsMaterial)
   extends THREE.Points(geometry, material) {
+  def getGeometry: THREE.BufferGeometry = geometry
   def printVertices(): Unit = for(v <- geometry.vertices) println(s"v(${v.x}, ${v.y}, ${v.z})")
 }
 

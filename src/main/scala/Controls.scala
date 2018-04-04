@@ -19,9 +19,12 @@ class Controls {
 }
 
 object Controls {
+  private var instance: Controls = _
+  def getMouse: THREE.Vector2 = instance.mouse
   def setup(env: Environment): Controls = {
     println("Controls Setup...")
     val controls = new Controls()
+    instance = controls
 
     // Oculus & Headset Controls
 

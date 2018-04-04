@@ -1,9 +1,9 @@
 import data.CSVParser
-import js.three.{SceneExt, VREffect}
-
+import js.three.{RaycasterParametersExt, SceneExt, VREffect}
 import org.scalajs.{threejs => THREE}
 import org.scalajs.dom
 import org.scalajs.dom.ext.LocalStorage
+import org.scalajs.threejs.{BufferAttribute, Raycaster}
 import plots._
 
 /**
@@ -47,13 +47,40 @@ class Environment(val scene: THREE.Scene,
   }
 
   def render(): Unit = {
-    //if (enterVR.isPresenting()) {
-      vrEffect.render(scene, camera)
+    //if (VR.isPresenting()) {
+    vrEffect.render(scene, camera)
     //} else {
-      renderer.render(scene, camera)
+    renderer.render(scene, camera)
     //}
+    mousePointSelection()
+  }
+
+  val raycaster: Raycaster = new THREE.Raycaster()
+  raycaster.params.asInstanceOf[RaycasterParametersExt].Points.threshold = 0.01
+  val SELECTIONS: Array[Int] = Array(-1, -1)
+
+  def mousePointSelection(): Unit = {
+    raycaster.setFromCamera(Controls.getMouse, camera)
+    var attr = Array(
+      plots3D(0)(active(0)).getGeometry.getAttribute("size"),
+      plots3D(1)(active(1)).getGeometry.getAttribute("size"))
+    var intersects: Array[scalajs.js.Array[THREE.Intersection]] = new Array[scalajs.js.Array[THREE.Intersection]](2)
+    intersects(0) = raycaster.intersectObject(plots3D(0)(active(0)).asInstanceOf[THREE.Points])
+    intersects(1) = raycaster.intersectObject(plots3D(1)(active(1)).asInstanceOf[THREE.Points])
+    //raycaster.intersectObject(plots3D(1)(active(1))).asInstanceOf[THREE.Points])
+
+    for(i <- 0 to 1) {
+      if(intersects(i).length > 0) {
+        dom.console.log("Found intersection: ")
+        dom.console.log(intersects(i)(0).`object`)
+        intersects(i)(0).`object`.scale.set(3,3,3)
+        //SELECTIONS(i) =
+        //attr(i).array(3*sel)
+      }
+    }
   }
 }
+
 
 object Environment {
 

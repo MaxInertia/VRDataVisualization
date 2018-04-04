@@ -17,17 +17,14 @@ object Main {
   @JSExport("init")
   def init(): Unit = {
     println("init called.")
-
     // Setup the Environment (Scene, Camera, Renderer) and the Controls (Mouse, Oculus Controllers and Headset)
     val container = dom.document.getElementById("scene-container")
     env = Environment.setup(container)
     Window.setupEventListeners(env.camera, env.renderer) // Setup event listeners on the Window
     controls = Controls.setup(env)
-
     // Add FPS stats to the Window
     stats = new Stats()
     container.appendChild(stats.dom)
-
     animate(0) // Trigger the animation cycle
   }
 
