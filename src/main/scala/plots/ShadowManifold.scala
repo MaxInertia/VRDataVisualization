@@ -26,11 +26,7 @@ object ShadowManifold {
     * @return A Shadow Manifold of the input time series values
     */
   def apply(id: String, measurements: Array[Coordinate], hue: Double): ShadowManifold = {
-    val vertices = Plot.makeVertices(measurements)
-    val points = new THREE.Points(
-      Plot.makeGeometry(vertices, hue),
-      Plot.makeShaderMaterial())
-    val sm = new ShadowManifold(id, points)
+    val sm = new ShadowManifold(id, Plot.makePoints(measurements, hue))
     sm.hue = hue
     sm
   }

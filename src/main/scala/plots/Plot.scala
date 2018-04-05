@@ -96,6 +96,16 @@ object Plot {
   val PARTICLE_SIZE: Double = 0.1
   var myTexture: THREE.Texture = _
 
+  def makePoints(coordinates: Array[Coordinate], hue: Double): THREE.Points = {
+    val vertices = makeVertices(coordinates)
+    val points = new THREE.Points(
+      Plot.makeGeometry(vertices, hue),
+      Plot.makeShaderMaterial())
+    points.receiveShadow = false
+    points.castShadow = false
+    points
+  }
+
   def makeVertices(coordinates: Array[Coordinate]): Array[THREE.Vector3] =
     coordinates.map{case (x, y, z) => new THREE.Vector3(x, y, z)}
 
