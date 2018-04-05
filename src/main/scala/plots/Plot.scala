@@ -41,7 +41,6 @@ abstract class Plot(tag: String, points: THREE.Points) {
   }
 
   private def updateColors(r: Float, g: Float, b: Float, pIndices: Seq[Int]): Unit = {
-    val color = new THREE.Color()
     val colorsAttr = getColorsAttribute
     val cArr = colorsAttr.array.asInstanceOf[Float32Array]
     for(i <- pIndices) {
@@ -80,11 +79,11 @@ abstract class Plot(tag: String, points: THREE.Points) {
     */
   private object Selection {
     var changesColor: Boolean = true
-    var red: Float = 1.toFloat
-    var green: Float = 1.toFloat
-    var blue: Float = 1.toFloat
+    var red: Float = 1.toFloat   //
+    var green: Float = 1.toFloat // Selected points are white
+    var blue: Float = 1.toFloat  //
     var changesSize: Boolean = true
-    var scale: Float = 1.5.toFloat
+    var scale: Float = 1.5.toFloat // Selected points are 1.5x larger
   }
 }
 
@@ -139,9 +138,6 @@ object Plot {
     geometry
   }
 
-  def zip3[A, B, C](fA: =>Array[A], fB: =>Array[B], fC: =>Array[C]): Array[(A, B, C)] =
-    (fA zip fB zip fC) map { case ((a, b), c) => (a, b, c)}
-
   def makeShaderMaterial() : THREE.PointsMaterial = {
     dom.console.log("\tCreating SM material")
 
@@ -164,4 +160,7 @@ object Plot {
     val material = new THREE.ShaderMaterial(params)
     material.asInstanceOf[THREE.PointsMaterial]
   }
+
+  def zip3[A, B, C](fA: =>Array[A], fB: =>Array[B], fC: =>Array[C]): Array[(A, B, C)] =
+    (fA zip fB zip fC) map { case ((a, b), c) => (a, b, c)}
 }
