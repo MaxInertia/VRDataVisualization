@@ -3,7 +3,6 @@ import js.three.{IntersectionExt, RaycasterParametersExt, SceneExt, VREffect}
 import org.scalajs.{threejs => THREE}
 import org.scalajs.dom
 import org.scalajs.dom.ext.LocalStorage
-import org.scalajs.threejs.Raycaster
 import plots._
 
 /**
@@ -56,7 +55,7 @@ class Environment(val scene:    THREE.Scene,
     if(Plot.myTexture != null) mousePointSelection()
   }
 
-  val rayCaster: Raycaster = new THREE.Raycaster()
+  val rayCaster: THREE.Raycaster = new THREE.Raycaster()
   // TODO: Determine how to appropriately scale rayCaster threshold with point size
   rayCaster.params.asInstanceOf[RaycasterParametersExt].Points.threshold = 0.015
   val NONE: Int = -248
@@ -89,6 +88,21 @@ class Environment(val scene:    THREE.Scene,
 
 object Environment {
 
+  /**
+    * Initiates setup for the Environment.
+    *
+    * The Environment includes:
+    * - the perspective camera,
+    * - the renderer,
+    * - and the scene.
+    *
+    * Setup involves:
+    * - initializing camera, scene, and renderer,
+    * - loading required resources (ex: The texture for points,
+    *                                   and data used for point positions.)
+    * @param container The dom element in which the renderer will display the environment.
+    * @return The environment instance.
+    */
   def setup(container: dom.Element): Environment = {
     dom.console.log("Environment Setup Started...")
 
@@ -103,19 +117,20 @@ object Environment {
     val env: Environment = new Environment(scene, camera, renderer, vrEffect)
     env.regions(0).position.set(-1.1, 0, -2) // region on the left
     env.regions(1).position.set( 1.1, 0, -2) // region on the right
-    // Load texture for points first, so it is done when it is needed
-    new THREE.TextureLoader().load("img/disc.png", t => {
-      Plot.myTexture = t
-      // Add plots to the env
-      //val (sm1, ts1) = createPlots("SM1_timeSeries", 0x880000)//Color.RED_HUE_SHIFT)
-      //val (sm2, ts2) = createPlots("SM2_timeSeries", 0x000088)//Color.BLUE_HUE_SHIFT)
-      val sm1 = createSMPlots("SM1_timeSeries", Color.RED_HUE_SHIFT)
-      val sm2 = createSMPlots("SM2_timeSeries", Color.BLUE_HUE_SHIFT)
-      env.plots3D(0) = sm1
-      env.plots3D(1) = sm2
-      env.loadPlot(regionID = 0, plotID = 0) // TODO: Dynamic region count?
-      env.loadPlot(regionID = 1, plotID = 0)
-    })
+
+    def drawPlots(texture: THREE.Texture): Unit = {
+        Plot.myTexture = texture
+        // Add plots to the env
+        //val (sm1, ts1) = createPlots("SM1_timeSeries", 0x880000)//Color.RED_HUE_SHIFT)
+        //val (sm2, ts2) = createPlots("SM2_timeSeries", 0x000088)//Color.BLUE_HUE_SHIFT)
+        val sm1 = createSMPlots("SM1_timeSeries", Color.RED_HUE_SHIFT) // TODO: Split off steps that do not require the texture
+        val sm2 = createSMPlots("SM2_timeSeries", Color.BLUE_HUE_SHIFT)
+        env.plots3D(0) = sm1
+        env.plots3D(1) = sm2
+        env.loadPlot(regionID = 0, plotID = 0) // TODO: Dynamic region count?
+        env.loadPlot(regionID = 1, plotID = 0)
+    }
+    Resources.loadPointTexture(drawPlots)
 
     // Add coordinate axes
     addAxes(env.regions(0), 1, centeredOrigin = false)
