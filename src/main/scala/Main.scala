@@ -38,4 +38,9 @@ object Main {
 
   @JSExport("renderer") // Temporary. renderer currently required in global scope.
   def getRenderer: THREE.Renderer = env.renderer
+
+  @JSExport("switchPlot")
+  def switchPlot(i: Int): Unit =
+    env.loadPlot(i, (env.active(i) + 1) % env.plots3D.length)
+
 }

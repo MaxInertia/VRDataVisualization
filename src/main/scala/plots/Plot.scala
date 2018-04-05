@@ -1,6 +1,10 @@
 package plots
 
+import javafx.scene.effect.ColorInput
+
+import org.scalajs.threejs.{Color, ShaderMaterialParameters, Texture}
 import org.scalajs.{dom, threejs => THREE}
+
 import scala.scalajs.js
 import js.typedarray.Float32Array
 import js.JSConverters._
@@ -9,10 +13,9 @@ import js.JSConverters._
   * Instances of classes that extend Plot can be added to a THREE.Scene
   * Created by Dorian Thiessen on 2018-02-08.
   */
-abstract class Plot(tag: String, override var geometry: THREE.BufferGeometry, material: THREE.PointsMaterial)
-  extends THREE.Points(geometry, material) {
-  def getGeometry: THREE.BufferGeometry = super.geometry.asInstanceOf[THREE.BufferGeometry]
-  def printVertices(): Unit = for(v <- geometry.vertices) println(s"v(${v.x}, ${v.y}, ${v.z})")
+abstract class Plot(tag: String, points: THREE.Points) {
+  def getGeometry: THREE.BufferGeometry = points.geometry.asInstanceOf[THREE.BufferGeometry]
+  def printVertices(): Unit = for(v <- points.geometry.vertices) println(s"v(${v.x}, ${v.y}, ${v.z})")
 }
 
 /**
@@ -20,12 +23,11 @@ abstract class Plot(tag: String, override var geometry: THREE.BufferGeometry, ma
   * Encapsulates general Plot initialization methods.
   */
 object Plot {
-
-  val PARTICLE_SIZE: Double = 0.013
+  val PARTICLE_SIZE: Double = 0.1
+  var myTexture: THREE.Texture = _
 
   def makeVertices(coordinates: Array[Coordinate]): Array[THREE.Vector3] =
     coordinates.map{case (x, y, z) => new THREE.Vector3(x, y, z)}
-
 
   def makeGeometry(vertices: Array[THREE.Vector3], hueShift: Double): THREE.BufferGeometry = {
     val positions = new Float32Array( vertices.length * 3 )
@@ -33,9 +35,8 @@ object Plot {
     val sizes = new Float32Array( vertices.length )
 
     val l = vertices.length
-    var vertex: THREE.Vector3 = null
     val color = new THREE.Color()
-
+    var vertex: THREE.Vector3 = null
     for ( i <- vertices.indices) {
       vertex = vertices(i)
       positions(3*i)     = vertex.x.toFloat
@@ -58,44 +59,30 @@ object Plot {
     geometry
   }
 
-
-  def makeMaterial(color: THREE.Color): THREE.PointsMaterial = {
-    var material = new THREE.PointsMaterial()
-    material.color = color
-    material.size = PARTICLE_SIZE
-    material
-  }
-
-
-  def zip3[A, B, C](fA: Array[A], fB: Array[B], fC: Array[C]): Array[(A, B, C)] =
+  def zip3[A, B, C](fA: =>Array[A], fB: =>Array[B], fC: =>Array[C]): Array[(A, B, C)] =
     (fA zip fB zip fC) map { case ((a, b), c) => (a, b, c)}
 
-
   // TODO: Find out why THREE.ShaderMaterial cannot be used as the material for Points, that is what is used in the JS version.
-  def makeShaderMaterial() : THREE.PointsMaterial = {
+  def makeShaderMaterial(colorIn: THREE.Color) : THREE.PointsMaterial = {
     println("\tCreating SM material")
-
-    val material = new THREE.ShaderMaterial()
-    val myTexture = new THREE.TextureLoader()//.load("./disc.png")
-
-    //myTexture.load("D:/Projects/CCM-VR-Scala/src/main/www/img/disc2.png", (t)=>{
-    //myTexture.load("../../src/main/www/img/disc.png", (t)=>
-    myTexture.load("disc.png", (t)=>{
-      material.uniforms = new js.Object{
-        "color" -> new THREE.Color(0xffffff)
-        "texture" -> t
-      }
-    })
 
     val myVertexShader = dom.document.getElementById("vertexshader").textContent
     val myFragmentShader = dom.document.getElementById("fragmentshader").textContent
 
-    //println(s"Vertex Shader: $myVertexShader")
-    //println(s"Fragment Shader: $myFragmentShader")
+    val params: ShaderMaterialParameters = new js.Object().asInstanceOf[ShaderMaterialParameters]
+    params.fragmentShader = myFragmentShader
+    params.vertexShader = myVertexShader
+    params.uniforms = new js.Object {
+      val color = new js.Object {
+        val value: Color = colorIn
+      }
+      val texture = new js.Object {
+        val value: Texture = myTexture
+      }
+    }
+    params.alphaTest = 0.5
 
-    material.vertexShader = myVertexShader
-    material.fragmentShader = myFragmentShader
-    material.alphaTest = 0.9
+    val material = new THREE.ShaderMaterial(params)
     material.asInstanceOf[THREE.PointsMaterial]
   }
 }

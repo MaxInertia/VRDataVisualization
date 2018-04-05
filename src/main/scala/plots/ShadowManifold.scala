@@ -3,9 +3,6 @@ package plots
 import math.Stats
 import org.scalajs.{threejs => THREE}
 
-import scala.scalajs.js
-import js.JSConverters._
-
 /**
   * A reconstruction of an attractor manifold generated from data on a single variable.
   * Each point can be thought of as the history of the variable over some interval of time,
@@ -13,8 +10,7 @@ import js.JSConverters._
   *
   * Created by Dorian Thiessen on 2018-01-13.
   */
-class ShadowManifold(val tag: String, geometry: THREE.BufferGeometry, material: THREE.PointsMaterial)
-  extends Plot(tag, geometry, material) {}
+class ShadowManifold(val tag: String, var points: THREE.Points) extends Plot(tag, points) {}
 
 /**
   * The companion object for the ShadowManifold class.
@@ -31,12 +27,11 @@ object ShadowManifold {
     */
   def apply(id: String, measurements: Array[Coordinate], hue: Double): ShadowManifold = {
     val vertices = Plot.makeVertices(measurements)
-    //for(v <- vertices) println(v.toArray().toJSArray)
-    val geometry = Plot.makeGeometry(vertices, hue)
     val color = new THREE.Color(hue)
-    val material = Plot.makeMaterial(color)
-    //val material = Plot.makeShaderMaterial()
-    new ShadowManifold(id, geometry, material)
+    val points = new THREE.Points(
+      Plot.makeGeometry(vertices, hue),
+      Plot.makeShaderMaterial(color))
+    new ShadowManifold(id, points)
   }
 
   /**
@@ -49,9 +44,9 @@ object ShadowManifold {
     */
   def createSet(data: Array[(String, Array[Double])], hue: Double): Array[ShadowManifold] =
     data.map{ case (id, vs) => (id, Stats.standardize(vs)) }   // Standardize the values
-      .map{ case (id, vs) => (id, lagzip3(vs)) }               // Convert values to point coordinates
+      .map{ case (id, vs) => (id, lagZip3(vs)) }               // Convert values to point coordinates
       .map{ case (id, vs) => ShadowManifold(id, vs, hue) }     // Create a shadow manifold
 
-  def lagzip3(ts: Array[Double]): Array[Coordinate] = Plot.zip3(ts.drop(2), ts.tail, ts) // TODO: Generalize Tau
+  def lagZip3(ts: Array[Double]): Array[Coordinate] = Plot.zip3(ts.drop(2), ts.tail, ts) // TODO: Generalize Tau
 
 }

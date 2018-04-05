@@ -3,7 +3,7 @@ import js.three.{IntersectionExt, RaycasterParametersExt, SceneExt, VREffect}
 import org.scalajs.{threejs => THREE}
 import org.scalajs.dom
 import org.scalajs.dom.ext.LocalStorage
-import org.scalajs.threejs.{BufferAttribute, Raycaster}
+import org.scalajs.threejs.Raycaster
 import plots._
 
 import scala.scalajs.js.typedarray.Float32Array
@@ -28,6 +28,8 @@ class Environment(val scene: THREE.Scene,
   /** Index of the active plots in each region */
   val active: Array[Int] = Array(-1, -1)
 
+  var SELECTION_SCALE: Float = 2.toFloat
+
   /**
     * Returns the ShadowManifold that is currently visible in the specified region
     * @param regionID The region the plot belongs to. (either 0 or 1)
@@ -42,9 +44,9 @@ class Environment(val scene: THREE.Scene,
     */
   def loadPlot(regionID: Int, plotID: Int): Unit = {
     if(active(regionID) != -1) {
-      regions(regionID).remove( plots3D(regionID)(active(regionID)) ) // Remove previous plot
+      regions(regionID).remove( plots3D(regionID)(active(regionID)).points ) // Remove previous plot
     }
-    regions(regionID).add( plots3D(regionID)(plotID) ) // Add requested plot
+    regions(regionID).add( plots3D(regionID)(plotID).points ) // Add requested plot
     active(regionID) = plotID // Update active plot index
   }
 
@@ -54,53 +56,29 @@ class Environment(val scene: THREE.Scene,
     //} else {
     renderer.render(scene, camera)
     //}
-    mousePointSelection()
+    if(Plot.myTexture != null) mousePointSelection()
   }
 
   val raycaster: Raycaster = new THREE.Raycaster()
   raycaster.params.asInstanceOf[RaycasterParametersExt].Points.threshold = 0.01
-  //val SELECTIONS: Array[Int] = Array(-1, -1)
+  val SELECTIONS: Array[Int] = Array(-1, -1)
 
   def mousePointSelection(): Unit = {
     raycaster.setFromCamera(Controls.getMouse, camera)
-    /*var attr = Array(
+    var attr = Array(
       plots3D(0)(active(0)).getGeometry.getAttribute("size"),
-      plots3D(1)(active(1)).getGeometry.getAttribute("size"))*/
-    var intersects: Array[scalajs.js.Array[THREE.Intersection]] = new Array[scalajs.js.Array[THREE.Intersection]](2)
-    intersects(0) = raycaster.intersectObject(plots3D(0)(active(0)).asInstanceOf[THREE.Points])
-    intersects(1) = raycaster.intersectObject(plots3D(1)(active(1)).asInstanceOf[THREE.Points])
-    //raycaster.intersectObject(plots3D(1)(active(1))).asInstanceOf[THREE.Points])
+      plots3D(1)(active(1)).getGeometry.getAttribute("size"))
+    var intersects: Array[scalajs.js.Array[THREE.Intersection]] = Array(
+      raycaster.intersectObject(plots3D(0)(active(0)).points),
+      raycaster.intersectObject(plots3D(1)(active(1)).points))
 
     for(i <- 0 to 1) {
       if(intersects(i).length > 0) {
-        dom.console.log("Found intersection: ")
-        //dom.console.log(intersects(i)(0).`object`)
-        //intersects(i)(0).`object`.scale.set(3,3,3)
         val pointIndex = intersects(i)(0).asInstanceOf[IntersectionExt].index
-        dom.console.log("Selected point index: "+ pointIndex +" in...")
-        //dom.console.log(attr(i).array.asInstanceOf[Float32Array])
-        var floats = plots3D(i)(active(i)).getGeometry.getAttribute("size").array.asInstanceOf[Float32Array]
-        dom.console.log(floats)
-
-        dom.console.log("Original size:")
-        //dom.console.log(attr(i).array.asInstanceOf[Float32Array](pointIndex))
-        dom.console.log(floats(pointIndex))
-
-        //attr(i).array.asInstanceOf[Float32Array](pointIndex) = (Plot.PARTICLE_SIZE * 10.0).toFloat
-        floats(pointIndex) = (Plot.PARTICLE_SIZE * 10.0).toFloat
-        //attr(i).needsUpdate = true
-        plots3D(i)(active(i)).getGeometry.getAttribute("size").needsUpdate = true
-        dom.console.log("Updated size:")
-        //dom.console.log(attr(i).array.asInstanceOf[Float32Array](pointIndex))
-        dom.console.log(floats(pointIndex))
-
-        floats.set(new Float32Array(pointIndex))
-        dom.console.log("Newly updated size:")
-        dom.console.log(floats(pointIndex))
-
-        //attr(i)
-        //SELECTIONS(i) =
-        //attr(i).array(3*sel)
+        var f32arr: Float32Array = attr(i).array.asInstanceOf[Float32Array]
+        f32arr(pointIndex) = (Plot.PARTICLE_SIZE * SELECTION_SCALE).toFloat
+        attr(i).needsUpdate = true
+        plots3D(i)(active(i)).points.updateMatrix()
       }
     }
   }
@@ -117,7 +95,6 @@ object Environment {
 
   def setup(container: dom.Element): Environment = {
     println("Environment Setup Started...")
-
     // Create Camera; This is the perspective through which the user views the scene.
     val camera = new THREE.PerspectiveCamera(
       65,  // Field of view
@@ -136,7 +113,7 @@ object Environment {
 
     // Create Scene & populate it with plots and such!
     val scene = new THREE.Scene()
-    //scene.background = new THREE.Color(0x333333)
+    scene.background = new THREE.Color(0xaaaaaa)
     scene.add(camera)
     scene.add(makeLight())
     container.appendChild(renderer.domElement)
@@ -144,19 +121,25 @@ object Environment {
     val env: Environment = new Environment(scene, camera, renderer, vrEffect)
     env.regions(0).position.set(-1.1, 0, -2) // region on the left
     env.regions(1).position.set( 1.1, 0, -2) // region on the right
-
-    // Add plots to the env
-    val (sm1, ts1) = createPlots("SM1_timeSeries", 0x880000)//Color.RED_HUE_SHIFT)
-    val (sm2, ts2) = createPlots("SM2_timeSeries", 0x000088)//Color.BLUE_HUE_SHIFT)
-    env.plots3D(0) = sm1
-    env.plots3D(1) = sm2
-    env.loadPlot(regionID = 0, plotID = 0)
-    env.loadPlot(regionID = 1, plotID = 0)
+    // Load texture for points first, so it is done when it is needed
+    new THREE.TextureLoader().load("img/disc.png", (t) => {
+      dom.console.log("Texture loaded!!")
+      dom.console.log(t)
+      Plot.myTexture = t
+      // Add plots to the env
+      //val (sm1, ts1) = createPlots("SM1_timeSeries", 0x880000)//Color.RED_HUE_SHIFT)
+      //val (sm2, ts2) = createPlots("SM2_timeSeries", 0x000088)//Color.BLUE_HUE_SHIFT)
+      val sm1 = createSMPlots("SM1_timeSeries", 0x880000)//Color.RED_HUE_SHIFT)
+      val sm2 = createSMPlots("SM2_timeSeries", 0x0000aa)//Color.BLUE_HUE_SHIFT)
+      env.plots3D(0) = sm1
+      env.plots3D(1) = sm2
+      env.loadPlot(regionID = 0, plotID = 0) // TODO: Dynamic region count?
+      env.loadPlot(regionID = 1, plotID = 0)
+    })
 
     // Add coordinate axes
     addAxes(env.regions(0), 1, centeredOrigin = false)
     addAxes(env.regions(1), 1, centeredOrigin = true)
-
     println("Environment complete.")
     env
   }
@@ -191,13 +174,12 @@ object Environment {
     else (ShadowManifold.createSet(timeSeries.get, hue), TimeSeries.createSet(timeSeries.get, hue)) // TODO: replace null with createTS(timeSeries)
   }
 
-  def createPlots(localStorageID: String, hue: Double): (Array[ShadowManifold]) = {
+  def createSMPlots(localStorageID: String, hue: Double): Array[ShadowManifold] = {
     val timeSeries = LocalStorage(localStorageID).map(CSVParser.parse)
-    if(timeSeries.isEmpty) null
-    else {
-      ()
-    } // TODO: replace null with createTS(timeSeries)
+    if (timeSeries.isEmpty) null
+    else ShadowManifold.createSet(timeSeries.get, hue)
   }
+
 
   def createTS(timeSeries: Option[String]): Array[TimeSeries] = ??? // TODO: Implement TimeSeries class ('2D' plot)
 
