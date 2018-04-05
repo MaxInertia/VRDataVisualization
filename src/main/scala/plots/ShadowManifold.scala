@@ -27,10 +27,9 @@ object ShadowManifold {
     */
   def apply(id: String, measurements: Array[Coordinate], hue: Double): ShadowManifold = {
     val vertices = Plot.makeVertices(measurements)
-    val color = new THREE.Color(hue)
     val points = new THREE.Points(
       Plot.makeGeometry(vertices, hue),
-      Plot.makeShaderMaterial(color))
+      Plot.makeShaderMaterial())
     new ShadowManifold(id, points)
   }
 

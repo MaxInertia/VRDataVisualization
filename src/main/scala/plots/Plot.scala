@@ -1,21 +1,91 @@
 package plots
 
-import javafx.scene.effect.ColorInput
-
-import org.scalajs.threejs.{Color, ShaderMaterialParameters, Texture}
 import org.scalajs.{dom, threejs => THREE}
-
 import scala.scalajs.js
 import js.typedarray.Float32Array
 import js.JSConverters._
 
 /**
-  * Instances of classes that extend Plot can be added to a THREE.Scene
+  * An abstract wrapper for THREE.Points that includes various
+  * operations one may want to perform on the points.
+  *
   * Created by Dorian Thiessen on 2018-02-08.
   */
 abstract class Plot(tag: String, points: THREE.Points) {
   def getGeometry: THREE.BufferGeometry = points.geometry.asInstanceOf[THREE.BufferGeometry]
-  def printVertices(): Unit = for(v <- points.geometry.vertices) println(s"v(${v.x}, ${v.y}, ${v.z})")
+  @inline def getColorsAttribute: js.Dynamic = getGeometry.getAttribute("customColor")
+  @inline def getSizesAttribute: js.Dynamic  = getGeometry.getAttribute("size")
+
+  /**
+    * Select the set of points at the provided indices.
+    * @param pIndices Point indices
+    */
+  def select(pIndices: Int*): Unit = {
+    if(Selection.changesColor) updateColors(Selection.red, Selection.green, Selection.blue, pIndices)
+    if(Selection.changesSize)  updateSizes(Plot.PARTICLE_SIZE.toFloat*Selection.scale, pIndices)
+  }
+
+  /**
+    * Deselect the set of points at the provided indices.
+    * Deselected points are restored to their original color and size.
+    * @param pIndices Point indices
+    */
+  def deselect(pIndices: Int*): Unit = {
+    if(Selection.changesColor) updateColors(Default.red, Default.green, Default.blue, pIndices)
+    if(Selection.changesSize)  updateSizes(Plot.PARTICLE_SIZE.toFloat, pIndices)
+  }
+
+  private def updateColors(r: Float, g: Float, b: Float, pIndices: Seq[Int]): Unit = {
+    // Buffer Attributes for point colors as RGB values
+    val colorsAttr = getColorsAttribute
+    val cArr = colorsAttr.array.asInstanceOf[Float32Array]
+    for(i <- pIndices) {
+      cArr(3*i) = r
+      cArr(3*i + 1) = g
+      cArr(3*i + 2) = b
+    }
+    colorsAttr.needsUpdate = true
+  }
+
+  private def updateSizes(newSize: Float, pIndices: Seq[Int]): Unit = {
+    // Buffer Attributes for point sizes
+    val sizesAttr = getSizesAttribute
+    val sArr = sizesAttr.array.asInstanceOf[Float32Array]
+    for(i <- pIndices) sArr(i) = newSize
+    sizesAttr.needsUpdate = true
+  }
+
+  /**
+    * Properties of selected points
+    */
+  private object Selection {
+    var changesColor: Boolean = true
+    var red: Float = 1.toFloat
+    var green: Float = 1.toFloat
+    var blue: Float = 1.toFloat
+    var changesSize: Boolean = true
+    var scale: Float = 1.5.toFloat
+  }
+
+  /**
+    * Contains default point properties used to revert points
+    * to their original state after deselecting them.
+    */
+  private object Default {
+    var red: Float = _
+    var green: Float = _
+    var blue: Float = _
+    // Method 'init' exists to initialize the default RGB values
+    // to avoid (1) descending into the depths of the geometry more than once,
+    // and (2) keeping a reference to the float32array.
+    def init() {
+      val defaultColors = getGeometry.getAttribute("customColor").array.asInstanceOf[Float32Array]
+      red = defaultColors(0)
+      green = defaultColors(1)
+      blue = defaultColors(2)
+    }
+    init()
+  }
 }
 
 /**
@@ -62,22 +132,21 @@ object Plot {
   def zip3[A, B, C](fA: =>Array[A], fB: =>Array[B], fC: =>Array[C]): Array[(A, B, C)] =
     (fA zip fB zip fC) map { case ((a, b), c) => (a, b, c)}
 
-  // TODO: Find out why THREE.ShaderMaterial cannot be used as the material for Points, that is what is used in the JS version.
-  def makeShaderMaterial(colorIn: THREE.Color) : THREE.PointsMaterial = {
-    println("\tCreating SM material")
+  def makeShaderMaterial() : THREE.PointsMaterial = {
+    dom.console.log("\tCreating SM material")
 
     val myVertexShader = dom.document.getElementById("vertexshader").textContent
     val myFragmentShader = dom.document.getElementById("fragmentshader").textContent
 
-    val params: ShaderMaterialParameters = new js.Object().asInstanceOf[ShaderMaterialParameters]
+    val params: THREE.ShaderMaterialParameters = new js.Object().asInstanceOf[THREE.ShaderMaterialParameters]
     params.fragmentShader = myFragmentShader
     params.vertexShader = myVertexShader
     params.uniforms = new js.Object {
-      val color = new js.Object {
-        val value: Color = colorIn
+      val color: js.Object = new js.Object {
+        val value: THREE.Color = new THREE.Color(Color.WHITE)
       }
-      val texture = new js.Object {
-        val value: Texture = myTexture
+      val texture: js.Object = new js.Object {
+        val value: THREE.Texture = myTexture
       }
     }
     params.alphaTest = 0.5

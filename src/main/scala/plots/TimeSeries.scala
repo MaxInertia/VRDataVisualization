@@ -12,8 +12,7 @@ object TimeSeries {
   def apply(id: String, measurements: Array[Coordinate], hue: Double): Unit = {
     val vertices = Plot.makeVertices(measurements)
     val geometry = Plot.makeGeometry(vertices, hue)
-    val color = new THREE.Color(hue)
-    val material = Plot.makeShaderMaterial(color)
+    val material = Plot.makeShaderMaterial()
     new TimeSeries(id, geometry, material)
   }
 
