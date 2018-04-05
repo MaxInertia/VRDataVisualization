@@ -119,8 +119,8 @@ object Environment {
       // Add plots to the env
       //val (sm1, ts1) = createPlots("SM1_timeSeries", 0x880000)//Color.RED_HUE_SHIFT)
       //val (sm2, ts2) = createPlots("SM2_timeSeries", 0x000088)//Color.BLUE_HUE_SHIFT)
-      val sm1 = createSMPlots("SM1_timeSeries", Color.RED)//Color.RED_HUE_SHIFT)
-      val sm2 = createSMPlots("SM2_timeSeries", Color.BLUE)//Color.BLUE_HUE_SHIFT)
+      val sm1 = createSMPlots("SM1_timeSeries", Color.RED_HUE_SHIFT)
+      val sm2 = createSMPlots("SM2_timeSeries", Color.BLUE_HUE_SHIFT)
       env.plots3D(0) = sm1
       env.plots3D(1) = sm2
       env.loadPlot(regionID = 0, plotID = 0) // TODO: Dynamic region count?

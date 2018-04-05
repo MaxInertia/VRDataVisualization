@@ -30,7 +30,9 @@ object ShadowManifold {
     val points = new THREE.Points(
       Plot.makeGeometry(vertices, hue),
       Plot.makeShaderMaterial())
-    new ShadowManifold(id, points)
+    val sm = new ShadowManifold(id, points)
+    sm.hue = hue
+    sm
   }
 
   /**

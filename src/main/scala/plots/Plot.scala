@@ -12,9 +12,14 @@ import js.JSConverters._
   * Created by Dorian Thiessen on 2018-02-08.
   */
 abstract class Plot(tag: String, points: THREE.Points) {
-  def getGeometry: THREE.BufferGeometry = points.geometry.asInstanceOf[THREE.BufferGeometry]
+  var hue: Double = _
+  val numPoints: Int = getSizesAttribute.array.asInstanceOf[Float32Array].length // hmm..
+
+  /** Buffer Attributes for point colors as RGB values */
   @inline def getColorsAttribute: js.Dynamic = getGeometry.getAttribute("customColor")
-  @inline def getSizesAttribute: js.Dynamic  = getGeometry.getAttribute("size")
+
+  /** Buffer Attributes for point sizes */
+  @inline def getSizesAttribute: js.Dynamic = getGeometry.getAttribute("size")
 
   /**
     * Select the set of points at the provided indices.
@@ -31,12 +36,12 @@ abstract class Plot(tag: String, points: THREE.Points) {
     * @param pIndices Point indices
     */
   def deselect(pIndices: Int*): Unit = {
-    if(Selection.changesColor) updateColors(Default.red, Default.green, Default.blue, pIndices)
-    if(Selection.changesSize)  updateSizes(Plot.PARTICLE_SIZE.toFloat, pIndices)
+    if(Selection.changesColor) for(i <- pIndices) resetColor(i)
+    if(Selection.changesSize) updateSizes(Plot.PARTICLE_SIZE.toFloat, pIndices)
   }
 
   private def updateColors(r: Float, g: Float, b: Float, pIndices: Seq[Int]): Unit = {
-    // Buffer Attributes for point colors as RGB values
+    val color = new THREE.Color()
     val colorsAttr = getColorsAttribute
     val cArr = colorsAttr.array.asInstanceOf[Float32Array]
     for(i <- pIndices) {
@@ -47,16 +52,31 @@ abstract class Plot(tag: String, points: THREE.Points) {
     colorsAttr.needsUpdate = true
   }
 
+  private def resetColor(pIndex: Int): Unit = {
+    // Recompute this points original color
+    val color: THREE.Color = new THREE.Color()
+    val newHue: Double = hue + 0.1 * ( pIndex * 1.0 / numPoints )
+    color.setHSL( newHue, 1.0, 0.5 )
+    // Assign color to point
+    val colorsAttr = getColorsAttribute
+    val cArr = colorsAttr.array.asInstanceOf[Float32Array]
+    cArr(3*pIndex) = color.r.toFloat
+    cArr(3*pIndex + 1) = color.g.toFloat
+    cArr(3*pIndex + 2) = color.b.toFloat
+    colorsAttr.needsUpdate = true
+  }
+
   private def updateSizes(newSize: Float, pIndices: Seq[Int]): Unit = {
-    // Buffer Attributes for point sizes
     val sizesAttr = getSizesAttribute
     val sArr = sizesAttr.array.asInstanceOf[Float32Array]
     for(i <- pIndices) sArr(i) = newSize
     sizesAttr.needsUpdate = true
   }
 
+  private def getGeometry: THREE.BufferGeometry = points.geometry.asInstanceOf[THREE.BufferGeometry]
+
   /**
-    * Properties of selected points
+    * Properties of selected points.
     */
   private object Selection {
     var changesColor: Boolean = true
@@ -65,26 +85,6 @@ abstract class Plot(tag: String, points: THREE.Points) {
     var blue: Float = 1.toFloat
     var changesSize: Boolean = true
     var scale: Float = 1.5.toFloat
-  }
-
-  /**
-    * Contains default point properties used to revert points
-    * to their original state after deselecting them.
-    */
-  private object Default {
-    var red: Float = _
-    var green: Float = _
-    var blue: Float = _
-    // Method 'init' exists to initialize the default RGB values
-    // to avoid (1) descending into the depths of the geometry more than once,
-    // and (2) keeping a reference to the float32array.
-    def init() {
-      val defaultColors = getGeometry.getAttribute("customColor").array.asInstanceOf[Float32Array]
-      red = defaultColors(0)
-      green = defaultColors(1)
-      blue = defaultColors(2)
-    }
-    init()
   }
 }
 
@@ -104,7 +104,7 @@ object Plot {
     val colors = new Float32Array( vertices.length * 3 )
     val sizes = new Float32Array( vertices.length )
 
-    val l = vertices.length
+    val l: Double = vertices.length
     val color = new THREE.Color()
     var vertex: THREE.Vector3 = null
     for ( i <- vertices.indices) {
