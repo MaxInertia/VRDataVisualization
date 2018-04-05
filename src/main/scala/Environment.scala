@@ -1,10 +1,12 @@
 import data.CSVParser
-import js.three.{RaycasterParametersExt, SceneExt, VREffect}
+import js.three.{IntersectionExt, RaycasterParametersExt, SceneExt, VREffect}
 import org.scalajs.{threejs => THREE}
 import org.scalajs.dom
 import org.scalajs.dom.ext.LocalStorage
 import org.scalajs.threejs.{BufferAttribute, Raycaster}
 import plots._
+
+import scala.scalajs.js.typedarray.Float32Array
 
 /**
   * Created by Dorian Thiessen on 2018-01-11.
@@ -57,13 +59,13 @@ class Environment(val scene: THREE.Scene,
 
   val raycaster: Raycaster = new THREE.Raycaster()
   raycaster.params.asInstanceOf[RaycasterParametersExt].Points.threshold = 0.01
-  val SELECTIONS: Array[Int] = Array(-1, -1)
+  //val SELECTIONS: Array[Int] = Array(-1, -1)
 
   def mousePointSelection(): Unit = {
     raycaster.setFromCamera(Controls.getMouse, camera)
-    var attr = Array(
+    /*var attr = Array(
       plots3D(0)(active(0)).getGeometry.getAttribute("size"),
-      plots3D(1)(active(1)).getGeometry.getAttribute("size"))
+      plots3D(1)(active(1)).getGeometry.getAttribute("size"))*/
     var intersects: Array[scalajs.js.Array[THREE.Intersection]] = new Array[scalajs.js.Array[THREE.Intersection]](2)
     intersects(0) = raycaster.intersectObject(plots3D(0)(active(0)).asInstanceOf[THREE.Points])
     intersects(1) = raycaster.intersectObject(plots3D(1)(active(1)).asInstanceOf[THREE.Points])
@@ -72,8 +74,31 @@ class Environment(val scene: THREE.Scene,
     for(i <- 0 to 1) {
       if(intersects(i).length > 0) {
         dom.console.log("Found intersection: ")
-        dom.console.log(intersects(i)(0).`object`)
-        intersects(i)(0).`object`.scale.set(3,3,3)
+        //dom.console.log(intersects(i)(0).`object`)
+        //intersects(i)(0).`object`.scale.set(3,3,3)
+        val pointIndex = intersects(i)(0).asInstanceOf[IntersectionExt].index
+        dom.console.log("Selected point index: "+ pointIndex +" in...")
+        //dom.console.log(attr(i).array.asInstanceOf[Float32Array])
+        var floats = plots3D(i)(active(i)).getGeometry.getAttribute("size").array.asInstanceOf[Float32Array]
+        dom.console.log(floats)
+
+        dom.console.log("Original size:")
+        //dom.console.log(attr(i).array.asInstanceOf[Float32Array](pointIndex))
+        dom.console.log(floats(pointIndex))
+
+        //attr(i).array.asInstanceOf[Float32Array](pointIndex) = (Plot.PARTICLE_SIZE * 10.0).toFloat
+        floats(pointIndex) = (Plot.PARTICLE_SIZE * 10.0).toFloat
+        //attr(i).needsUpdate = true
+        plots3D(i)(active(i)).getGeometry.getAttribute("size").needsUpdate = true
+        dom.console.log("Updated size:")
+        //dom.console.log(attr(i).array.asInstanceOf[Float32Array](pointIndex))
+        dom.console.log(floats(pointIndex))
+
+        floats.set(new Float32Array(pointIndex))
+        dom.console.log("Newly updated size:")
+        dom.console.log(floats(pointIndex))
+
+        //attr(i)
         //SELECTIONS(i) =
         //attr(i).array(3*sel)
       }
@@ -166,6 +191,13 @@ object Environment {
     else (ShadowManifold.createSet(timeSeries.get, hue), TimeSeries.createSet(timeSeries.get, hue)) // TODO: replace null with createTS(timeSeries)
   }
 
+  def createPlots(localStorageID: String, hue: Double): (Array[ShadowManifold]) = {
+    val timeSeries = LocalStorage(localStorageID).map(CSVParser.parse)
+    if(timeSeries.isEmpty) null
+    else {
+      ()
+    } // TODO: replace null with createTS(timeSeries)
+  }
 
   def createTS(timeSeries: Option[String]): Array[TimeSeries] = ??? // TODO: Implement TimeSeries class ('2D' plot)
 

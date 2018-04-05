@@ -9,7 +9,8 @@ resolvers += sbt.Resolver.bintrayRepo("scalajs-facades", "scalajs-facades-releas
 libraryDependencies ++= Seq(
   "org.scala-js" %%% "scalajs-dom" % "0.9.2",
   "com.lihaoyi" %%% "utest" % "0.6.0" % "test",
-  "org.scalajs" %%% "threejs-facade" % "0.0.88-0.1.9"
+  "org.scalajs" %%% "threejs-facade" % "0.0.88-0.1.9",
+  "be.doeraene" %%% "scalajs-jquery" % "0.9.3"
 )
 
 testFrameworks += new TestFramework("utest.runner.Framework")
@@ -24,3 +25,5 @@ testFrameworks += new TestFramework("utest.runner.Framework")
 //scalaJSModuleKind := ModuleKind.CommonJSModule
 scalaJSUseMainModuleInitializer := false // Explicitly called from script in index.html
 scalacOptions += "-P:scalajs:sjsDefinedByDefault"
+
+skip in packageJSDependencies := false
