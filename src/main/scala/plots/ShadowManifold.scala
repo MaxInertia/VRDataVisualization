@@ -10,7 +10,7 @@ import org.scalajs.{threejs => THREE}
   *
   * Created by Dorian Thiessen on 2018-01-13.
   */
-class ShadowManifold(val tag: String, var points: THREE.Points) extends Plot(tag, points) {}
+class ShadowManifold(val tag: String, var points: THREE.Points) extends Plot(tag, points)
 
 /**
   * The companion object for the ShadowManifold class.

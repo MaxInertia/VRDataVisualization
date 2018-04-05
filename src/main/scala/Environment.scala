@@ -62,8 +62,10 @@ class Environment(val scene:    THREE.Scene,
   val NONE: Int = -248
   val SELECTIONS: Array[Int] = Array(NONE, NONE)
 
+  // TODO: Make pointSelection a method in Plot?
   def mousePointSelection(): Unit = {
     // Retrieve intersections
+    // TODO: Create method that returns the appropriate rayCaster (which depends on the users input method)
     rayCaster.setFromCamera(Controls.getMouse, camera)
     val intersects: Array[scalajs.js.Array[THREE.Intersection]] = Array(
       rayCaster.intersectObject(get3DPlot(0).points),
@@ -84,7 +86,6 @@ class Environment(val scene:    THREE.Scene,
     }
   }
 }
-
 
 object Environment {
 
@@ -189,7 +190,6 @@ object Environment {
     if (timeSeries.isEmpty) null // TODO: Again, Option?
     else ShadowManifold.createSet(timeSeries.get, hue)
   }
-
 
   def createTS(timeSeries: Option[String]): Array[TimeSeries] = ??? // TODO: Implement TimeSeries class ('2D' plot)
 

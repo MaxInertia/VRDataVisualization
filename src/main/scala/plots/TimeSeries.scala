@@ -5,8 +5,7 @@ import org.scalajs.{threejs => THREE}
 /**
   * Created by Dorian Thiessen on 2018-01-13.
   */
-class TimeSeries(val tag: String, points: THREE.Points)
-  extends Plot(tag, points)
+class TimeSeries(val tag: String, points: THREE.Points) extends Plot(tag, points)
 
 object TimeSeries {
   def apply(id: String, measurements: Array[Coordinate], hue: Double): TimeSeries = {
