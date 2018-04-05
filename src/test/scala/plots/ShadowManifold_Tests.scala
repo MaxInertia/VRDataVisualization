@@ -53,13 +53,13 @@ object ShadowManifold_Tests extends TestSuite {
 
       def notLazy(n: Int): Unit = {
         val nums = (1d until n.toDouble by 1d).toArray
-        val coords = ShadowManifold.lagzip3(nums)
+        val coords = ShadowManifold.lagZip3(nums)
         verifyCoordinates(nums, coords)
       }
 
       def useLazy(n: Int): Unit = {
         lazy val nums = (1d until n.toDouble by 1d).toArray
-        val coords = ShadowManifold.lagzip3(nums)
+        val coords = ShadowManifold.lagZip3(nums)
         verifyCoordinates(nums, coords)
       }
 
