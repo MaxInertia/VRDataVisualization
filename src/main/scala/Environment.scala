@@ -90,25 +90,14 @@ object Environment {
 
   def setup(container: dom.Element): Environment = {
     dom.console.log("Environment Setup Started...")
-    // Create Camera; This is the perspective through which the user views the scene.
-    val camera = new THREE.PerspectiveCamera(
-      65,  // Field of view
-      dom.window.innerWidth / dom.window.innerHeight, // Aspect Ratio
-      0.01, // Nearest distance visible
-      20000) // Farthest distance visible
-    // Create Renderer
-    val renderer = new THREE.WebGLRenderer()
-    renderer.setSize(dom.window.innerWidth, dom.window.innerHeight)
-    renderer.devicePixelRatio = dom.window.devicePixelRatio
-    // Applies renderer to VR display (if available)
-    val vrEffect = new VREffect(renderer)
-    vrEffect.setSize(dom.window.innerWidth, dom.window.innerHeight)
-    // Create Scene & populate it with plots and such!
-    val scene = new THREE.Scene()
-    scene.background = new THREE.Color(Color.GRAY)
+
+    val camera: THREE.PerspectiveCamera = makeCamera()
+    val (renderer, vrEffect) = makeRendererAndVREffect()
+    container.appendChild(renderer.domElement)
+
+    val scene: THREE.Scene = makeScene()
     scene.add(camera)
     scene.add(makeLight())
-    container.appendChild(renderer.domElement)
 
     val env: Environment = new Environment(scene, camera, renderer, vrEffect)
     env.regions(0).position.set(-1.1, 0, -2) // region on the left
@@ -130,8 +119,42 @@ object Environment {
     // Add coordinate axes
     addAxes(env.regions(0), 1, centeredOrigin = false)
     addAxes(env.regions(1), 1, centeredOrigin = true)
-    dom.console.log("Environment complete.")
+    dom.console.log("Environment prepared.")
     env
+  }
+
+  /**
+    * Creates the renderer.
+    * @return THREE.WebGLRenderer instance
+    */
+  private def makeRendererAndVREffect(): (THREE.WebGLRenderer, VREffect) = {
+    val renderer = new THREE.WebGLRenderer()
+    renderer.setSize(dom.window.innerWidth, dom.window.innerHeight)
+    renderer.devicePixelRatio = dom.window.devicePixelRatio
+    // Applies renderer to VR display (if available)
+    val vrEffect = new VREffect(renderer)
+    vrEffect.setSize(dom.window.innerWidth, dom.window.innerHeight)
+    (renderer, vrEffect)
+  }
+
+  /**
+    * Creates the camera, the perspective through which the user views the scene.
+    * @return THREE.PerspectiveCamera instance
+    */
+  private def makeCamera(): THREE.PerspectiveCamera = new THREE.PerspectiveCamera(
+      65,  // Field of view
+      dom.window.innerWidth / dom.window.innerHeight, // Aspect Ratio
+      0.01, // Nearest distance visible
+      20000) // Farthest distance visible
+
+  /**
+    * Creates the scene, the space in which objects can be placed for viewing.
+    * @return THREE.Scene instance
+    */
+  private def makeScene(): THREE.Scene = {
+    val scene = new THREE.Scene()
+    scene.background = new THREE.Color(Color.GRAY)
+    scene
   }
 
   def makeLight(): THREE.Light = {
