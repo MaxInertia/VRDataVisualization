@@ -104,8 +104,6 @@ object Environment {
     * @return The environment instance.
     */
   def setup(container: dom.Element): Environment = {
-    dom.console.log("Environment Setup Started...")
-
     val camera: THREE.PerspectiveCamera = makeCamera()
     val (renderer, vrEffect) = makeRendererAndVREffect()
     container.appendChild(renderer.domElement)
@@ -119,23 +117,22 @@ object Environment {
     env.regions(1).position.set( 1.1, 0, -2) // region on the right
 
     def drawPlots(texture: THREE.Texture): Unit = {
-        Plot.myTexture = texture
-        // Add plots to the env
-        //val (sm1, ts1) = createPlots("SM1_timeSeries", 0x880000)//Color.RED_HUE_SHIFT)
-        //val (sm2, ts2) = createPlots("SM2_timeSeries", 0x000088)//Color.BLUE_HUE_SHIFT)
-        val sm1 = createSMPlots("SM1_timeSeries", Color.RED_HUE_SHIFT) // TODO: Split off steps that do not require the texture
-        val sm2 = createSMPlots("SM2_timeSeries", Color.BLUE_HUE_SHIFT)
-        env.plots3D(0) = sm1
-        env.plots3D(1) = sm2
-        env.loadPlot(regionID = 0, plotID = 0) // TODO: Dynamic region count?
-        env.loadPlot(regionID = 1, plotID = 0)
+      Plot.myTexture = texture
+      // Add plots to the env
+      //val (sm1, ts1) = createPlots("SM1_timeSeries", 0x880000)//Color.RED_HUE_SHIFT)
+      //val (sm2, ts2) = createPlots("SM2_timeSeries", 0x000088)//Color.BLUE_HUE_SHIFT)
+      val sm1 = createSMPlots("SM1_timeSeries", Color.RED_HUE_SHIFT) // TODO: Split off steps that do not require the texture
+      val sm2 = createSMPlots("SM2_timeSeries", Color.BLUE_HUE_SHIFT)
+      env.plots3D(0) = sm1
+      env.plots3D(1) = sm2
+      env.loadPlot(regionID = 0, plotID = 0) // TODO: Dynamic region count?
+      env.loadPlot(regionID = 1, plotID = 0)
     }
     Resources.loadPointTexture(drawPlots)
 
     // Add coordinate axes
     addAxes(env.regions(0), 1, centeredOrigin = false)
     addAxes(env.regions(1), 1, centeredOrigin = true)
-    dom.console.log("Environment prepared.")
     env
   }
 
