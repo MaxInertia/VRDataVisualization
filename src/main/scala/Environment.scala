@@ -52,7 +52,7 @@ class Environment(val scene:    THREE.Scene,
     renderer.render(scene, camera)
     //}
     // TODO: Find a better way to ignore points while waiting for the texture to be loaded
-    if(Plot.myTexture != null) mousePointSelection()
+    if(Plot.myTextures(0) != null && Plot.myTextures(1) != null) mousePointSelection()
   }
 
   val rayCaster: THREE.Raycaster = new THREE.Raycaster()
@@ -116,23 +116,29 @@ object Environment {
     env.regions(0).position.set(-1.1, 0, -2) // region on the left
     env.regions(1).position.set( 1.1, 0, -2) // region on the right
 
-    def drawPlots(texture: THREE.Texture): Unit = {
-      Plot.myTexture = texture
+    // TODO: Create a PlotBuilder to hide all Plot creation details
+    def drawPlot1(texture: THREE.Texture): Unit = drawPlot(texture, 0)
+    def drawPlot2(texture: THREE.Texture): Unit = drawPlot(texture, 1)
+    def drawPlot(texture: THREE.Texture, plotNumber: Int): Unit = {
+      dom.console.log(texture.anisotropy)
+      texture.anisotropy = 4
+      Plot.myTextures(plotNumber) = texture
       // Add plots to the env
-      //val (sm1, ts1) = createPlots("SM1_timeSeries", 0x880000)//Color.RED_HUE_SHIFT)
-      //val (sm2, ts2) = createPlots("SM2_timeSeries", 0x000088)//Color.BLUE_HUE_SHIFT)
-      val sm1 = createSMPlots("SM1_timeSeries", Color.RED_HUE_SHIFT) // TODO: Split off steps that do not require the texture
-      val sm2 = createSMPlots("SM2_timeSeries", Color.BLUE_HUE_SHIFT)
-      env.plots3D(0) = sm1
-      env.plots3D(1) = sm2
-      env.loadPlot(regionID = 0, plotID = 0) // TODO: Dynamic region count?
-      env.loadPlot(regionID = 1, plotID = 0)
+      if(plotNumber == 0) {
+        val sm1 = createSMPlots("SM1_timeSeries", Color.RED_HUE_SHIFT, plotNumber) // TODO: Split off steps that do not require the texture
+        env.plots3D(0) = sm1
+      } else {
+        val sm2 = createSMPlots("SM2_timeSeries", Color.BLUE_HUE_SHIFT, plotNumber)
+        env.plots3D(1) = sm2
+      }
+      env.loadPlot(regionID = plotNumber, plotID = 0)
     }
-    Resources.loadPointTexture(drawPlots)
+    Resources.loadPointTexture(drawPlot1, 0)
+    Resources.loadPointTexture(drawPlot2, 1)
 
     // Add coordinate axes
-    addAxes(env.regions(0), 1, centeredOrigin = false)
-    addAxes(env.regions(1), 1, centeredOrigin = true)
+    addAxes(env.regions(0), 1, centeredOrigin = false, color = Color.WHITE)
+    addAxes(env.regions(1), 1, centeredOrigin = true, color = Color.WHITE)
     env
   }
 
@@ -166,12 +172,12 @@ object Environment {
     */
   private def makeScene(): THREE.Scene = {
     val scene = new THREE.Scene()
-    scene.background = new THREE.Color(Color.GRAY)
+    scene.background = new THREE.Color(Color.BLACK)
     scene
   }
 
   def makeLight(): THREE.Light = {
-    var light = new THREE.DirectionalLight(Color.WHITE)
+    val light = new THREE.DirectionalLight(Color.WHITE)
     light.position.set(1, 1, 1).normalize()
     light
   }
@@ -180,8 +186,8 @@ object Environment {
     * Add coordinate axes to the plot in this region
     * @param region The region of space in the scene to add the axes to
     */
-  def addAxes(region: THREE.Object3D, length: Int, centeredOrigin: Boolean): Unit = {
-    val axes = CoordinateAxes3D.create(length, centeredOrigin)
+  def addAxes(region: THREE.Object3D, length: Int, centeredOrigin: Boolean, color: Int): Unit = {
+    val axes = CoordinateAxes3D.create(length, centeredOrigin, color)
     region.add(axes)
   }
 
@@ -197,10 +203,10 @@ object Environment {
     else (ShadowManifold.createSet(timeSeries.get, hue), TimeSeries.createSet(timeSeries.get, hue)) // TODO: replace null with createTS(timeSeries)
   }*/
 
-  def createSMPlots(localStorageID: String, hue: Double): Array[ShadowManifold] = {
+  def createSMPlots(localStorageID: String, hue: Double, textureIndex: Int): Array[ShadowManifold] = {
     val timeSeries = LocalStorage(localStorageID).map(CSVParser.parse)
     if (timeSeries.isEmpty) null // TODO: Again, Option?
-    else ShadowManifold.createSet(timeSeries.get, hue)
+    else ShadowManifold.createSet(timeSeries.get, hue, textureIndex)
   }
 
   def createTS(timeSeries: Option[String]): Array[TimeSeries] = ??? // TODO: Implement TimeSeries class ('2D' plot)

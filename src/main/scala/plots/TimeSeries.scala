@@ -9,8 +9,13 @@ class TimeSeries(val tag: String, points: THREE.Points) extends Plot(tag, points
 
 object TimeSeries {
   def apply(id: String, measurements: Array[Coordinate], hue: Double): TimeSeries = {
-    val timeSeries = new TimeSeries(id, Plot.makePoints(measurements, hue))
+    val timeSeries = new TimeSeries(id, Plot.makePoints(measurements, Some(hue), 0))
     timeSeries.hue = hue
+    timeSeries
+  }
+
+  def apply(id: String, measurements: Array[Coordinate]): TimeSeries = {
+    val timeSeries = new TimeSeries(id, Plot.makePoints(measurements, None, 0))
     timeSeries
   }
 

@@ -25,9 +25,14 @@ object ShadowManifold {
     * @param hue Some number, influences the color of the points generated
     * @return A Shadow Manifold of the input time series values
     */
-  def apply(id: String, measurements: Array[Coordinate], hue: Double): ShadowManifold = {
-    val sm = new ShadowManifold(id, Plot.makePoints(measurements, hue))
+  def apply(id: String, measurements: Array[Coordinate], textureIndex: Int, hue: Double): ShadowManifold = {
+    val sm = new ShadowManifold(id, Plot.makePoints(measurements, Some(hue), textureIndex))
     sm.hue = hue
+    sm
+  }
+
+  def apply(id: String, measurements: Array[Coordinate], textureIndex: Int): ShadowManifold = {
+    val sm = new ShadowManifold(id, Plot.makePoints(measurements, None, textureIndex))
     sm
   }
 
@@ -39,10 +44,10 @@ object ShadowManifold {
     * @param hue Some number, influences the color of the points generated
     * @return An Array of Shadow Manifolds
     */
-  def createSet(data: Array[(String, Array[Double])], hue: Double): Array[ShadowManifold] =
+  def createSet(data: Array[(String, Array[Double])], hue: Double, textureIndex: Int): Array[ShadowManifold] =
     data.map{ case (id, vs) => (id, Stats.standardize(vs)) }   // Standardize the values
       .map{ case (id, vs) => (id, lagZip3(vs)) }               // Convert values to point coordinates
-      .map{ case (id, vs) => ShadowManifold(id, vs, hue) }     // Create a shadow manifold
+      .map{ case (id, vs) => ShadowManifold(id, vs, textureIndex, hue) }     // Create a shadow manifold
 
   def lagZip3(ts: Array[Double]): Array[Coordinate] = Plot.zip3(ts.drop(2), ts.tail, ts) // TODO: Generalize Tau
 

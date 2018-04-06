@@ -93,13 +93,13 @@ abstract class Plot(tag: String, points: THREE.Points) {
   */
 object Plot {
   val PARTICLE_SIZE: Double = 0.1
-  var myTexture: THREE.Texture = _
+  var myTextures: Array[THREE.Texture] = Array(null, null)
 
-  def makePoints(coordinates: Array[Coordinate], hue: Double): THREE.Points = {
+  def makePoints(coordinates: Array[Coordinate], hue: Option[Double], textureIndex: Int): THREE.Points = {
     val vertices = makeVertices(coordinates)
     val points = new THREE.Points(
       Plot.makeGeometry(vertices, hue),
-      Plot.makeShaderMaterial())
+      Plot.makeShaderMaterial(textureIndex))
     points.receiveShadow = false
     points.castShadow = false
     points
@@ -108,13 +108,16 @@ object Plot {
   def makeVertices(coordinates: Array[Coordinate]): Array[THREE.Vector3] =
     coordinates.map{case (x, y, z) => new THREE.Vector3(x, y, z)}
 
-  def makeGeometry(vertices: Array[THREE.Vector3], hueShift: Double): THREE.BufferGeometry = {
+  def makeGeometry(vertices: Array[THREE.Vector3], hueShift: Option[Double]): THREE.BufferGeometry = {
     val positions = new Float32Array( vertices.length * 3 )
     val colors = new Float32Array( vertices.length * 3 )
     val sizes = new Float32Array( vertices.length )
 
     val l: Double = vertices.length
     val color = new THREE.Color()
+    if(hueShift.isEmpty) {
+      color.setRGB(255,255,255)
+    }
     var vertex: THREE.Vector3 = null
     for ( i <- vertices.indices) {
       vertex = vertices(i)
@@ -122,10 +125,10 @@ object Plot {
       positions(3*i + 1) = vertex.y.toFloat
       positions(3*i + 2) = vertex.z.toFloat
 
-      color.setHSL( hueShift + 0.1 * ( i / l ), 1.0, 0.5 )
-      colors(3*i)     = color.r.toFloat
-      colors(3*i + 1) = color.g.toFloat
-      colors(3*i + 2) = color.b.toFloat
+      if(hueShift.nonEmpty) color.setHSL(hueShift.get + 0.1 * (i / l), 1.0, 0.5)
+      colors(3 * i) = color.r.toFloat
+      colors(3 * i + 1) = color.g.toFloat
+      colors(3 * i + 2) = color.b.toFloat
 
       sizes(i) = PARTICLE_SIZE.toFloat
     }
@@ -138,7 +141,7 @@ object Plot {
     geometry
   }
 
-  def makeShaderMaterial() : THREE.PointsMaterial = {
+  def makeShaderMaterial(textureIndex: Int) : THREE.PointsMaterial = {
     dom.console.log("\tCreating SM material")
 
     val myVertexShader = dom.document.getElementById("vertexshader").textContent
@@ -152,7 +155,7 @@ object Plot {
         val value: THREE.Color = new THREE.Color(Color.WHITE)
       }
       val texture: js.Object = new js.Object {
-        val value: THREE.Texture = myTexture
+        val value: THREE.Texture = myTextures(textureIndex)
       }
     }
     params.alphaTest = 0.5

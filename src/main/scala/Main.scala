@@ -16,7 +16,6 @@ object Main {
 
   @JSExport("init")
   def init(): Unit = {
-    println("init called.")
     // Setup the Environment (Scene, Camera, Renderer) and the Controls (Mouse, Oculus Controllers and Headset)
     val container = dom.document.getElementById("scene-container")
     env = Environment.setup(container)
