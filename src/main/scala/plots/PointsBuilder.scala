@@ -1,9 +1,6 @@
 package plots
 
-
-
 import org.scalajs.{threejs => THREE}
-
 import scala.annotation.implicitNotFound
 
 /**

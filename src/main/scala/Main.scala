@@ -1,7 +1,6 @@
 import js.Stats
 import org.scalajs.{threejs => THREE}
 import org.scalajs.dom
-
 import scala.scalajs.js.annotation.{JSExport, JSExportTopLevel}
 
 /**
