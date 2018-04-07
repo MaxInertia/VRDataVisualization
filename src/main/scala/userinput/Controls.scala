@@ -1,7 +1,7 @@
 package userinput
 
 import env.Environment
-import js.three.{FirstPersonVRControls, VRController, VRControls}
+import js.three.{FirstPersonVRControls, RaycasterParametersExt, VRController, VRControls}
 import org.scalajs.dom.{document, raw}
 import org.scalajs.{threejs => THREE}
 import window.Window
@@ -25,7 +25,23 @@ class Controls {
 
 object Controls {
   private var instance: Controls = _
+
+  type RayCaster = THREE.Raycaster
+  private val rayCaster: RayCaster = new RayCaster()
+  rayCaster.params.asInstanceOf[RaycasterParametersExt].Points.threshold = 0.015
+
+  def getSelectionRaycaster(camera: => THREE.PerspectiveCamera): RayCaster = {
+    // If using mouse
+    rayCaster.setFromCamera(getMouse, camera)
+    // TODO: if using Oculus
+    // ...
+    // TODO: If using mobile (neither Oculus or Mouse available)
+    // ...
+    rayCaster
+  }
+
   def getMouse: THREE.Vector2 = instance.mouse
+
   def setup(env: Environment): Controls = {
     println("Controls Setup...")
     val controls = new Controls()

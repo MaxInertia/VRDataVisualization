@@ -69,6 +69,8 @@ class Environment(val scene:    Scene,
   /** Index of the active plots in each region */
   var active: Array[Int] = Array()
 
+  val DNE: Int = -248 // Does Not Exist
+
   /**
     * Returns the Plot that is currently visible in the specified region
     * @param regionID The region the plot belongs to. (either 0 or 1)
@@ -118,17 +120,9 @@ class Environment(val scene:    Scene,
     if(Regions().length >= 2) mousePointSelection()
   }
 
-  val rayCaster: THREE.Raycaster = new THREE.Raycaster()
-  // TODO: Determine how to appropriately scale rayCaster threshold with point size
-  rayCaster.params.asInstanceOf[RaycasterParametersExt].Points.threshold = 0.015
-  val DNE: Int = -248
-  val SELECTIONS: Array[Int] = Array(DNE, DNE)
-
-  // TODO: Make pointSelection a method in Plot?
   def mousePointSelection(): Unit = {
-    // Retrieve intersections
-    // TODO: Create method that returns the appropriate rayCaster (which depends on the users input method)
-    rayCaster.setFromCamera(Controls.getMouse, camera)
+    // Retrieve intersections on the available inputs ray caster
+    val rayCaster: THREE.Raycaster = Controls.getSelectionRaycaster(camera)
     val intersects: Array[scalajs.js.Array[THREE.Intersection]] = Array(
       rayCaster.intersectObject(get3DPlot(0).getPoints),
       rayCaster.intersectObject(get3DPlot(1).getPoints))
