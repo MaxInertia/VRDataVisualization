@@ -1,33 +1,37 @@
-import js.three.{IntersectionExt, RaycasterParametersExt, SceneExt, VREffect}
-import math.Stats
+
 import org.scalajs.{threejs => THREE}
 import org.scalajs.dom
-import plots.ShadowManifold.lagZip3
+import scala.util.{Failure, Success}
+
+import js.three.{IntersectionExt, RaycasterParametersExt, SceneExt, VREffect}
+import math.Stats
 import plots._
-import resources.Res.Texture
 import resources._
-
-import scala.concurrent.Promise
-import scala.util.{Failure, Success, Try}
-
+import ui.vr.VirtualScreen
+import resources.Res.Texture
+import Environment.{PerspectiveCamera, Scene, WebGLRenderer}
 
 /**
   * Created by Dorian Thiessen on 2018-01-11.
   */
-class Environment(val scene:    THREE.Scene,
-                  val camera:   THREE.PerspectiveCamera,
-                  val renderer: THREE.WebGLRenderer,
+class Environment(val scene:    Scene,
+                  val camera:   PerspectiveCamera,
+                  val renderer: WebGLRenderer,
                   val vrEffect: VREffect) {
+
+  /** Used to group multiple objects in the environent
+    * that should always move and rotate together */
+  type Group = THREE.Object3D // TODO: Use THREE.Group? Not in facade.
 
   /** Regions are represent positions in the scene,
     * used to anchor multiple objects to one another */
   private object Regions {
-    private var regions: Array[THREE.Object3D] = Array()
-    def apply(): Array[THREE.Object3D] = regions
-    def apply(i: Int): THREE.Object3D = regions(i)
+    private var regions: Array[Group] = Array()
+    def apply(): Array[Group] = regions
+    def apply(i: Int): Group = regions(i)
 
-    def add(newRegion: THREE.Object3D): Unit = {
-      println(s"Adding region #${regions.length}")
+    def add(newRegion: Group): Unit = {
+      dom.console.log(s"Adding region #${regions.length}")
       regions = regions :+ newRegion
       scene.add(newRegion)
       reposition()
@@ -36,9 +40,9 @@ class Environment(val scene:    THREE.Scene,
     def update(regionID: Int, plotID: Int): Unit = {
       // Remove current plot if region is not empty
       if(active(regionID) != DNE) regions(regionID)
-        .remove(plots3D(regionID % 2).get(active(regionID)).points)
+        .remove(plots3D(regionID % 2).get(active(regionID)).getPoints)
       // Add the requested plot to the region
-      regions(regionID).add(plots3D(regionID % 2).get(plotID).points)
+      regions(regionID).add(plots3D(regionID % 2).get(plotID).getPoints)
     }
 
     private def reposition(): Unit = Regions().length match {
@@ -59,17 +63,17 @@ class Environment(val scene:    THREE.Scene,
     }
   }
 
-  val plots3D: Array[Option[Array[ShadowManifold]]] = Array(None, None, None) // TODO: Use Option?
+  val plots3D: Array[Option[Array[Plot]]] = Array(None, None, None) // TODO: Use Option?
 
   /** Index of the active plots in each region */
   var active: Array[Int] = Array()
 
   /**
-    * Returns the ShadowManifold that is currently visible in the specified region
+    * Returns the Plot that is currently visible in the specified region
     * @param regionID The region the plot belongs to. (either 0 or 1)
     * @return The Shadow Manifold
     */
-  @inline def get3DPlot(regionID: Int): ShadowManifold = plots3D(regionID).get(active(regionID))
+  def get3DPlot(regionID: Int): Plot = plots3D(regionID).get(active(regionID))
 
   def nextPlot(regionID: Int) : Unit = {
     if(active.length <= regionID) loadPlot(regionID, 0)
@@ -90,7 +94,7 @@ class Environment(val scene:    THREE.Scene,
 
     // Increase the number of available regions, place requested plot inside
     if(regionID == Regions().length) {
-      Regions.add(new THREE.Object3D)
+      Regions.add(new Group)
       active = active :+ plotID
     }
 
@@ -98,7 +102,7 @@ class Environment(val scene:    THREE.Scene,
     active(regionID) = plotID // Update active plot index
   }
 
-  def addPlots(regionID: Int, plots: Option[Array[ShadowManifold]]): Unit = {
+  def addPlots(regionID: Int, plots: Option[Array[Plot]]): Unit = {
     println(s"Added plots to region #$regionID")
     plots3D(regionID) = plots
   }
@@ -125,8 +129,8 @@ class Environment(val scene:    THREE.Scene,
     // TODO: Create method that returns the appropriate rayCaster (which depends on the users input method)
     rayCaster.setFromCamera(Controls.getMouse, camera)
     val intersects: Array[scalajs.js.Array[THREE.Intersection]] = Array(
-      rayCaster.intersectObject(get3DPlot(0).points),
-      rayCaster.intersectObject(get3DPlot(1).points))
+      rayCaster.intersectObject(get3DPlot(0).getPoints),
+      rayCaster.intersectObject(get3DPlot(1).getPoints))
     for(i <- 0 to 1) { // For each plot
       if(intersects(i).length > 0) { // If currently selecting point on current plot.
         if(SELECTIONS(i) != DNE) { // If previous selection exists, request plots deselect them.
@@ -145,6 +149,9 @@ class Environment(val scene:    THREE.Scene,
 }
 
 object Environment {
+  type Scene = THREE.Scene
+  type WebGLRenderer = THREE.WebGLRenderer
+  type PerspectiveCamera = THREE.PerspectiveCamera
 
   /**
     * Initiates setup for the Environment.
@@ -163,11 +170,11 @@ object Environment {
     */
   def setup(container: dom.Element): Environment = {
 
-    val camera: THREE.PerspectiveCamera = makeCamera()
+    val camera: PerspectiveCamera = makeCamera()
     val (renderer, vrEffect) = makeRendererAndVREffect()
     container.appendChild(renderer.domElement)
 
-    val scene: THREE.Scene = makeScene()
+    val scene: Scene = makeScene()
     scene.add(camera)
     scene.add(makeLight())
 
@@ -183,6 +190,8 @@ object Environment {
       case Failure(err) => err.printStackTrace()
     }
 
+    val screenScaffold = VirtualScreen.makeSlantedScreens(0.6, 0.1)
+    env.scene.add(screenScaffold)
     env
   }
 
@@ -205,8 +214,8 @@ object Environment {
     * Creates the renderer.
     * @return THREE.WebGLRenderer instance
     */
-  private def makeRendererAndVREffect(): (THREE.WebGLRenderer, VREffect) = {
-    val renderer = new THREE.WebGLRenderer()
+  private def makeRendererAndVREffect(): (WebGLRenderer, VREffect) = {
+    val renderer = new WebGLRenderer()
     renderer.setSize(Window.width, Window.height)
     renderer.devicePixelRatio = Window.devicePixelRatio
     // Applies renderer to VR display (if available)
@@ -220,8 +229,8 @@ object Environment {
     * @param aspectRatio The aspect ratio of the display area
     * @return THREE.PerspectiveCamera instance
     */
-  private def makeCamera(aspectRatio: Double = Window.aspectRatio): THREE.PerspectiveCamera =
-    new THREE.PerspectiveCamera(
+  private def makeCamera(aspectRatio: Double = Window.aspectRatio): PerspectiveCamera =
+    new PerspectiveCamera(
       65,          // Field of view
       aspectRatio, // Aspect Ratio
       0.01,        // Nearest distance visible
@@ -233,7 +242,7 @@ object Environment {
     * @return THREE.Scene instance
     */
   private def makeScene(): THREE.Scene = {
-    val scene = new THREE.Scene()
+    val scene = new Scene()
     scene.background = new THREE.Color(Color.BLACK)
     scene
   }
@@ -253,7 +262,7 @@ object Environment {
     region.add(axes)
   }
 
-  def createSMPlots(localStorageID: String, hue: Double, textureIndex: Int): Option[Array[ShadowManifold]] = {
+  def createSMPlots(localStorageID: String, hue: Double, textureIndex: Int): Option[Array[Plot]] = {
     val timeSeries = BrowserStorage.timeSeriesFromCSV(localStorageID)
     if (timeSeries.isEmpty) None
     else {
@@ -274,7 +283,7 @@ object Environment {
         i += 1
       }
 
-      Some(plots)
+      Some(plots.asInstanceOf[Array[Plot]])
     }
   }
 
