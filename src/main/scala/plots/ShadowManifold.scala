@@ -1,5 +1,6 @@
 package plots
 
+
 /**
   * A reconstruction of an attractor manifold generated from data on a single variable.
   * Each point can be thought of as the history of the variable over some interval of time,
@@ -7,7 +8,11 @@ package plots
   *
   * Created by Dorian Thiessen on 2018-01-13.
   */
-class ShadowManifold(val tag: String, var points: Points) extends Plot(tag, points)
+class ShadowManifold(val tag: String, var points: Points) extends Plot {
+  override def getPoints: Points = points
+  def getGeometry: BufferGeometry = points.geometry.asInstanceOf[BufferGeometry]
+}
+
 
 /**
   * The companion object for the ShadowManifold class.

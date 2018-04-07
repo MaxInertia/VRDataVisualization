@@ -6,4 +6,6 @@ import org.scalajs.{threejs => THREE}
 package object plots {
   type Points = THREE.Points
   type Coordinate = (Double, Double, Double)
+
+  type BufferGeometry = THREE.BufferGeometry
 }

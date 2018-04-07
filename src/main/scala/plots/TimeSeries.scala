@@ -3,7 +3,10 @@ package plots
 /**
   * Created by Dorian Thiessen on 2018-01-13.
   */
-class TimeSeries(val tag: String, points: Points) extends Plot(tag, points)
+class TimeSeries(val tag: String, points: Points) extends Plot {
+  override def getPoints: Points = points
+  def getGeometry: BufferGeometry = points.geometry.asInstanceOf[BufferGeometry]
+}
 
 object TimeSeries {
   def apply(id: String, points: Points, hue: Double): TimeSeries = {

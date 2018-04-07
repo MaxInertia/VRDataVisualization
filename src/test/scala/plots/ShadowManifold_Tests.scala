@@ -15,7 +15,7 @@ object ShadowManifold_Tests extends TestSuite {
       coordinate._3)
 
 
-  val tests = Tests {
+  val tests: Tests = Tests {
 
     'converting_TS_Values_To_SM_Points { // Tests for method 'lagzip3'
 
@@ -73,6 +73,7 @@ object ShadowManifold_Tests extends TestSuite {
       }
 
     } // end of 'lagzip3' tests
+
   }
 }
 

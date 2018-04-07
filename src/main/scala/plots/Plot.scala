@@ -1,6 +1,6 @@
 package plots
 
-import org.scalajs.{dom, threejs => THREE}
+import org.scalajs.{threejs => THREE}
 import scala.scalajs.js
 import js.typedarray.Float32Array
 
@@ -10,9 +10,11 @@ import js.typedarray.Float32Array
   *
   * Created by Dorian Thiessen on 2018-02-08.
   */
-abstract class Plot(tag: String, points: THREE.Points) {
+trait Plot {
   var hue: Double = _
   val numPoints: Int = getSizesAttribute.array.asInstanceOf[Float32Array].length // hmm..
+
+  def getPoints: Points
 
   /** Buffer Attributes for point colors as RGB values */
   @inline def getColorsAttribute: js.Dynamic = getGeometry.getAttribute("customColor")
@@ -71,7 +73,7 @@ abstract class Plot(tag: String, points: THREE.Points) {
     sizesAttr.needsUpdate = true
   }
 
-  private def getGeometry: THREE.BufferGeometry = points.geometry.asInstanceOf[THREE.BufferGeometry]
+  private[plots] def getGeometry: THREE.BufferGeometry
 
   /**
     * Properties of selected points.
