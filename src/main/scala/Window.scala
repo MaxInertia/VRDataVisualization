@@ -20,7 +20,7 @@ object Window {
       renderer.setSize(window.innerWidth, window.innerHeight)
     })
 
-    // Add additional event listeners that require no more than the Camera or Renderer here
+    // Add additional event listeners that require no more than the Camera and Renderer here
   }
 
   def setupMouseEventListener(mouse: THREE.Vector2): Unit = {
