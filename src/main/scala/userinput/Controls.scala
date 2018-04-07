@@ -1,8 +1,13 @@
+package userinput
+
+import env.Environment
 import js.three.{FirstPersonVRControls, VRController, VRControls}
 import org.scalajs.dom.{document, raw}
 import org.scalajs.{threejs => THREE}
+import window.Window
 
 /**
+  * An abstraction over the users method of input.
   * Created by Dorian Thiessen on 2018-01-13.
   */
 class Controls {

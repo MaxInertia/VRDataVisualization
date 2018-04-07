@@ -1,12 +1,14 @@
+package env
 
 import org.scalajs.{threejs => THREE}
 import org.scalajs.dom
 import scala.util.{Failure, Success}
-
-import js.three.{IntersectionExt, RaycasterParametersExt, SceneExt, VREffect}
+import js.three.{RaycasterParametersExt, SceneExt, VREffect}
 import math.Stats
 import plots._
 import resources._
+import userinput.{Controls, Interactions}
+import window.Window
 import resources.Res.Texture
 import Environment.{PerspectiveCamera, Scene, WebGLRenderer}
 
@@ -18,7 +20,7 @@ class Environment(val scene:    Scene,
                   val renderer: WebGLRenderer,
                   val vrEffect: VREffect) {
 
-  /** Used to group multiple objects in the environent
+  /** Used to group multiple objects in the environment
     * that should always move and rotate together */
   type Group = THREE.Object3D // TODO: Use THREE.Group? Not in facade.
 
@@ -130,20 +132,23 @@ class Environment(val scene:    Scene,
     val intersects: Array[scalajs.js.Array[THREE.Intersection]] = Array(
       rayCaster.intersectObject(get3DPlot(0).getPoints),
       rayCaster.intersectObject(get3DPlot(1).getPoints))
-    for(i <- 0 to 1) { // For each plot
-      if(intersects(i).length > 0) { // If currently selecting point on current plot.
-        if(SELECTIONS(i) != DNE) { // If previous selection exists, request plots deselect them.
-          get3DPlot(0).deselect(SELECTIONS(i))
-          get3DPlot(1).deselect(SELECTIONS(i))
-        }
-        // Request plots update selections.
-        SELECTIONS(i) = intersects(i)(0).asInstanceOf[IntersectionExt].index
-        // TODO: Generalize selection, have SM override selection behavior and take as arg the other SM
-        // Basically don't assume we're dealing with shadow manifolds.
-        get3DPlot(0).select(SELECTIONS(i))
-        get3DPlot(1).select(SELECTIONS(i))
-      }
-    }
+
+    val plot1 = get3DPlot(0)
+    val plot2 = get3DPlot(1)
+    var (results1, results2)= ((-1, -1), (-1, -1))
+    // Intersections with the first plot
+    if(intersects(0).nonEmpty) results1 = Interactions.on(plot1, intersects(0))
+    // Intersections with the second plot
+    if(intersects(1).nonEmpty) results2 = Interactions.on(plot2, intersects(1))
+
+    // TODO: This may be specific use case for SM, not general
+    // Selecting point in opposing plot
+    val (rem1, add1) = (results1._1, results1._2)
+    val (rem2, add2) = (results2._1, results2._2)
+    if(rem1 != -1) plot2.deselect(rem1)
+    if(add1 != -1) plot2.select(add1)
+    if(rem2 != -1) plot1.deselect(rem2)
+    if(add2 != -1) plot1.select(add2)
   }
 }
 

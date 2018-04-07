@@ -1,6 +1,10 @@
+import env.Environment
 import js.Stats
 import org.scalajs.{threejs => THREE}
 import org.scalajs.dom
+import userinput.Controls
+import window.Window
+
 import scala.scalajs.js.annotation.{JSExport, JSExportTopLevel}
 
 /**

@@ -1,3 +1,5 @@
+package window
+
 import org.scalajs.{dom, threejs => THREE}
 import org.scalajs.dom.raw.MouseEvent
 import org.scalajs.dom.{Event, document, window}
