@@ -1,9 +1,9 @@
-import data.CSVParser
 import js.three.{IntersectionExt, RaycasterParametersExt, SceneExt, VREffect}
 import org.scalajs.{threejs => THREE}
 import org.scalajs.dom
 import org.scalajs.dom.ext.LocalStorage
 import plots._
+import resources._
 
 /**
   * Created by Dorian Thiessen on 2018-01-11.
@@ -126,15 +126,17 @@ object Environment {
       // Add plots to the env
       if(plotNumber == 0) {
         val sm1 = createSMPlots("SM1_timeSeries", Color.RED_HUE_SHIFT, plotNumber) // TODO: Split off steps that do not require the texture
-        env.plots3D(0) = sm1
+        if(sm1.isEmpty) return
+        env.plots3D(0) = sm1.get
       } else {
         val sm2 = createSMPlots("SM2_timeSeries", Color.BLUE_HUE_SHIFT, plotNumber)
-        env.plots3D(1) = sm2
+        if(sm2.isEmpty) return
+        env.plots3D(1) = sm2.get
       }
       env.loadPlot(regionID = plotNumber, plotID = 0)
     }
-    Resources.loadPointTexture(drawPlot1, 0)
-    Resources.loadPointTexture(drawPlot2, 1)
+    Res.loadPointTexture(drawPlot1, 0)
+    Res.loadPointTexture(drawPlot2, 1)
 
     // Add coordinate axes
     addAxes(env.regions(0), 1, centeredOrigin = false, color = Color.WHITE)
@@ -191,22 +193,10 @@ object Environment {
     region.add(axes)
   }
 
-  /**
-    * Creates a Shadow Manifold and Time Series for every column of one of the input CSV files.
-    * Accesses the required data from localStorage.
-    * @return A 2Tuple of 2Tuples, each containing the Array of SM's and TS's produced from the input CSVs.
-    *         Each inner-2Tuple corresponds to a
-    */
-  /*def createPlots(localStorageID: String, hue: Double): (Array[ShadowManifold], Array[TimeSeries]) = {
-    val timeSeries = LocalStorage(localStorageID).map(CSVParser.parse)
-    if(timeSeries.isEmpty) null
-    else (ShadowManifold.createSet(timeSeries.get, hue), TimeSeries.createSet(timeSeries.get, hue)) // TODO: replace null with createTS(timeSeries)
-  }*/
-
-  def createSMPlots(localStorageID: String, hue: Double, textureIndex: Int): Array[ShadowManifold] = {
-    val timeSeries = LocalStorage(localStorageID).map(CSVParser.parse)
-    if (timeSeries.isEmpty) null // TODO: Again, Option?
-    else ShadowManifold.createSet(timeSeries.get, hue, textureIndex)
+  def createSMPlots(localStorageID: String, hue: Double, textureIndex: Int): Option[Array[ShadowManifold]] = {
+    val timeSeries = BrowserStorage.timeSeriesFromCSV(localStorageID)
+    if (timeSeries.isEmpty) None
+    else Some(ShadowManifold.createSet(timeSeries.get, hue, textureIndex))
   }
 
   def createTS(timeSeries: Option[String]): Array[TimeSeries] = ??? // TODO: Implement TimeSeries class ('2D' plot)
