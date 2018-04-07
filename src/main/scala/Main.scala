@@ -39,6 +39,6 @@ object Main {
 
   @JSExport("switchPlot")
   def switchPlot(i: Int): Unit =
-    env.loadPlot(i, (env.active(i) + 1) % env.plots3D.length)
+    env.nextPlot(i)
 
 }

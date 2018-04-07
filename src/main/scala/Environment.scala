@@ -14,22 +14,63 @@ class Environment(val scene:    THREE.Scene,
 
   /** Regions are represent positions in the scene,
     * used to anchor multiple objects to one another */
-  val regions: Array[THREE.Object3D] = Array(
-      new THREE.Object3D(),
-      new THREE.Object3D())
-  regions.foreach(r => scene.add(r))
+  private object Regions {
+    private var regions: Array[THREE.Object3D] = Array()
+    def apply(): Array[THREE.Object3D] = regions
+    def apply(i: Int): THREE.Object3D = regions(i)
 
-  val plots3D: Array[Array[ShadowManifold]] = Array(null, null) // TODO: Use Option?
+    def add(newRegion: THREE.Object3D): Unit = {
+      regions = regions :+ newRegion
+      scene.add(newRegion)
+      reposition()
+    }
+
+    def update(regionID: Int, plotID: Int): Unit = {
+      // Remove current plot if region is not empty
+      if(active(regionID) != DNE) regions(regionID)
+        .remove(plots3D(regionID % 2).get(active(regionID)).points)
+      // Add the requested plot to the region
+      regions(regionID).add(plots3D(regionID % 2).get(plotID).points)
+    }
+
+    private def reposition(): Unit = Regions().length match {
+      case 1 =>
+        regions(0).position.set(0, 0, -2) // north
+      case 2 =>
+        regions(0).position.set(-1.1, 0, -2) // north west
+        regions(1).position.set(1.1,  0, -2) // north east
+      case 3 =>
+        regions(0).position.set(-2.1, 0, -2) // north west
+        regions(1).position.set(0,    0, -2) // north
+        regions(2).position.set(2.1,  0, -2) // north east
+      case 4 =>
+        regions(0).position.set(-2.7, 0, -2) // north west
+        regions(1).position.set(-1.1, 0, -2) // north-north west
+        regions(2).position.set(1.1,  0, -2) // north-north east
+        regions(3).position.set(2.7,  0, -2) // north east
+    }
+  }
+
+  val plots3D: Array[Option[Array[ShadowManifold]]] = Array(None, None, None) // TODO: Use Option?
 
   /** Index of the active plots in each region */
-  val active: Array[Int] = Array(-1, -1)
+  var active: Array[Int] = Array()
 
   /**
     * Returns the ShadowManifold that is currently visible in the specified region
     * @param regionID The region the plot belongs to. (either 0 or 1)
     * @return The Shadow Manifold
     */
-  @inline def get3DPlot(regionID: Int): ShadowManifold = plots3D(regionID)(active(regionID))
+  @inline def get3DPlot(regionID: Int): ShadowManifold = plots3D(regionID).get(active(regionID))
+
+  def nextPlot(regionID: Int) : Unit = {
+    dom.console.log("nextPlot 1")
+    if(active.length <= regionID) loadPlot(regionID, 0)
+    else {
+      dom.console.log("nextPlot 2")
+      loadPlot(regionID, (active(regionID) + 1) % plots3D.length)
+    }
+  }
 
   /**
     * Swaps out the currently visible plot for the specified plot.
@@ -37,11 +78,20 @@ class Environment(val scene:    THREE.Scene,
     * @param plotID The index of the plot in plots3D.
     */
   def loadPlot(regionID: Int, plotID: Int): Unit = {
-    if(active(regionID) != -1)  // Remove current plot if region is not empty
-      regions(regionID).remove( plots3D(regionID)(active(regionID)).points )
-    regions(regionID).add( plots3D(regionID)(plotID).points ) // Add requested plot
+    if(regionID > Regions().length) {
+      dom.console.log(s"USER ERROR: There are only ${Regions().length} regions, cannot load plot into region $regionID.")
+      dom.console.log(s"Use loadPlot(${Regions().length}, $plotID) to create a new region containing that plot!")
+      return
+    }
+
+    // Increase the number of available regions, place requested plot inside
+    if(regionID == Regions().length) {
+      Regions.add(new THREE.Object3D)
+      active = active :+ plotID
+    }
+
+    Regions.update(regionID, plotID) // Add requested plot
     active(regionID) = plotID // Update active plot index
-    //plots3D(regionID)(plotID).points.matrixAutoUpdate = false
   }
 
   def render(): Unit = {
@@ -57,8 +107,8 @@ class Environment(val scene:    THREE.Scene,
   val rayCaster: THREE.Raycaster = new THREE.Raycaster()
   // TODO: Determine how to appropriately scale rayCaster threshold with point size
   rayCaster.params.asInstanceOf[RaycasterParametersExt].Points.threshold = 0.015
-  val NONE: Int = -248
-  val SELECTIONS: Array[Int] = Array(NONE, NONE)
+  val DNE: Int = -248
+  val SELECTIONS: Array[Int] = Array(DNE, DNE)
 
   // TODO: Make pointSelection a method in Plot?
   def mousePointSelection(): Unit = {
@@ -70,7 +120,7 @@ class Environment(val scene:    THREE.Scene,
       rayCaster.intersectObject(get3DPlot(1).points))
     for(i <- 0 to 1) { // For each plot
       if(intersects(i).length > 0) { // If currently selecting point on current plot.
-        if(SELECTIONS(i) != NONE) { // If previous selection exists, request plots deselect them.
+        if(SELECTIONS(i) != DNE) { // If previous selection exists, request plots deselect them.
           get3DPlot(0).deselect(SELECTIONS(i))
           get3DPlot(1).deselect(SELECTIONS(i))
         }
@@ -112,8 +162,6 @@ object Environment {
     scene.add(makeLight())
 
     val env: Environment = new Environment(scene, camera, renderer, vrEffect)
-    env.regions(0).position.set(-1.1, 0, -2) // region on the left
-    env.regions(1).position.set( 1.1, 0, -2) // region on the right
 
     // TODO: Create a PlotBuilder to hide all Plot creation details
     def drawPlot1(texture: THREE.Texture): Unit = drawPlot(texture, 0)
@@ -126,13 +174,15 @@ object Environment {
       if(plotNumber == 0) {
         val sm1 = createSMPlots("SM1_timeSeries", Color.RED_HUE_SHIFT, plotNumber) // TODO: Split off steps that do not require the texture
         if(sm1.isEmpty) return
-        env.plots3D(0) = sm1.get
+        env.plots3D(0) = sm1
       } else {
         val sm2 = createSMPlots("SM2_timeSeries", Color.BLUE_HUE_SHIFT, plotNumber)
         if(sm2.isEmpty) return
-        env.plots3D(1) = sm2.get
+        env.plots3D(1) = sm2
       }
       env.loadPlot(regionID = plotNumber, plotID = 0)
+      val axes = CoordinateAxes3D.create(1, centeredOrigin = true, color = Color.WHITE)
+      env.Regions(plotNumber).add(axes) // Add coordinate axes (TEMPORARY)
     }
     Res.loadPointTexture(drawPlot1, 0)
     Res.loadPointTexture(drawPlot2, 1)
