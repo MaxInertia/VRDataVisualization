@@ -7,6 +7,11 @@ import org.scalajs.dom.{Event, document, window}
   */
 object Window {
 
+  def width: Double = dom.window.innerWidth
+  def height: Double = dom.window.innerHeight
+  def aspectRatio: Double = width / height
+  def devicePixelRatio: Double = dom.window.devicePixelRatio
+
   /** Event listeners on the Window are defined and set here. */
   def setupEventListeners(camera: THREE.PerspectiveCamera, renderer: THREE.WebGLRenderer): Unit = {
     window.addEventListener("resize", (e: Event) => {

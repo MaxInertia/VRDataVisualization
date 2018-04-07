@@ -1,7 +1,6 @@
 import js.three.{IntersectionExt, RaycasterParametersExt, SceneExt, VREffect}
 import org.scalajs.{threejs => THREE}
 import org.scalajs.dom
-import org.scalajs.dom.ext.LocalStorage
 import plots._
 import resources._
 
@@ -150,23 +149,26 @@ object Environment {
     */
   private def makeRendererAndVREffect(): (THREE.WebGLRenderer, VREffect) = {
     val renderer = new THREE.WebGLRenderer()
-    renderer.setSize(dom.window.innerWidth, dom.window.innerHeight)
-    renderer.devicePixelRatio = dom.window.devicePixelRatio
+    renderer.setSize(Window.width, Window.height)
+    renderer.devicePixelRatio = Window.devicePixelRatio
     // Applies renderer to VR display (if available)
     val vrEffect = new VREffect(renderer)
-    vrEffect.setSize(dom.window.innerWidth, dom.window.innerHeight)
+    vrEffect.setSize(Window.width, Window.height)
     (renderer, vrEffect)
   }
 
   /**
     * Creates the camera, the perspective through which the user views the scene.
+    * @param aspectRatio The aspect ratio of the display area
     * @return THREE.PerspectiveCamera instance
     */
-  private def makeCamera(): THREE.PerspectiveCamera = new THREE.PerspectiveCamera(
-      65,  // Field of view
-      dom.window.innerWidth / dom.window.innerHeight, // Aspect Ratio
-      0.01, // Nearest distance visible
-      20000) // Farthest distance visible
+  private def makeCamera(aspectRatio: Double = Window.aspectRatio): THREE.PerspectiveCamera =
+    new THREE.PerspectiveCamera(
+      65,          // Field of view
+      aspectRatio, // Aspect Ratio
+      0.01,        // Nearest distance visible
+      20000        // Farthest distance visible
+    )
 
   /**
     * Creates the scene, the space in which objects can be placed for viewing.
