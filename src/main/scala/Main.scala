@@ -1,8 +1,11 @@
-import js.Stats
+import scala.scalajs.js.annotation.{JSExport, JSExportTopLevel}
 import org.scalajs.{threejs => THREE}
 import org.scalajs.dom
 
-import scala.scalajs.js.annotation.{JSExport, JSExportTopLevel}
+import userinput.Controls
+import env.Environment
+import window.Window
+import js.Stats
 
 /**
   * Created by Dorian Thiessen on 2018-01-05.
@@ -40,6 +43,6 @@ object Main {
 
   @JSExport("switchPlot")
   def switchPlot(i: Int): Unit =
-    env.loadPlot(i, (env.active(i) + 1) % env.plots3D.length)
+    env.nextPlot(i)
 
 }

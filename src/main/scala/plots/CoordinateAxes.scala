@@ -2,7 +2,6 @@ package plots
 
 import org.scalajs.threejs.LineBasicMaterial
 import org.scalajs.{threejs => THREE}
-
 import scala.scalajs.js
 import js.typedarray.Float32Array
 

@@ -1,13 +1,11 @@
-package data
-
-import scala.scalajs.js
+package resources
 
 /** Parser for CSVs whose first row contains identifiers for their respective columns,
   * the rest of the elements must be numbers, not expressions (ex: 1+2).
   *
   * Created by Dorian Thiessen on 2018-02-05.
   */
-object CSVParser {
+private[resources] object CSVParser {
 
   // Regexp that matches numbers with or without decimal and sign.
   val numberRegex = """([-+]?)((\d+\.\d+)|(\d+\.)|(\.\d+)|(\d+))"""

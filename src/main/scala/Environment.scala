@@ -1,36 +1,87 @@
-import data.CSVParser
-import js.three.{IntersectionExt, RaycasterParametersExt, SceneExt, VREffect}
+package env
+
 import org.scalajs.{threejs => THREE}
 import org.scalajs.dom
-import org.scalajs.dom.ext.LocalStorage
+import scala.util.{Failure, Success}
+import js.three.{SceneExt, VREffect}
+import math.Stats
 import plots._
+import resources._
+import userinput.{Controls, Interactions}
+import window.Window
+import resources.Res.Texture
+import Environment.{PerspectiveCamera, Scene, WebGLRenderer}
 
 /**
   * Created by Dorian Thiessen on 2018-01-11.
   */
-class Environment(val scene:    THREE.Scene,
-                  val camera:   THREE.PerspectiveCamera,
-                  val renderer: THREE.WebGLRenderer,
+class Environment(val scene: Scene,
+                  val camera: PerspectiveCamera,
+                  val renderer: WebGLRenderer, 
                   val vrEffect: VREffect) {
+
+  /** Used to group multiple objects in the environment
+    * that should always move and rotate together */
+  type Group = THREE.Object3D // TODO: Use THREE.Group? Not in facade.
 
   /** Regions are represent positions in the scene,
     * used to anchor multiple objects to one another */
-  val regions: Array[THREE.Object3D] = Array(
-      new THREE.Object3D(),
-      new THREE.Object3D())
-  regions.foreach(r => scene.add(r))
+  private object Regions {
+    private var regions: Array[Group] = Array()
+    def apply(): Array[Group] = regions
+    def apply(i: Int): Group = regions(i)
 
-  val plots3D: Array[Array[ShadowManifold]] = Array(null, null) // TODO: Use Option?
+    def add(newRegion: Group): Unit = {
+      dom.console.log(s"Adding region #${regions.length}")
+      regions = regions :+ newRegion
+      scene.add(newRegion)
+      reposition()
+    }
+
+    def update(regionID: Int, plotID: Int): Unit = {
+      // Remove current plot if region is not empty
+      if(active(regionID) != DNE) regions(regionID)
+        .remove(plots3D(regionID % 2).get(active(regionID)).getPoints)
+      // Add the requested plot to the region
+      regions(regionID).add(plots3D(regionID % 2).get(plotID).getPoints)
+    }
+
+    private def reposition(): Unit = Regions().length match {
+      case 1 =>
+        regions(0).position.set(0, 0, -2) // north
+      case 2 =>
+        regions(0).position.set(-1.1, 0, -2) // north west
+        regions(1).position.set(1.1,  0, -2) // north east
+      case 3 =>
+        regions(0).position.set(-2.1, 0, -2) // north west
+        regions(1).position.set(0,    0, -2) // north
+        regions(2).position.set(2.1,  0, -2) // north east
+      case 4 =>
+        regions(0).position.set(-2.7, 0, -2) // north west
+        regions(1).position.set(-1.1, 0, -2) // north-north west
+        regions(2).position.set(1.1,  0, -2) // north-north east
+        regions(3).position.set(2.7,  0, -2) // north east
+    }
+  }
+
+  val plots3D: Array[Option[Array[Plot]]] = Array(None, None, None) // TODO: Use Option?
 
   /** Index of the active plots in each region */
-  val active: Array[Int] = Array(-1, -1)
+  var active: Array[Int] = Array()
+
+  val DNE: Int = -248 // Does Not Exist
 
   /**
-    * Returns the ShadowManifold that is currently visible in the specified region
+    * Returns the Plot that is currently visible in the specified region
     * @param regionID The region the plot belongs to. (either 0 or 1)
     * @return The Shadow Manifold
     */
-  @inline def get3DPlot(regionID: Int): ShadowManifold = plots3D(regionID)(active(regionID))
+  def get3DPlot(regionID: Int): Plot = plots3D(regionID).get(active(regionID))
+
+  def nextPlot(regionID: Int) : Unit = {
+    if(active.length <= regionID) loadPlot(regionID, 0)
+    else loadPlot(regionID, (active(regionID) + 1) % plots3D.length)
+  }
 
   /**
     * Swaps out the currently visible plot for the specified plot.
@@ -38,11 +89,25 @@ class Environment(val scene:    THREE.Scene,
     * @param plotID The index of the plot in plots3D.
     */
   def loadPlot(regionID: Int, plotID: Int): Unit = {
-    if(active(regionID) != -1)  // Remove current plot if region is not empty
-      regions(regionID).remove( plots3D(regionID)(active(regionID)).points )
-    regions(regionID).add( plots3D(regionID)(plotID).points ) // Add requested plot
+    if(regionID > Regions().length) {
+      dom.console.log(s"USER ERROR: There are only ${Regions().length} regions, cannot load plot into region $regionID.")
+      dom.console.log(s"Use loadPlot(${Regions().length}, $plotID) to create a new region containing that plot!")
+      return
+    }
+
+    // Increase the number of available regions, place requested plot inside
+    if(regionID == Regions().length) {
+      Regions.add(new Group)
+      active = active :+ plotID
+    }
+
+    Regions.update(regionID, plotID) // Add requested plot
     active(regionID) = plotID // Update active plot index
-    //plots3D(regionID)(plotID).points.matrixAutoUpdate = false
+  }
+
+  def addPlots(regionID: Int, plots: Option[Array[Plot]]): Unit = {
+    println(s"Added plots to region #$regionID")
+    plots3D(regionID) = plots
   }
 
   def render(): Unit = {
@@ -51,42 +116,40 @@ class Environment(val scene:    THREE.Scene,
     //} else {
     renderer.render(scene, camera)
     //}
-    // TODO: Find a better way to ignore points while waiting for the texture to be loaded
-    if(Plot.myTextures(0) != null && Plot.myTextures(1) != null) mousePointSelection()
+    // TODO: Still find a better way to ignore points while waiting for the texture to be loaded
+    if(Regions().length >= 2) mousePointSelection()
   }
 
-  val rayCaster: THREE.Raycaster = new THREE.Raycaster()
-  // TODO: Determine how to appropriately scale rayCaster threshold with point size
-  rayCaster.params.asInstanceOf[RaycasterParametersExt].Points.threshold = 0.015
-  val NONE: Int = -248
-  val SELECTIONS: Array[Int] = Array(NONE, NONE)
-
-  // TODO: Make pointSelection a method in Plot?
   def mousePointSelection(): Unit = {
-    // Retrieve intersections
-    // TODO: Create method that returns the appropriate rayCaster (which depends on the users input method)
-    rayCaster.setFromCamera(Controls.getMouse, camera)
+    // Retrieve intersections on the available inputs ray caster
+    val rayCaster: THREE.Raycaster = Controls.getSelectionRaycaster(camera)
     val intersects: Array[scalajs.js.Array[THREE.Intersection]] = Array(
-      rayCaster.intersectObject(get3DPlot(0).points),
-      rayCaster.intersectObject(get3DPlot(1).points))
-    for(i <- 0 to 1) { // For each plot
-      if(intersects(i).length > 0) { // If currently selecting point on current plot.
-        if(SELECTIONS(i) != NONE) { // If previous selection exists, request plots deselect them.
-          get3DPlot(0).deselect(SELECTIONS(i))
-          get3DPlot(1).deselect(SELECTIONS(i))
-        }
-        // Request plots update selections.
-        SELECTIONS(i) = intersects(i)(0).asInstanceOf[IntersectionExt].index
-        // TODO: Generalize selection, have SM override selection behavior and take as arg the other SM
-        // Basically don't assume we're dealing with shadow manifolds.
-        get3DPlot(0).select(SELECTIONS(i))
-        get3DPlot(1).select(SELECTIONS(i))
-      }
-    }
+      rayCaster.intersectObject(get3DPlot(0).getPoints),
+      rayCaster.intersectObject(get3DPlot(1).getPoints))
+
+    val plot1 = get3DPlot(0)
+    val plot2 = get3DPlot(1)
+    var (results1, results2)= ((-1, -1), (-1, -1))
+    // Intersections with the first plot
+    if(intersects(0).nonEmpty) results1 = Interactions.on(plot1, intersects(0))
+    // Intersections with the second plot
+    if(intersects(1).nonEmpty) results2 = Interactions.on(plot2, intersects(1))
+
+    // TODO: This may be specific use case for SM, not general
+    // Selecting point in opposing plot
+    val (rem1, add1) = (results1._1, results1._2)
+    val (rem2, add2) = (results2._1, results2._2)
+    if(rem1 != -1) plot2.deselect(rem1)
+    if(add1 != -1) plot2.select(add1)
+    if(rem2 != -1) plot1.deselect(rem2)
+    if(add2 != -1) plot1.select(add2)
   }
 }
 
 object Environment {
+  type Scene = THREE.Scene
+  type WebGLRenderer = THREE.WebGLRenderer
+  type PerspectiveCamera = THREE.PerspectiveCamera
 
   /**
     * Initiates setup for the Environment.
@@ -104,74 +167,76 @@ object Environment {
     * @return The environment instance.
     */
   def setup(container: dom.Element): Environment = {
-    val camera: THREE.PerspectiveCamera = makeCamera()
+
+    val camera: PerspectiveCamera = makeCamera()
     val (renderer, vrEffect) = makeRendererAndVREffect()
     container.appendChild(renderer.domElement)
 
-    val scene: THREE.Scene = makeScene()
+    val scene: Scene = makeScene()
     scene.add(camera)
     scene.add(makeLight())
 
     val env: Environment = new Environment(scene, camera, renderer, vrEffect)
-    env.regions(0).position.set(-1.1, 0, -2) // region on the left
-    env.regions(1).position.set( 1.1, 0, -2) // region on the right
 
-    // TODO: Create a PlotBuilder to hide all Plot creation details
-    def drawPlot1(texture: THREE.Texture): Unit = drawPlot(texture, 0)
-    def drawPlot2(texture: THREE.Texture): Unit = drawPlot(texture, 1)
-    def drawPlot(texture: THREE.Texture, plotNumber: Int): Unit = {
-      dom.console.log(texture.anisotropy)
-      texture.anisotropy = 4
-      Plot.myTextures(plotNumber) = texture
-      // Add plots to the env
-      if(plotNumber == 0) {
-        val sm1 = createSMPlots("SM1_timeSeries", Color.RED_HUE_SHIFT, plotNumber) // TODO: Split off steps that do not require the texture
-        env.plots3D(0) = sm1
-      } else {
-        val sm2 = createSMPlots("SM2_timeSeries", Color.BLUE_HUE_SHIFT, plotNumber)
-        env.plots3D(1) = sm2
-      }
-      env.loadPlot(regionID = plotNumber, plotID = 0)
+    // Load texture for plots
+    val loadTexture = Res.loadPointTexture(1)
+    import scala.concurrent.ExecutionContext.Implicits.global
+    loadTexture andThen {
+      case Success(texture) => makePlots(env, texture)
+      case Failure(err) => err.printStackTrace()
     }
-    Resources.loadPointTexture(drawPlot1, 0)
-    Resources.loadPointTexture(drawPlot2, 1)
 
-    // Add coordinate axes
-    addAxes(env.regions(0), 1, centeredOrigin = false, color = Color.WHITE)
-    addAxes(env.regions(1), 1, centeredOrigin = true, color = Color.WHITE)
     env
+  }
+
+  def makePlots(env: Environment, texture: Texture): Unit = { // Not happy with this method
+    def makeSingle(texture: Texture, plotNumber: Int, storageID: String, hue: Double): Unit = {
+
+      // Create the plot
+      val sm = createSMPlots(storageID, hue, 1)
+      if (sm.isEmpty) return
+      env.addPlots(plotNumber, sm)
+      env.loadPlot(regionID = plotNumber, plotID = 0)
+      val axes = CoordinateAxes3D.create(1, centeredOrigin = true, color = Color.WHITE)
+      env.Regions(plotNumber).add(axes) // Add coordinate axes (TEMPORARY)
+    }
+    makeSingle(texture, 0, "SM1_timeSeries", Color.BLUE_HUE_SHIFT)
+    makeSingle(texture, 1, "SM2_timeSeries", Color.RED_HUE_SHIFT)
   }
 
   /**
     * Creates the renderer.
     * @return THREE.WebGLRenderer instance
     */
-  private def makeRendererAndVREffect(): (THREE.WebGLRenderer, VREffect) = {
-    val renderer = new THREE.WebGLRenderer()
-    renderer.setSize(dom.window.innerWidth, dom.window.innerHeight)
-    renderer.devicePixelRatio = dom.window.devicePixelRatio
+  private def makeRendererAndVREffect(): (WebGLRenderer, VREffect) = {
+    val renderer = new WebGLRenderer()
+    renderer.setSize(Window.width, Window.height)
+    renderer.devicePixelRatio = Window.devicePixelRatio
     // Applies renderer to VR display (if available)
     val vrEffect = new VREffect(renderer)
-    vrEffect.setSize(dom.window.innerWidth, dom.window.innerHeight)
+    vrEffect.setSize(Window.width, Window.height)
     (renderer, vrEffect)
   }
 
   /**
     * Creates the camera, the perspective through which the user views the scene.
+    * @param aspectRatio The aspect ratio of the display area
     * @return THREE.PerspectiveCamera instance
     */
-  private def makeCamera(): THREE.PerspectiveCamera = new THREE.PerspectiveCamera(
-      65,  // Field of view
-      dom.window.innerWidth / dom.window.innerHeight, // Aspect Ratio
-      0.01, // Nearest distance visible
-      20000) // Farthest distance visible
+  private def makeCamera(aspectRatio: Double = Window.aspectRatio): PerspectiveCamera =
+    new PerspectiveCamera(
+      65,          // Field of view
+      aspectRatio, // Aspect Ratio
+      0.01,        // Nearest distance visible
+      20000        // Farthest distance visible
+    )
 
   /**
     * Creates the scene, the space in which objects can be placed for viewing.
     * @return THREE.Scene instance
     */
   private def makeScene(): THREE.Scene = {
-    val scene = new THREE.Scene()
+    val scene = new Scene()
     scene.background = new THREE.Color(Color.BLACK)
     scene
   }
@@ -191,22 +256,29 @@ object Environment {
     region.add(axes)
   }
 
-  /**
-    * Creates a Shadow Manifold and Time Series for every column of one of the input CSV files.
-    * Accesses the required data from localStorage.
-    * @return A 2Tuple of 2Tuples, each containing the Array of SM's and TS's produced from the input CSVs.
-    *         Each inner-2Tuple corresponds to a
-    */
-  /*def createPlots(localStorageID: String, hue: Double): (Array[ShadowManifold], Array[TimeSeries]) = {
-    val timeSeries = LocalStorage(localStorageID).map(CSVParser.parse)
-    if(timeSeries.isEmpty) null
-    else (ShadowManifold.createSet(timeSeries.get, hue), TimeSeries.createSet(timeSeries.get, hue)) // TODO: replace null with createTS(timeSeries)
-  }*/
+  def createSMPlots(localStorageID: String, hue: Double, textureIndex: Int): Option[Array[Plot]] = {
+    val timeSeries = BrowserStorage.timeSeriesFromCSV(localStorageID)
+    if (timeSeries.isEmpty) None
+    else {
+      // Standardize the values
+      val standardizedData = timeSeries.get.map { case (id, vs) => (id, Stats.standardize(vs)) }
 
-  def createSMPlots(localStorageID: String, hue: Double, textureIndex: Int): Array[ShadowManifold] = {
-    val timeSeries = LocalStorage(localStorageID).map(CSVParser.parse)
-    if (timeSeries.isEmpty) null // TODO: Again, Option?
-    else ShadowManifold.createSet(timeSeries.get, hue, textureIndex)
+      var plots: Array[ShadowManifold] = Array()
+      var i = 0
+      for ((id, data) <- standardizedData) {
+        val points = PointsBuilder()
+          .withXS(data.drop(2))
+          .withYS(data.tail)
+          .withZS(data)
+          .usingHue(Some(hue))
+          .usingTexture(textureIndex)
+          .build3D()
+        plots = plots :+ ShadowManifold(id, points, hue)
+        i += 1
+      }
+
+      Some(plots.asInstanceOf[Array[Plot]])
+    }
   }
 
   def createTS(timeSeries: Option[String]): Array[TimeSeries] = ??? // TODO: Implement TimeSeries class ('2D' plot)

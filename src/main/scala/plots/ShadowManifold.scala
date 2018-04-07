@@ -1,7 +1,5 @@
 package plots
 
-import math.Stats
-import org.scalajs.{threejs => THREE}
 
 /**
   * A reconstruction of an attractor manifold generated from data on a single variable.
@@ -10,7 +8,11 @@ import org.scalajs.{threejs => THREE}
   *
   * Created by Dorian Thiessen on 2018-01-13.
   */
-class ShadowManifold(val tag: String, var points: THREE.Points) extends Plot(tag, points)
+class ShadowManifold(val tag: String, var points: Points) extends Plot {
+  override def getPoints: Points = points
+  def getGeometry: BufferGeometry = points.geometry.asInstanceOf[BufferGeometry]
+}
+
 
 /**
   * The companion object for the ShadowManifold class.
@@ -21,33 +23,19 @@ object ShadowManifold {
   /**
     * Creates a single Shadow Manifold.
     * @param id The identifier of the variable in 'csv_Values'
-    * @param measurements A sequence of measurements of some variable called 'id'
     * @param hue Some number, influences the color of the points generated
     * @return A Shadow Manifold of the input time series values
     */
-  def apply(id: String, measurements: Array[Coordinate], textureIndex: Int, hue: Double): ShadowManifold = {
-    val sm = new ShadowManifold(id, Plot.makePoints(measurements, Some(hue), textureIndex))
+  def apply(id: String, points: Points, hue: Double): ShadowManifold = {
+    val sm = new ShadowManifold(id, points)
     sm.hue = hue
     sm
   }
 
-  def apply(id: String, measurements: Array[Coordinate], textureIndex: Int): ShadowManifold = {
-    val sm = new ShadowManifold(id, Plot.makePoints(measurements, None, textureIndex))
+  def apply(id: String, points: Points): ShadowManifold = {
+    val sm = new ShadowManifold(id, points)
     sm
   }
-
-  /**
-    * Creates a set of Shadow Manifolds. One SM is generated for every element of the input array 'data'.
-    * @param data An array of tuples (id, vs) where
-    *             id: the id of the variable in 'vs'
-    *             vs: A sequence of measurements of the variable 'id'
-    * @param hue Some number, influences the color of the points generated
-    * @return An Array of Shadow Manifolds
-    */
-  def createSet(data: Array[(String, Array[Double])], hue: Double, textureIndex: Int): Array[ShadowManifold] =
-    data.map{ case (id, vs) => (id, Stats.standardize(vs)) }   // Standardize the values
-      .map{ case (id, vs) => (id, lagZip3(vs)) }               // Convert values to point coordinates
-      .map{ case (id, vs) => ShadowManifold(id, vs, textureIndex, hue) }     // Create a shadow manifold
 
   def lagZip3(ts: Array[Double]): Array[Coordinate] = Plot.zip3(ts.drop(2), ts.tail, ts) // TODO: Generalize Tau
 

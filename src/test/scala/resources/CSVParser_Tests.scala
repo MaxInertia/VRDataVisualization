@@ -1,4 +1,4 @@
-package data
+package resources
 
 import utest._
 

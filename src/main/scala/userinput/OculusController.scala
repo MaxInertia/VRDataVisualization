@@ -1,3 +1,5 @@
+package userinput
+
 import js.three.VRController
 import org.scalajs.dom.raw.Event
 
@@ -25,6 +27,9 @@ sealed abstract class OculusController {
 /**
   * Contains the name, event id's and setup method for the left Oculus Controller.
   * All event listeners for inputs to this controller are here.
+  *
+  * Can be thought of as a mapping from a subset of the available
+  * inputs to interactions (see plots.Interactions).
   */
 object OculusControllerLeft extends OculusController {
   override val name: String = "Oculus Touch (Left)"
@@ -57,6 +62,9 @@ object OculusControllerLeft extends OculusController {
 /**
   * Contains the name, event id's and setup method for the right Oculus Controller.
   * All event listeners for inputs to this controller are here.
+  *
+  * Can be thought of as a mapping from a subset of the available
+  * inputs to interactions (see plots.Interactions).
   */
 object OculusControllerRight extends OculusController {
   override val name: String = "Oculus Touch (Right)"

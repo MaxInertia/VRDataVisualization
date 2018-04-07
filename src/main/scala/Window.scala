@@ -1,3 +1,5 @@
+package window
+
 import org.scalajs.{dom, threejs => THREE}
 import org.scalajs.dom.raw.MouseEvent
 import org.scalajs.dom.{Event, document, window}
@@ -7,6 +9,11 @@ import org.scalajs.dom.{Event, document, window}
   */
 object Window {
 
+  def width: Double = dom.window.innerWidth
+  def height: Double = dom.window.innerHeight
+  def aspectRatio: Double = width / height
+  def devicePixelRatio: Double = dom.window.devicePixelRatio
+
   /** Event listeners on the Window are defined and set here. */
   def setupEventListeners(camera: THREE.PerspectiveCamera, renderer: THREE.WebGLRenderer): Unit = {
     window.addEventListener("resize", (e: Event) => {
@@ -15,7 +22,7 @@ object Window {
       renderer.setSize(window.innerWidth, window.innerHeight)
     })
 
-    // Add additional event listeners that require no more than the Camera or Renderer here
+    // Add additional event listeners that require no more than the Camera and Renderer here
   }
 
   def setupMouseEventListener(mouse: THREE.Vector2): Unit = {
