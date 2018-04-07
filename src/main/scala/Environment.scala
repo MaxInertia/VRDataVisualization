@@ -1,8 +1,15 @@
 import js.three.{IntersectionExt, RaycasterParametersExt, SceneExt, VREffect}
+import math.Stats
 import org.scalajs.{threejs => THREE}
 import org.scalajs.dom
+import plots.ShadowManifold.lagZip3
 import plots._
+import resources.Res.Texture
 import resources._
+
+import scala.concurrent.Promise
+import scala.util.{Failure, Success, Try}
+
 
 /**
   * Created by Dorian Thiessen on 2018-01-11.
@@ -20,6 +27,7 @@ class Environment(val scene:    THREE.Scene,
     def apply(i: Int): THREE.Object3D = regions(i)
 
     def add(newRegion: THREE.Object3D): Unit = {
+      println(s"Adding region #${regions.length}")
       regions = regions :+ newRegion
       scene.add(newRegion)
       reposition()
@@ -90,14 +98,19 @@ class Environment(val scene:    THREE.Scene,
     active(regionID) = plotID // Update active plot index
   }
 
+  def addPlots(regionID: Int, plots: Option[Array[ShadowManifold]]): Unit = {
+    println(s"Added plots to region #$regionID")
+    plots3D(regionID) = plots
+  }
+
   def render(): Unit = {
     //if (VR.isPresenting()) {
     vrEffect.render(scene, camera)
     //} else {
     renderer.render(scene, camera)
     //}
-    // TODO: Find a better way to ignore points while waiting for the texture to be loaded
-    if(Plot.myTextures(0) != null && Plot.myTextures(1) != null) mousePointSelection()
+    // TODO: Still find a better way to ignore points while waiting for the texture to be loaded
+    if(Regions().length >= 2) mousePointSelection()
   }
 
   val rayCaster: THREE.Raycaster = new THREE.Raycaster()
@@ -160,31 +173,32 @@ object Environment {
 
     val env: Environment = new Environment(scene, camera, renderer, vrEffect)
 
-    // TODO: Create a PlotBuilder to hide all Plot creation details
-    def drawPlot1(texture: THREE.Texture): Unit = drawPlot(texture, 0)
-    def drawPlot2(texture: THREE.Texture): Unit = drawPlot(texture, 1)
-    def drawPlot(texture: THREE.Texture, plotNumber: Int): Unit = {
-      dom.console.log(texture.anisotropy)
-      texture.anisotropy = 4
-      Plot.myTextures(plotNumber) = texture
-      // Add plots to the env
-      if(plotNumber == 0) {
-        val sm1 = createSMPlots("SM1_timeSeries", Color.RED_HUE_SHIFT, plotNumber) // TODO: Split off steps that do not require the texture
-        if(sm1.isEmpty) return
-        env.plots3D(0) = sm1
-      } else {
-        val sm2 = createSMPlots("SM2_timeSeries", Color.BLUE_HUE_SHIFT, plotNumber)
-        if(sm2.isEmpty) return
-        env.plots3D(1) = sm2
-      }
+    // Load texture for plots
+    val loadTexture = Res.loadPointTexture(1)
+    import scala.concurrent.ExecutionContext.Implicits.global
+    loadTexture andThen {
+      case Success(texture) =>
+        //texture.anisotropy = 4
+        makePlots(env, texture)
+      case Failure(err) => err.printStackTrace()
+    }
+
+    env
+  }
+
+  def makePlots(env: Environment, texture: Texture): Unit = { // Not happy with this method
+    def makeSingle(texture: Texture, plotNumber: Int, storageID: String, hue: Double): Unit = {
+
+      // Create the plot
+      val sm = createSMPlots(storageID, hue, 1)
+      if (sm.isEmpty) return
+      env.addPlots(plotNumber, sm)
       env.loadPlot(regionID = plotNumber, plotID = 0)
       val axes = CoordinateAxes3D.create(1, centeredOrigin = true, color = Color.WHITE)
       env.Regions(plotNumber).add(axes) // Add coordinate axes (TEMPORARY)
     }
-    Res.loadPointTexture(drawPlot1, 0)
-    Res.loadPointTexture(drawPlot2, 1)
-
-    env
+    makeSingle(texture, 0, "SM1_timeSeries", Color.BLUE_HUE_SHIFT)
+    makeSingle(texture, 1, "SM2_timeSeries", Color.RED_HUE_SHIFT)
   }
 
   /**
@@ -242,7 +256,26 @@ object Environment {
   def createSMPlots(localStorageID: String, hue: Double, textureIndex: Int): Option[Array[ShadowManifold]] = {
     val timeSeries = BrowserStorage.timeSeriesFromCSV(localStorageID)
     if (timeSeries.isEmpty) None
-    else Some(ShadowManifold.createSet(timeSeries.get, hue, textureIndex))
+    else {
+      // Standardize the values
+      val standardizedData = timeSeries.get.map { case (id, vs) => (id, Stats.standardize(vs)) }
+
+      var plots: Array[ShadowManifold] = Array()
+      var i = 0
+      for ((id, data) <- standardizedData) {
+        val points = PointsBuilder()
+          .withXS(data.drop(2))
+          .withYS(data.tail)
+          .withZS(data)
+          .usingHue(Some(hue))
+          .usingTexture(textureIndex)
+          .build3D()
+        plots = plots :+ ShadowManifold(id, points, hue)
+        i += 1
+      }
+
+      Some(plots)
+    }
   }
 
   def createTS(timeSeries: Option[String]): Array[TimeSeries] = ??? // TODO: Implement TimeSeries class ('2D' plot)
