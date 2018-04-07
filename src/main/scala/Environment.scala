@@ -7,7 +7,6 @@ import js.three.{IntersectionExt, RaycasterParametersExt, SceneExt, VREffect}
 import math.Stats
 import plots._
 import resources._
-import ui.vr.VirtualScreen
 import resources.Res.Texture
 import Environment.{PerspectiveCamera, Scene, WebGLRenderer}
 
@@ -184,14 +183,10 @@ object Environment {
     val loadTexture = Res.loadPointTexture(1)
     import scala.concurrent.ExecutionContext.Implicits.global
     loadTexture andThen {
-      case Success(texture) =>
-        //texture.anisotropy = 4
-        makePlots(env, texture)
+      case Success(texture) => makePlots(env, texture)
       case Failure(err) => err.printStackTrace()
     }
 
-    val screenScaffold = VirtualScreen.makeSlantedScreens(0.6, 0.1)
-    env.scene.add(screenScaffold)
     env
   }
 
