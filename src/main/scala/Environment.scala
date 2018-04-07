@@ -64,12 +64,8 @@ class Environment(val scene:    THREE.Scene,
   @inline def get3DPlot(regionID: Int): ShadowManifold = plots3D(regionID).get(active(regionID))
 
   def nextPlot(regionID: Int) : Unit = {
-    dom.console.log("nextPlot 1")
     if(active.length <= regionID) loadPlot(regionID, 0)
-    else {
-      dom.console.log("nextPlot 2")
-      loadPlot(regionID, (active(regionID) + 1) % plots3D.length)
-    }
+    else loadPlot(regionID, (active(regionID) + 1) % plots3D.length)
   }
 
   /**
@@ -153,6 +149,7 @@ object Environment {
     * @return The environment instance.
     */
   def setup(container: dom.Element): Environment = {
+
     val camera: THREE.PerspectiveCamera = makeCamera()
     val (renderer, vrEffect) = makeRendererAndVREffect()
     container.appendChild(renderer.domElement)
@@ -187,9 +184,6 @@ object Environment {
     Res.loadPointTexture(drawPlot1, 0)
     Res.loadPointTexture(drawPlot2, 1)
 
-    // Add coordinate axes
-    addAxes(env.regions(0), 1, centeredOrigin = false, color = Color.WHITE)
-    addAxes(env.regions(1), 1, centeredOrigin = true, color = Color.WHITE)
     env
   }
 
