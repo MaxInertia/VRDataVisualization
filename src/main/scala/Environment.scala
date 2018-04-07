@@ -3,7 +3,7 @@ package env
 import org.scalajs.{threejs => THREE}
 import org.scalajs.dom
 import scala.util.{Failure, Success}
-import js.three.{RaycasterParametersExt, SceneExt, VREffect}
+import js.three.{SceneExt, VREffect}
 import math.Stats
 import plots._
 import resources._
@@ -15,9 +15,9 @@ import Environment.{PerspectiveCamera, Scene, WebGLRenderer}
 /**
   * Created by Dorian Thiessen on 2018-01-11.
   */
-class Environment(val scene:    Scene,
-                  val camera:   PerspectiveCamera,
-                  val renderer: WebGLRenderer,
+class Environment(val scene: Scene,
+                  val camera: PerspectiveCamera,
+                  val renderer: WebGLRenderer, 
                   val vrEffect: VREffect) {
 
   /** Used to group multiple objects in the environment

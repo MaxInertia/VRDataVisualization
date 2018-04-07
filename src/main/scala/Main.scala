@@ -1,11 +1,11 @@
-import env.Environment
-import js.Stats
+import scala.scalajs.js.annotation.{JSExport, JSExportTopLevel}
 import org.scalajs.{threejs => THREE}
 import org.scalajs.dom
-import userinput.Controls
-import window.Window
 
-import scala.scalajs.js.annotation.{JSExport, JSExportTopLevel}
+import userinput.Controls
+import env.Environment
+import window.Window
+import js.Stats
 
 /**
   * Created by Dorian Thiessen on 2018-01-05.
