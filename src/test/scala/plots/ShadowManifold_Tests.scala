@@ -6,6 +6,15 @@ import utest._
   * Created by Dorian Thiessen on 2018-02-08.
   */
 object ShadowManifold_Tests extends TestSuite {
+
+  class PointCoordinate(val x: Double, val y: Double, val z: Double)
+  implicit def x(coordinate: Coordinate): PointCoordinate =
+    new PointCoordinate(
+      coordinate._1,
+      coordinate._2,
+      coordinate._3)
+
+
   val tests = Tests {
 
     'converting_TS_Values_To_SM_Points { // Tests for method 'lagzip3'
