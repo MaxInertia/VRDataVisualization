@@ -39,6 +39,8 @@ class PointsBuilder[Props <: Component] private(xs: Array[Double], ys: Array[Dou
 }
 
 object PointsBuilder{
+  type Triple = (Double, Double, Double)
+
   sealed trait Component
   object Prop {
     sealed trait CleanPlot extends Component
@@ -51,17 +53,33 @@ object PointsBuilder{
   }
 
   def apply(): PointsBuilder[CleanPlot] = new PointsBuilder[CleanPlot](
-    Array(0),
-    Array(0),
-    Array(0))
+    null,
+    null,
+    null)
 
   private def makePoints(coordinates: Array[Coordinate], hue: Option[Double], textureIndex: Int): THREE.Points = {
     val vertices = makeVertices(coordinates)
-    val points = new THREE.Points(
-      makeGeometry(vertices, hue),
-      makeShaderMaterial(textureIndex))
+    val (geometry, minimums, maximums) = makeGeometry(vertices, hue)
+    val points = new THREE.Points(geometry, makeShaderMaterial(textureIndex))
     points.receiveShadow = false
     points.castShadow = false
+    // The amount to scale the points so they fit within a 1x1x1 cube.
+    val xScale = scala.math.abs(maximums._1 - minimums._1)
+    val yScale = scala.math.abs(maximums._2 - minimums._2)
+    val zScale = scala.math.abs(maximums._3 - minimums._3)
+    // Apply the scale.
+    points.scale.x /= xScale
+    points.scale.y /= yScale
+    points.scale.z /= zScale
+    // Find center of points.
+    val centerX = (maximums._1 + minimums._1) / (2 * xScale)
+    val centerY = (maximums._2 + minimums._2) / (2 * yScale)
+    val centerZ = (maximums._3 + minimums._3) / (2 * zScale)
+    // Align the points center with it's parents center.
+    points.translateX(-centerX)
+    points.translateY(-centerY)
+    points.translateZ(-centerZ)
+    points.matrixWorldNeedsUpdate = true
     points
   }
 
@@ -91,7 +109,7 @@ object PointsBuilder{
     material.asInstanceOf[THREE.PointsMaterial]
   }
 
-  private def makeGeometry(vertices: Array[THREE.Vector3], hueShift: Option[Double]): THREE.BufferGeometry = {
+  private def makeGeometry(vertices: Array[THREE.Vector3], hueShift: Option[Double]): (THREE.BufferGeometry, Triple, Triple) = {
     val positions = new Float32Array( vertices.length * 3 )
     val colors = new Float32Array( vertices.length * 3 )
     val sizes = new Float32Array( vertices.length )
@@ -101,11 +119,28 @@ object PointsBuilder{
     if(hueShift.isEmpty) color.setRGB(255,255,255)
 
     var vertex: THREE.Vector3 = null
+
+    var maxX = -Double.MaxValue
+    var maxY = -Double.MaxValue
+    var maxZ = -Double.MaxValue
+    var minX = Double.MaxValue
+    var minY = Double.MaxValue
+    var minZ = Double.MaxValue
+
     for ( i <- vertices.indices) {
       vertex = vertices(i)
+
       positions(3*i)     = vertex.x.toFloat
+      if(vertex.x > maxX) maxX = vertex.x
+      if(vertex.x < minX) minX = vertex.x
+
       positions(3*i + 1) = vertex.y.toFloat
+      if(vertex.y > maxY) maxY = vertex.y
+      if(vertex.y < minY) minY = vertex.y
+
       positions(3*i + 2) = vertex.z.toFloat
+      if(vertex.z > maxZ) maxZ = vertex.z
+      if(vertex.z < minZ) minZ = vertex.z
 
       if(hueShift.nonEmpty) color.setHSL(hueShift.get + 0.1 * (i / l), 1.0, 0.5)
       colors(3 * i) = color.r.toFloat
@@ -114,13 +149,21 @@ object PointsBuilder{
 
       sizes(i) = PARTICLE_SIZE.toFloat
     }
+    dom.console.log("Largest values:")
+    dom.console.log(s"\tx: $maxX")
+    dom.console.log(s"\ty: $maxY")
+    dom.console.log(s"\tz: $maxZ")
+    dom.console.log("Smallest values:")
+    dom.console.log(s"\tx: $minX")
+    dom.console.log(s"\ty: $minY")
+    dom.console.log(s"\tz: $minZ")
 
     val geometry = new THREE.BufferGeometry()
     geometry.vertices = vertices.toJSArray
     geometry.addAttribute( "position", new THREE.BufferAttribute( positions, 3 ) )
     geometry.addAttribute( "customColor", new THREE.BufferAttribute( colors, 3 ) )
     geometry.addAttribute( "size", new THREE.BufferAttribute( sizes, 1 ) )
-    geometry
+    (geometry, (minX, minY, minZ), (maxX, maxY, maxZ))
   }
 
 }
