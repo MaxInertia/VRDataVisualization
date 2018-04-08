@@ -17,7 +17,7 @@ import Environment.{PerspectiveCamera, Scene, WebGLRenderer}
   */
 class Environment(val scene: Scene,
                   val camera: PerspectiveCamera,
-                  val renderer: WebGLRenderer, 
+                  val renderer: WebGLRenderer,
                   val vrEffect: VREffect) {
 
   /** Used to group multiple objects in the environment
@@ -41,9 +41,9 @@ class Environment(val scene: Scene,
     def update(regionID: Int, plotID: Int): Unit = {
       // Remove current plot if region is not empty
       if(active(regionID) != DNE) regions(regionID)
-        .remove(plots3D(regionID % 2).get(active(regionID)).getPoints)
+        .remove(get3DPlot(regionID % 2,active(regionID)).getPoints)
       // Add the requested plot to the region
-      regions(regionID).add(plots3D(regionID % 2).get(plotID).getPoints)
+      regions(regionID).add(get3DPlot(regionID % 2,plotID).getPoints)
     }
 
     private def reposition(): Unit = Regions().length match {
@@ -64,7 +64,7 @@ class Environment(val scene: Scene,
     }
   }
 
-  val plots3D: Array[Option[Array[Plot]]] = Array(None, None, None) // TODO: Use Option?
+  val plots3D: Array[Option[Array[Plot]]] = Array(None, None)
 
   /** Index of the active plots in each region */
   var active: Array[Int] = Array()
@@ -77,10 +77,11 @@ class Environment(val scene: Scene,
     * @return The Shadow Manifold
     */
   def get3DPlot(regionID: Int): Plot = plots3D(regionID).get(active(regionID))
+  def get3DPlot(regionID: Int, plotID: Int): Plot = plots3D(regionID).get(plotID)
 
   def nextPlot(regionID: Int) : Unit = {
     if(active.length <= regionID) loadPlot(regionID, 0)
-    else loadPlot(regionID, (active(regionID) + 1) % plots3D.length)
+    else loadPlot(regionID, (active(regionID) + 1) % plots3D(regionID).get.length)
   }
 
   /**
