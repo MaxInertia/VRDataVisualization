@@ -1,7 +1,6 @@
 import scala.scalajs.js.annotation.{JSExport, JSExportTopLevel}
 import org.scalajs.{threejs => THREE}
 import org.scalajs.dom
-
 import userinput.Controls
 import env.Environment
 import window.Window
@@ -40,9 +39,5 @@ object Main {
 
   @JSExport("renderer") // Temporary. renderer currently required in global scope.
   def getRenderer: THREE.Renderer = env.renderer
-
-  @JSExport("switchPlot")
-  def switchPlot(i: Int): Unit =
-    env.nextPlot(i)
 
 }

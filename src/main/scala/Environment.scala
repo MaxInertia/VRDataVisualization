@@ -27,7 +27,7 @@ class Environment(val scene: Scene,
   /** Regions are represent positions in the scene,
     * used to anchor multiple objects to one another */
   private object Regions {
-    private var regions: Array[Group] = Array()
+    var regions: Array[Group] = Array()
     def apply(): Array[Group] = regions
     def apply(i: Int): Group = regions(i)
 
@@ -41,12 +41,12 @@ class Environment(val scene: Scene,
     def update(regionID: Int, plotID: Int): Unit = {
       // Remove current plot if region is not empty
       if(active(regionID) != DNE) regions(regionID)
-        .remove(get3DPlot(regionID % 2,active(regionID)).getPoints)
+        .remove(getPlot(regionID % 2, active(regionID)).getPoints)
       // Add the requested plot to the region
-      regions(regionID).add(get3DPlot(regionID % 2,plotID).getPoints)
+      regions(regionID).add(getPlot(regionID % 2,plotID).getPoints)
     }
 
-    private def reposition(): Unit = Regions().length match {
+    def reposition(): Unit = Regions().length match {
       case 1 =>
         regions(0).position.set(0, 0, -2) // north
       case 2 =>
@@ -64,7 +64,10 @@ class Environment(val scene: Scene,
     }
   }
 
-  val plots3D: Array[Option[Array[Plot]]] = Array(None, None)
+  def getRegions: Array[Group] = Regions.regions
+  def repositionRegions(): Unit = Regions.reposition()
+
+  private val plots3D: Array[Option[Array[Plot]]] = Array(None, None)
 
   /** Index of the active plots in each region */
   var active: Array[Int] = Array()
@@ -76,8 +79,8 @@ class Environment(val scene: Scene,
     * @param regionID The region the plot belongs to. (either 0 or 1)
     * @return The Shadow Manifold
     */
-  def get3DPlot(regionID: Int): Plot = plots3D(regionID).get(active(regionID))
-  def get3DPlot(regionID: Int, plotID: Int): Plot = plots3D(regionID).get(plotID)
+  def getActivePlot(regionID: Int): Plot = plots3D(regionID).get(active(regionID))
+  def getPlot(regionID: Int, plotID: Int): Plot = plots3D(regionID).get(plotID)
 
   def nextPlot(regionID: Int) : Unit = {
     if(active.length <= regionID) loadPlot(regionID, 0)
@@ -125,11 +128,11 @@ class Environment(val scene: Scene,
     // Retrieve intersections on the available inputs ray caster
     val rayCaster: THREE.Raycaster = Controls.getSelectionRaycaster(camera)
     val intersects: Array[scalajs.js.Array[THREE.Intersection]] = Array(
-      rayCaster.intersectObject(get3DPlot(0).getPoints),
-      rayCaster.intersectObject(get3DPlot(1).getPoints))
+      rayCaster.intersectObject(getActivePlot(0).getPoints),
+      rayCaster.intersectObject(getActivePlot(1).getPoints))
 
-    val plot1 = get3DPlot(0)
-    val plot2 = get3DPlot(1)
+    val plot1 = getActivePlot(0)
+    val plot2 = getActivePlot(1)
     var (results1, results2)= ((-1, -1), (-1, -1))
     // Intersections with the first plot
     if(intersects(0).nonEmpty) results1 = Interactions.on(plot1, intersects(0))
