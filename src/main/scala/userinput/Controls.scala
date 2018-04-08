@@ -1,7 +1,7 @@
 package userinput
 
 import env.Environment
-import js.three.{FirstPersonVRControls, RaycasterParametersExt, VRController, VRControls}
+import facades.three.{FirstPersonVRControls, RaycasterParametersExt, VRController, VRControls}
 import org.scalajs.dom.{document, raw}
 import org.scalajs.{threejs => THREE}
 import window.Window

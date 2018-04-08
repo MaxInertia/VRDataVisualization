@@ -1,6 +1,6 @@
 package userinput
 
-import js.three.VRController
+import facades.three.VRController
 import org.scalajs.dom.raw.Event
 
 /**

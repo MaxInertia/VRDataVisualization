@@ -1,4 +1,4 @@
-package js.three
+package facades.three
 
 import scalajs.js
 import org.scalajs.{threejs => THREE}

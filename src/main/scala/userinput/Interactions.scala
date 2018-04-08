@@ -1,6 +1,6 @@
 package userinput
 
-import js.three.IntersectionExt
+import facades.three.IntersectionExt
 import org.scalajs.{threejs => THREE}
 import plots.Plot
 import userinput.Interactions.Intersection

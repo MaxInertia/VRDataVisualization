@@ -1,5 +1,5 @@
 import Main.env
-import js.three.{LineSegments, WireframeGeometry}
+import facades.three.{LineSegments, WireframeGeometry}
 import org.scalajs.{threejs => THREE}
 import plots.{Color, Plot}
 import scala.scalajs.js.annotation.{JSExport, JSExportTopLevel}

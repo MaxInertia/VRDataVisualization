@@ -1,4 +1,4 @@
-package js.three
+package facades.three
 
 import org.scalajs.dom.raw.Event
 

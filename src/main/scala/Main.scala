@@ -4,7 +4,7 @@ import org.scalajs.dom
 import userinput.Controls
 import env.Environment
 import window.Window
-import js.Stats
+import facades.Stats
 
 /**
   * Created by Dorian Thiessen on 2018-01-05.

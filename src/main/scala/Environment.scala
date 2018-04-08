@@ -3,7 +3,7 @@ package env
 import org.scalajs.{threejs => THREE}
 import org.scalajs.dom
 import scala.util.{Failure, Success}
-import js.three.{SceneExt, VREffect}
+import facades.three.{SceneExt, VREffect}
 import math.Stats
 import plots._
 import resources._
