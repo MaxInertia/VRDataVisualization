@@ -1,5 +1,5 @@
 import Main.env
-import facades.three.{LineSegments, WireframeGeometry}
+import facades.three.IFThree.{LineSegments, WireframeGeometry}
 import org.scalajs.{threejs => THREE}
 import plots.{Color, Plot}
 import scala.scalajs.js.annotation.{JSExport, JSExportTopLevel}
@@ -11,13 +11,11 @@ import scala.scalajs.js.annotation.{JSExport, JSExportTopLevel}
 object Utils {
 
   @JSExport("switchPlot")
-  def switchPlot(i: Int): Unit =
-    env.nextPlot(i)
+  def switchPlot(i: Int): Unit = env.nextPlot(i)
 
   @JSExport("scalePlot")
-  def scalePlot(i: Int, s: Double): Unit = {
+  def scalePlot(i: Int, s: Double): Unit =
     env.getActivePlot(i).getPoints.scale.multiplyScalar(s)
-  }
 
   var cube1: Option[THREE.Mesh] = None
   var cube2: Option[THREE.Mesh] = None
@@ -71,8 +69,7 @@ object Utils {
   }
 
   @JSExport("expand")
-  def separateRegions(): Unit = {
-    env.repositionRegions()
-  }
+  def separateRegions(): Unit = env.repositionRegions()
+
 }
 

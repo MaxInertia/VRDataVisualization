@@ -1,9 +1,9 @@
 package env
 
+import facades.three.IFThree.{SceneExt, VREffect}
 import org.scalajs.{threejs => THREE}
 import org.scalajs.dom
 import scala.util.{Failure, Success}
-import facades.three.{SceneExt, VREffect}
 import math.Stats
 import plots._
 import resources._
@@ -287,6 +287,6 @@ object Environment {
 
   def createTS(timeSeries: Option[String]): Array[TimeSeries] = ??? // TODO: Implement TimeSeries class ('2D' plot)
 
-  implicit def convertScene(scene: THREE.Scene): SceneExt = scene.asInstanceOf[SceneExt]
+  implicit def toSceneExt(scene: THREE.Scene): SceneExt = scene.asInstanceOf[SceneExt]
 
 }
