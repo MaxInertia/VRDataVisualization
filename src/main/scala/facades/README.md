@@ -1,1 +1,1 @@
-Package 'js' contains additional scala-js facades required by the project.
+Package 'facades' contains additional scala-js facades required by the project.
