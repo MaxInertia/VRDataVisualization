@@ -1,10 +1,14 @@
 package userinput
 
-import env.Environment
-import facades.three.{FirstPersonVRControls, RaycasterParametersExt, VRController, VRControls}
 import org.scalajs.dom.{document, raw}
 import org.scalajs.{threejs => THREE}
 import window.Window
+import env.Environment
+import facades.three.IFThree.{
+  FirstPersonVRControls,
+  RaycasterParametersExt,
+  VRController,
+  VRControls}
 
 /**
   * An abstraction over the users method of input.
