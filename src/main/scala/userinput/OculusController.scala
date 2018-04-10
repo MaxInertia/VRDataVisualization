@@ -1,9 +1,10 @@
 package userinput
 
+import env.Environment
 import facades.three.IFThree.{RaycasterParametersExt, VRController}
 import org.scalajs.dom
 import org.scalajs.dom.raw.Event
-import org.scalajs.threejs.{ArrowHelper, BoxGeometry, Color, CylinderGeometry, Matrix4, Mesh, MeshBasicMaterial, Vector3}
+import org.scalajs.threejs.{ArrowHelper, BoxGeometry, Color, CylinderGeometry, Matrix4, Mesh, MeshBasicMaterial, Object3D, SceneUtils, Vector3}
 import userinput.Controls.RayCaster
 
 trait OculusTouchEvents {
@@ -174,6 +175,9 @@ object OculusControllerRight extends OculusController {
   val B_PressBegan: String = "B press began"
   val B_PressEnded: String = "B press ended"
 
+  var captured: Option[Object3D] = None
+  var capturedDiff: Vector3 = _
+
   def setup(vrc: VRController): Unit = {
     dom.console.log(s"$name Connected!")
     init(vrc, meshColorRed)
@@ -198,9 +202,22 @@ object OculusControllerRight extends OculusController {
       //dom.console.log("Primary Press Ended")
     }).asInstanceOf[Any => Unit])
     vrc.addEventListener(Grip_PressBegan, ((event: Event) => {
+      val regions = Environment.instance.getRegions
+      for(r <- regions) {
+        val controllerPos = vrc.position
+        if(captured.isEmpty && r.position.distanceTo(controllerPos) < 0.5) {
+          SceneUtils.attach(r, Environment.instance.scene, vrc)
+          captured = Some(r)
+        }
+      }
       //dom.console.log("Grip Press Began")
     }).asInstanceOf[Any => Unit])
     vrc.addEventListener(Grip_PressEnded, ((event: Event) => {
+      if(captured.nonEmpty) {
+        val dropped = captured.get
+        SceneUtils.detach(dropped, vrc, Environment.instance.scene)
+        captured = None
+      }
       //dom.console.log("Grip Press Ended")
     }).asInstanceOf[Any => Unit])
     vrc.addEventListener(Axes_Changed, ((event: Event) => {

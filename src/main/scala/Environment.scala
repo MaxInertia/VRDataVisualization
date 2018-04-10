@@ -52,8 +52,8 @@ class Environment(val scene: Scene,
       case 1 =>
         regions(0).position.set(0, 0, -2) // north
       case 2 =>
-        regions(0).position.set(-1.1, 0, -2) // north west
-        regions(1).position.set(1.1,  0, -2) // north east
+        regions(0).position.set(-0.6, 0, -1) // north west
+        regions(1).position.set(0.6,  0, -1) // north east
       case 3 =>
         regions(0).position.set(-2.1, 0, -2) // north west
         regions(1).position.set(0,    0, -2) // north
@@ -155,6 +155,8 @@ object Environment {
   type WebGLRenderer = THREE.WebGLRenderer
   type PerspectiveCamera = THREE.PerspectiveCamera
 
+  var instance: Environment = _
+
   /**
     * Initiates setup for the Environment.
     *
@@ -181,6 +183,7 @@ object Environment {
     scene.add(makeLight())
 
     val env: Environment = new Environment(scene, camera, renderer)
+    instance = env
 
     // Load texture for plots
     val loadTexture = Res.loadPointTexture(1)

@@ -64,9 +64,7 @@ object Controls {
     });*/
 
     controls.vr = new VRControls(env.camera)
-    dom.console.log("Reached the 'vr controller connected' event listener adding")
     dom.window.addEventListener("vr controller connected", (event: SomeEvent) => {
-      dom.console.log("CONTROLLER CONENCTED")
       val controller: VRController = event.detail.asInstanceOf[VRController]
 
       if(controller.name == OculusControllerRight.name) {
@@ -88,7 +86,6 @@ object Controls {
     controls.fp = new FirstPersonVRControls(env.camera, env.scene)
     controls.mouse = new THREE.Vector2()
     Window.setupMouseEventListener(controls.mouse)
-    //Window.setupControllerConnectionEventListener()
     controls
   }
 }
