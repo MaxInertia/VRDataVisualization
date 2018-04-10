@@ -1,8 +1,9 @@
 package env
 
-import facades.three.IFThree.{SceneExt, VREffect}
+import facades.three.IFThree.{SceneExt, WebGLRendererExt}
 import org.scalajs.{threejs => THREE}
 import org.scalajs.dom
+
 import scala.util.{Failure, Success}
 import math.Stats
 import plots._
@@ -11,14 +12,15 @@ import userinput.{Controls, Interactions}
 import window.Window
 import resources.Res.Texture
 import Environment.{PerspectiveCamera, Scene, WebGLRenderer}
+import org.scalajs.threejs.{ArrowHelper, Vector3}
+import userinput.Controls.{RayCaster, rayCaster}
 
 /**
   * Created by Dorian Thiessen on 2018-01-11.
   */
 class Environment(val scene: Scene,
                   val camera: PerspectiveCamera,
-                  val renderer: WebGLRenderer,
-                  val vrEffect: VREffect) {
+                  val renderer: WebGLRenderer) {
 
   /** Used to group multiple objects in the environment
     * that should always move and rotate together */
@@ -115,18 +117,16 @@ class Environment(val scene: Scene,
   }
 
   def render(): Unit = {
-    //if (VR.isPresenting()) {
-    vrEffect.render(scene, camera)
-    //} else {
+    val maybeRC: Option[THREE.Raycaster] = Controls.getSelectionRayCaster(camera)
+    if(maybeRC.nonEmpty) {
+      // TODO: Still find a better way to ignore points while waiting for the texture to be loaded
+      if (Regions().length >= 2) pointSelection(maybeRC.get)
+    }
     renderer.render(scene, camera)
-    //}
-    // TODO: Still find a better way to ignore points while waiting for the texture to be loaded
-    if(Regions().length >= 2) mousePointSelection()
   }
 
-  def mousePointSelection(): Unit = {
+  def pointSelection(rayCaster: RayCaster): Unit = {
     // Retrieve intersections on the available inputs ray caster
-    val rayCaster: THREE.Raycaster = Controls.getSelectionRaycaster(camera)
     val intersects: Array[scalajs.js.Array[THREE.Intersection]] = Array(
       rayCaster.intersectObject(getActivePlot(0).getPoints),
       rayCaster.intersectObject(getActivePlot(1).getPoints))
@@ -173,14 +173,14 @@ object Environment {
   def setup(container: dom.Element): Environment = {
 
     val camera: PerspectiveCamera = makeCamera()
-    val (renderer, vrEffect) = makeRendererAndVREffect()
+    val renderer: WebGLRenderer = makeRenderer()
     container.appendChild(renderer.domElement)
 
     val scene: Scene = makeScene()
     scene.add(camera)
     scene.add(makeLight())
 
-    val env: Environment = new Environment(scene, camera, renderer, vrEffect)
+    val env: Environment = new Environment(scene, camera, renderer)
 
     // Load texture for plots
     val loadTexture = Res.loadPointTexture(1)
@@ -195,7 +195,6 @@ object Environment {
 
   def makePlots(env: Environment, texture: Texture): Unit = { // Not happy with this method
     def makeSingle(texture: Texture, plotNumber: Int, storageID: String, hue: Double): Unit = {
-
       // Create the plot
       val sm = createSMPlots(storageID, hue, 1)
       if (sm.isEmpty) return
@@ -212,14 +211,12 @@ object Environment {
     * Creates the renderer.
     * @return THREE.WebGLRenderer instance
     */
-  private def makeRendererAndVREffect(): (WebGLRenderer, VREffect) = {
+  private def makeRenderer(): WebGLRenderer = {
     val renderer = new WebGLRenderer()
     renderer.setSize(Window.width, Window.height)
     renderer.devicePixelRatio = Window.devicePixelRatio
-    // Applies renderer to VR display (if available)
-    val vrEffect = new VREffect(renderer)
-    vrEffect.setSize(Window.width, Window.height)
-    (renderer, vrEffect)
+    renderer.asInstanceOf[WebGLRendererExt].vr.enabled = true
+    renderer
   }
 
   /**

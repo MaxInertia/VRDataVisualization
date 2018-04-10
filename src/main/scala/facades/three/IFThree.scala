@@ -32,13 +32,6 @@ object IFThree {
     def getStandingMatrix(): Matrix4 = js.native
     def dispose(): Unit = js.native
   }
-  @js.native
-  @JSGlobal("THREE.VREffect")
-  class VREffect extends js.Object {
-    def this(renderer: Renderer) = this()
-    def setSize(width: Double, Height: Double): Unit = js.native
-    def render(scene: Scene, camera: Camera): Unit = js.native
-  }
 
   /**
     * Created by Dorian Thiessen on 2018-01-13.
@@ -96,12 +89,27 @@ object IFThree {
     val isLineSegments: Boolean = js.native
   }
 
+
+  /**
+    * Created by Dorian Thiessen on 2018-04-09.
+    */
+  @js.native
+  @JSGlobal("THREE.WebGLRenderer")
+  class WebGLRendererExt extends WebGLRenderer {
+    var vr: WebVRManager = js.native
+    def animate(callback: () => _): Unit = js.native
+  }
+  @js.native
+  @JSGlobal("THREE.WebVRManager")
+  class WebVRManager extends js.Any {
+    def this(renderer: Renderer) = this()
+    var enabled: Boolean = js.native
+  }
   @js.native
   @JSGlobal("WEBVR")
   object WEBVR extends js.Any {
     def createButton(renderer: WebGLRenderer): Element = js.native
   }
-
   @js.native
   trait SomeEvent extends js.Any {
     val detail: js.Dynamic = js.native

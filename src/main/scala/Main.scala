@@ -5,8 +5,7 @@ import userinput.Controls
 import env.Environment
 import window.Window
 import facades.Stats
-import facades.three.IFThree.{VRController, VRControllerManager, WEBVR}
-import org.scalajs.dom.raw.{CustomEvent, Event}
+import facades.three.IFThree.{VRControllerManager, WEBVR}
 
 /**
   * Created by Dorian Thiessen on 2018-01-05.
@@ -20,10 +19,6 @@ object Main {
 
   @JSExport("init")
   def init(): Unit = {
-    /*dom.window.addEventListener( "vr controller connected", (event: CustomEvent) => {
-      dom.console.log("VR CONTROLLER CONNECTED EVENT FIRED!!!!!!!!!")
-    })*/
-
     // Setup the Environment (Scene, Camera, Renderer) and the Controls (Mouse, Oculus Controllers and Headset)
     val container = dom.document.getElementById("scene-container")
     env = Environment.setup(container)

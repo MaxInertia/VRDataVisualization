@@ -1,15 +1,21 @@
 package userinput
 
-import facades.three.IFThree.VRController
+import facades.three.IFThree.{RaycasterParametersExt, VRController}
 import org.scalajs.dom
 import org.scalajs.dom.raw.Event
-import org.scalajs.threejs.{BoxGeometry, Color, CylinderGeometry, Mesh, MeshBasicMaterial, THREE}
+import org.scalajs.threejs.{ArrowHelper, BoxGeometry, Color, CylinderGeometry, Matrix4, Mesh, MeshBasicMaterial, Vector3}
+import userinput.Controls.RayCaster
+
+trait OculusTouchEvents {
+  val ThumbRest_TouchBegan: String = "thumbrest touch began"
+  val ThumbRest_TouchEnded: String = "thumbrest touch ended"
+}
 
 /**
   * Common traits of the left and right Oculus Controllers.
   * Created by Dorian Thiessen on 2018-02-12.
   */
-sealed abstract class OculusController {
+sealed abstract class OculusController extends OculusTouchEvents {
   val name: String
   // Event ID's
   val Primary_PressBegan: String = "primary press began"
@@ -23,9 +29,50 @@ sealed abstract class OculusController {
   val meshColorBlue: Int = 0x0000FF
   val meshColorWhite: Int = 0xFFFFFF
 
-  var controllerMesh: MeshBasicMaterial
+  protected var controllerEl: VRController = _
+  protected var controllerMesh: Mesh = _
+  protected var rayCasterEl: RayCaster = _
+  protected[userinput] var rayCasterArrow: ArrowHelper = _ // effectively the rayCaster mesh
 
-  def createControllerMesh(color: Int): Mesh = {
+  def setup(vrc: VRController): Unit
+  def isPointing: Boolean = rayCasterArrow!=null && rayCasterArrow.visible
+  def updatedRayCaster: RayCaster = {
+    rayCasterEl.set(
+      controllerEl.position,
+      controllerDirection())
+    rayCasterEl
+  }
+
+  protected def init(vrc: VRController, hexColor: Int): Unit = {
+    controllerEl = vrc
+    controllerMesh = createControllerMesh(hexColor)
+
+    rayCasterEl = new RayCaster()
+    rayCasterEl.set(
+      vrc.position,
+      controllerDirection())
+    rayCasterEl.params.asInstanceOf[RaycasterParametersExt].Points.threshold = 0.015
+
+    rayCasterArrow = new ArrowHelper(
+      new Vector3(0, 0, -1),
+      new Vector3(0, 0, 0),
+      100, hexColor)
+    rayCasterArrow.visible = false
+    rayCasterArrow.cone.visible = false
+
+    vrc.add(rayCasterArrow)
+    vrc.add(controllerMesh)
+  }
+
+  protected def controllerDirection(): Vector3 = {
+    val matrix = new Matrix4()
+    matrix.extractRotation( controllerEl.matrix )
+    var direction = new Vector3( 0, 0, 1 )
+    direction = direction.applyMatrix4(matrix).negate()
+    direction
+  }
+
+  protected def createControllerMesh(color: Int): Mesh = {
     val controllerMaterial = new MeshBasicMaterial()
     controllerMaterial.color = new Color(color)
     val controllerMesh = new Mesh(
@@ -41,8 +88,6 @@ sealed abstract class OculusController {
     controllerMesh.add( handleMesh )
     controllerMesh
   }
-
-  def setup(vrc: VRController): Unit
 }
 
 /**
@@ -60,46 +105,49 @@ object OculusControllerLeft extends OculusController {
   val Y_PressBegan: String = "Y press began"
   val Y_PressEnded: String = "Y press ended"
 
-  override var controllerMesh: MeshBasicMaterial = _
-
   def setup(vrc: VRController): Unit = {
     dom.console.log(s"$name Connected!")
-    vrc.add(createControllerMesh(meshColorBlue))
+    init(vrc, meshColorBlue)
+
+    // Touch events
+
+    vrc.addEventListener(ThumbRest_TouchBegan, ((event: Event) => {
+      //dom.console.log("Thumbrest Touch Began")
+      rayCasterArrow.visible = true
+    }).asInstanceOf[Any => Unit])
+    vrc.addEventListener(ThumbRest_TouchEnded, ((event: Event) => {
+      //dom.console.log("Thumbrest Touch Ended")
+      rayCasterArrow.visible = false
+    }).asInstanceOf[Any => Unit])
+
+    // Other events
 
     vrc.addEventListener(Primary_PressBegan, ((event: Event) => {
-      dom.console.log("Primary Press Began")
+      //dom.console.log("Primary Press Began")
     }).asInstanceOf[Any => Unit])
-
     vrc.addEventListener(Primary_PressEnded, ((event: Event) => {
-      dom.console.log("Primary Press Ended")
+      //dom.console.log("Primary Press Ended")
     }).asInstanceOf[Any => Unit])
-
     vrc.addEventListener(Grip_PressBegan, ((event: Event) => {
-      dom.console.log("Grip Press Began")
+      //dom.console.log("Grip Press Began")
     }).asInstanceOf[Any => Unit])
-
     vrc.addEventListener(Grip_PressEnded, ((event: Event) => {
-      dom.console.log("Grip Press Ended")
+      //dom.console.log("Grip Press Ended")
     }).asInstanceOf[Any => Unit])
-
     vrc.addEventListener(Axes_Changed, ((event: Event) => {
-      dom.console.log("Axes Changed")
+      //dom.console.log("Axes Changed")
     }).asInstanceOf[Any => Unit])
-
     vrc.addEventListener(X_PressBegan, ((event: Event) => {
-      dom.console.log("X Press Began")
+      //dom.console.log("X Press Began")
     }).asInstanceOf[Any => Unit])
-
     vrc.addEventListener(X_PressEnded, ((event: Event) => {
-      dom.console.log("X Press Ended")
+      //dom.console.log("X Press Ended")
     }).asInstanceOf[Any => Unit])
-
     vrc.addEventListener(Y_PressBegan, ((event: Event) => {
-      dom.console.log("Y Press Began")
+      //dom.console.log("Y Press Began")
     }).asInstanceOf[Any => Unit])
-
     vrc.addEventListener(Y_PressEnded, ((event: Event) => {
-      dom.console.log("Y Press Ended")
+      //dom.console.log("Y Press Ended")
     }).asInstanceOf[Any => Unit])
 
     vrc.addEventListener(Disconnected, ((event: Event) => {
@@ -108,6 +156,7 @@ object OculusControllerLeft extends OculusController {
       dom.console.log(s"$name Disconnected!")
     }).asInstanceOf[Any => Unit])
   }
+
 }
 
 /**
@@ -125,46 +174,49 @@ object OculusControllerRight extends OculusController {
   val B_PressBegan: String = "B press began"
   val B_PressEnded: String = "B press ended"
 
-  override var controllerMesh: MeshBasicMaterial = _
-
   def setup(vrc: VRController): Unit = {
     dom.console.log(s"$name Connected!")
-    vrc.add(createControllerMesh(meshColorRed))
+    init(vrc, meshColorRed)
+
+    // Touch Events
+
+    vrc.addEventListener(ThumbRest_TouchBegan, ((event: Event) => {
+      //dom.console.log("Thumbrest Touch Began")
+      rayCasterArrow.visible = true
+    }).asInstanceOf[Any => Unit])
+    vrc.addEventListener(ThumbRest_TouchEnded, ((event: Event) => {
+      //dom.console.log("Thumbrest Touch Ended")
+      rayCasterArrow.visible = false
+    }).asInstanceOf[Any => Unit])
+
+    // Other Events
 
     vrc.addEventListener(Primary_PressBegan, ((event: Event) => {
-      dom.console.log("Primary Press Began")
+      //dom.console.log("Primary Press Began")
     }).asInstanceOf[Any => Unit])
-
     vrc.addEventListener(Primary_PressEnded, ((event: Event) => {
-      dom.console.log("Primary Press Ended")
+      //dom.console.log("Primary Press Ended")
     }).asInstanceOf[Any => Unit])
-
     vrc.addEventListener(Grip_PressBegan, ((event: Event) => {
-      dom.console.log("Grip Press Began")
+      //dom.console.log("Grip Press Began")
     }).asInstanceOf[Any => Unit])
-
     vrc.addEventListener(Grip_PressEnded, ((event: Event) => {
-      dom.console.log("Grip Press Ended")
+      //dom.console.log("Grip Press Ended")
     }).asInstanceOf[Any => Unit])
-
     vrc.addEventListener(Axes_Changed, ((event: Event) => {
-      dom.console.log("Axes Changed")
+      //dom.console.log("Axes Changed")
     }).asInstanceOf[Any => Unit])
-
     vrc.addEventListener(A_PressBegan, ((event: Event) => {
-      dom.console.log("A Press Began")
+      //dom.console.log("A Press Began")
     }).asInstanceOf[Any => Unit])
-
     vrc.addEventListener(A_PressEnded, ((event: Event) => {
-      dom.console.log("A Press Ended")
+      //dom.console.log("A Press Ended")
     }).asInstanceOf[Any => Unit])
-
     vrc.addEventListener(B_PressBegan, ((event: Event) => {
-      dom.console.log("B Press Began")
+      //dom.console.log("B Press Began")
     }).asInstanceOf[Any => Unit])
-
     vrc.addEventListener(B_PressEnded, ((event: Event) => {
-      dom.console.log("B Press Ended")
+      //dom.console.log("B Press Ended")
     }).asInstanceOf[Any => Unit])
 
     vrc.addEventListener(Disconnected, ((event: Event) => {
@@ -173,5 +225,13 @@ object OculusControllerRight extends OculusController {
       dom.console.log(s"$name Disconnected!")
     }).asInstanceOf[Any => Unit])
 
+  }
+}
+
+object OculusControllers {
+  def getActiveRayCaster: Option[RayCaster] = {
+    if(OculusControllerRight.isPointing) Some(OculusControllerRight.updatedRayCaster)
+    else if(OculusControllerLeft.isPointing) Some(OculusControllerLeft.updatedRayCaster)
+    else None
   }
 }

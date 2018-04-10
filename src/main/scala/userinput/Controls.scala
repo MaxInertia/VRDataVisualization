@@ -5,6 +5,7 @@ import org.scalajs.{dom, threejs => THREE}
 import window.Window
 import env.Environment
 import facades.three.IFThree._
+import org.scalajs.threejs.{ArrowHelper, Matrix4}
 
 /**
   * An abstraction over the users method of input.
@@ -27,17 +28,20 @@ object Controls {
   private var instance: Controls = _
 
   type RayCaster = THREE.Raycaster
-  private val rayCaster: RayCaster = new RayCaster()
+  private val rayCaster: RayCaster = new RayCaster() // Used for the mouse
   rayCaster.params.asInstanceOf[RaycasterParametersExt].Points.threshold = 0.015
 
-  def getSelectionRaycaster(camera: => THREE.PerspectiveCamera): RayCaster = {
-    // If using mouse
-    rayCaster.setFromCamera(getMouse, camera)
-    // TODO: if using Oculus
-    // ...
+  def getSelectionRayCaster(camera: => THREE.PerspectiveCamera): Option[RayCaster] = {
+    if(instance.controllers(0) == null && instance.controllers(1) == null) {
+      // No Oculus Controllers connected, assume using mouse
+      rayCaster.setFromCamera(getMouse, camera)
+      Some(rayCaster)
+    } else {
+      // Return direction a controller is pointing (if activated)
+      OculusControllers.getActiveRayCaster
+    }
     // TODO: If using mobile (neither Oculus or Mouse available)
     // ...
-    rayCaster
   }
 
   def getMouse: THREE.Vector2 = instance.mouse
