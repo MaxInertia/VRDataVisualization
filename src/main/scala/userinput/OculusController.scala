@@ -1,7 +1,9 @@
 package userinput
 
 import facades.three.IFThree.VRController
+import org.scalajs.dom
 import org.scalajs.dom.raw.Event
+import org.scalajs.threejs.{BoxGeometry, Color, CylinderGeometry, Mesh, MeshBasicMaterial, THREE}
 
 /**
   * Common traits of the left and right Oculus Controllers.
@@ -21,6 +23,25 @@ sealed abstract class OculusController {
   val meshColorBlue: Int = 0x0000FF
   val meshColorWhite: Int = 0xFFFFFF
 
+  var controllerMesh: MeshBasicMaterial
+
+  def createMesh(color: Int): Mesh = {
+    val controllerMaterial = new MeshBasicMaterial()
+    controllerMaterial.color = new Color(color)
+    val controllerMesh = new Mesh(
+      new CylinderGeometry( 0.005, 0.05, 0.1, 6 ),
+      controllerMaterial)
+    val handleMesh = new Mesh(
+      new BoxGeometry(0.03, 0.1, 0.03),
+      controllerMaterial)
+
+    //controllerMaterial.flatShading = true;
+    controllerMesh.rotation.x = -Math.PI / 2
+    handleMesh.position.y = -0.05
+    controllerMesh.add( handleMesh )
+    controllerMesh
+  }
+
   def setup(vrc: VRController): Unit
 }
 
@@ -39,23 +60,53 @@ object OculusControllerLeft extends OculusController {
   val Y_PressBegan: String = "Y press began"
   val Y_PressEnded: String = "Y press ended"
 
+  override var controllerMesh: MeshBasicMaterial = _
+
   def setup(vrc: VRController): Unit = {
-    // TODO: Add mesh
-    println(s"$name Connected!")
-    /*vrc.addEventListener(Primary_PressBegan, (event: Event) => {})
-    vrc.addEventListener(Primary_PressEnded, (event: Event) => {})
-    vrc.addEventListener(Grip_PressBegan, (event: Event) => {})
-    vrc.addEventListener(Grip_PressEnded, (event: Event) => {})
-    vrc.addEventListener(Axes_Changed, (event: Event) => {})
-    vrc.addEventListener(X_PressBegan, (event: Event) => {})
-    vrc.addEventListener(X_PressEnded, (event: Event) => {})
-    vrc.addEventListener(Y_PressBegan, (event: Event) => {})
-    vrc.addEventListener(Y_PressEnded, (event: Event) => {})*/
-    vrc.addEventListener(Disconnected, (event: Event) => {
+    dom.console.log(s"$name Connected!")
+    vrc.add(createMesh(meshColorBlue))
+
+    vrc.addEventListener(Primary_PressBegan, ((event: Event) => {
+      dom.console.log("Primary Press Began")
+    }).asInstanceOf[Any => Unit])
+
+    vrc.addEventListener(Primary_PressEnded, ((event: Event) => {
+      dom.console.log("Primary Press Ended")
+    }).asInstanceOf[Any => Unit])
+
+    vrc.addEventListener(Grip_PressBegan, ((event: Event) => {
+      dom.console.log("Grip Press Began")
+    }).asInstanceOf[Any => Unit])
+
+    vrc.addEventListener(Grip_PressEnded, ((event: Event) => {
+      dom.console.log("Grip Press Ended")
+    }).asInstanceOf[Any => Unit])
+
+    vrc.addEventListener(Axes_Changed, ((event: Event) => {
+      dom.console.log("Axes Changed")
+    }).asInstanceOf[Any => Unit])
+
+    vrc.addEventListener(X_PressBegan, ((event: Event) => {
+      dom.console.log("X Press Began")
+    }).asInstanceOf[Any => Unit])
+
+    vrc.addEventListener(X_PressEnded, ((event: Event) => {
+      dom.console.log("X Press Ended")
+    }).asInstanceOf[Any => Unit])
+
+    vrc.addEventListener(Y_PressBegan, ((event: Event) => {
+      dom.console.log("Y Press Began")
+    }).asInstanceOf[Any => Unit])
+
+    vrc.addEventListener(Y_PressEnded, ((event: Event) => {
+      dom.console.log("Y Press Ended")
+    }).asInstanceOf[Any => Unit])
+
+    vrc.addEventListener(Disconnected, ((event: Event) => {
       //vrc.parent.remove(vrc)
       //TODO: Remove meshes & raycasters associated with this controller
-      println(s"$name Disconnected!")
-    })
+      dom.console.log(s"$name Disconnected!")
+    }).asInstanceOf[Any => Unit])
   }
 }
 
@@ -74,22 +125,53 @@ object OculusControllerRight extends OculusController {
   val B_PressBegan: String = "B press began"
   val B_PressEnded: String = "B press ended"
 
+  override var controllerMesh: MeshBasicMaterial = _
+
   def setup(vrc: VRController): Unit = {
-    // TODO: Add mesh
-    println(s"$name Connected!")
-    /*vrc.addEventListener(Primary_PressBegan, (event: Event) => {})
-    vrc.addEventListener(Primary_PressEnded, (event: Event) => {})
-    vrc.addEventListener(Grip_PressBegan, (event: Event) => {})
-    vrc.addEventListener(Grip_PressEnded, (event: Event) => {})
-    vrc.addEventListener(Axes_Changed, (event: Event) => {})
-    vrc.addEventListener(A_PressBegan, (event: Event) => {})
-    vrc.addEventListener(A_PressEnded, (event: Event) => {})
-    vrc.addEventListener(B_PressEnded, (event: Event) => {})
-    vrc.addEventListener(B_PressBegan, (event: Event) => {})*/
-    vrc.addEventListener(Disconnected, (event: Event) => {
+    dom.console.log(s"$name Connected!")
+    vrc.add(createMesh(meshColorRed))
+
+    vrc.addEventListener(Primary_PressBegan, ((event: Event) => {
+      dom.console.log("Primary Press Began")
+    }).asInstanceOf[Any => Unit])
+
+    vrc.addEventListener(Primary_PressEnded, ((event: Event) => {
+      dom.console.log("Primary Press Ended")
+    }).asInstanceOf[Any => Unit])
+
+    vrc.addEventListener(Grip_PressBegan, ((event: Event) => {
+      dom.console.log("Grip Press Began")
+    }).asInstanceOf[Any => Unit])
+
+    vrc.addEventListener(Grip_PressEnded, ((event: Event) => {
+      dom.console.log("Grip Press Ended")
+    }).asInstanceOf[Any => Unit])
+
+    vrc.addEventListener(Axes_Changed, ((event: Event) => {
+      dom.console.log("Axes Changed")
+    }).asInstanceOf[Any => Unit])
+
+    vrc.addEventListener(A_PressBegan, ((event: Event) => {
+      dom.console.log("A Press Began")
+    }).asInstanceOf[Any => Unit])
+
+    vrc.addEventListener(A_PressEnded, ((event: Event) => {
+      dom.console.log("A Press Ended")
+    }).asInstanceOf[Any => Unit])
+
+    vrc.addEventListener(B_PressBegan, ((event: Event) => {
+      dom.console.log("B Press Began")
+    }).asInstanceOf[Any => Unit])
+
+    vrc.addEventListener(B_PressEnded, ((event: Event) => {
+      dom.console.log("B Press Ended")
+    }).asInstanceOf[Any => Unit])
+
+    vrc.addEventListener(Disconnected, ((event: Event) => {
       //vrc.parent.remove(vrc)
       //TODO: Remove meshes & raycasters associated with this controller
-      println(s"$name Disconnected!")
-    })
+      dom.console.log(s"$name Disconnected!")
+    }).asInstanceOf[Any => Unit])
+
   }
 }

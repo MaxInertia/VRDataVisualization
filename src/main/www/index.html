@@ -49,6 +49,33 @@
         }
     </script>
 
+    <script>
+        //console.log("IS THIS EVEN RUNNING!?");
+        /*window.ongamepadconnected = function(event) {
+          // All buttons and axes values can be accessed through
+          event.gamepad;
+          console.log("GAMEPAD CONNECTED");
+        };*/
+
+        /*window.addEventListener('vr controller connected', function( event ) {
+             // All buttons and axes values can be accessed through
+             event.gamepad;
+             console.log("VR CONTROLLER CONNECTED!!!!");
+        });
+
+        window.addEventListener('gamepadconnected', function( event ) {
+             // All buttons and axes values can be accessed through
+             event.gamepad;
+             console.log("GAMEPAD CONNECTED?");
+        });*/
+
+        // Note that the API is still vendor-prefixed in browsers implementing it
+        /*window.addEventListener("gamepadconnected", function( event ) {
+             // All buttons and axes values can be accessed through
+             event.gamepad;
+        });*/
+    </script>
+
     <div id="scene-container"></div>
 
 </body>
@@ -60,7 +87,7 @@
 
     function onVRDisplayPresentChange() {
         console.log('onVRDisplayPresentChange');
-        onResize();
+        //onResize();
     }
 
     window.addEventListener('vrdisplaypresentchange', onVRDisplayPresentChange);
@@ -85,7 +112,7 @@
         if (displays.length > 0) {
             vrDisplay = displays[0];
             // Kick off the render loop.
-            vrDisplay.requestAnimationFrame(CCMVR.animate);
+            vrDisplay.requestAnimationFrame(animate);
         }
     });
 </script>

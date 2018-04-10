@@ -1,14 +1,10 @@
 package userinput
 
-import org.scalajs.dom.{document, raw}
-import org.scalajs.{threejs => THREE}
+import org.scalajs.dom.document
+import org.scalajs.{dom, threejs => THREE}
 import window.Window
 import env.Environment
-import facades.three.IFThree.{
-  FirstPersonVRControls,
-  RaycasterParametersExt,
-  VRController,
-  VRControls}
+import facades.three.IFThree._
 
 /**
   * An abstraction over the users method of input.
@@ -47,7 +43,7 @@ object Controls {
   def getMouse: THREE.Vector2 = instance.mouse
 
   def setup(env: Environment): Controls = {
-    println("Controls Setup...")
+    dom.console.log("Controls Setup...")
     val controls = new Controls()
     instance = controls
 
@@ -64,16 +60,20 @@ object Controls {
     });*/
 
     controls.vr = new VRControls(env.camera)
-    document.addEventListener("vr controller connected", (event: raw.CustomEvent) => {
+    dom.console.log("Reached the 'vr controller connected' event listener adding")
+    dom.window.addEventListener("vr controller connected", (event: SomeEvent) => {
+      dom.console.log("CONTROLLER CONENCTED")
       val controller: VRController = event.detail.asInstanceOf[VRController]
 
       if(controller.name == OculusControllerRight.name) {
         OculusControllerRight.setup(controller)
         controls.controllers(1) = controller
+        env.scene.add(controller)
 
       } else if(controller.name == OculusControllerLeft.name) {
         OculusControllerLeft.setup(controller)
         controls.controllers(0) = controller
+        env.scene.add(controller)
 
       } else
         println("[Controls]\t Unknown controller passed on event: \"vr controller connected\"")

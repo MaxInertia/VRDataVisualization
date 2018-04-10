@@ -1,6 +1,6 @@
 package facades.three
 
-import org.scalajs.dom.raw.Event
+import org.scalajs.dom.raw.{Element, Event}
 import org.scalajs.threejs._
 
 import scala.scalajs.js
@@ -44,11 +44,16 @@ object IFThree {
     * Created by Dorian Thiessen on 2018-01-13.
     */
   @js.native
-  @JSGlobal("THREE.VRController")
-  class VRController extends js.Object {
-    val name: String = js.native
+  //@JSGlobal("THREE.VRController")
+  trait VRController extends Object3D {
     def update(): Unit = js.native
-    def addEventListener[T <: Event](`type`: String, listener: js.Function1[T, _]): Unit = js.native
+    //def addEventListener[T <: Event](`type`: String, listener: js.Function1[T, _]): Unit = js.native
+  }
+
+  @js.native
+  @JSGlobal("THREE.VRController")
+  object VRControllerManager extends js.Object {
+    def update(): Unit = js.native
   }
 
   /**
@@ -89,6 +94,17 @@ object IFThree {
   @JSGlobal("THREE.LineSegments")
   class LineSegments(wireframe: WireframeGeometry) extends Line {
     val isLineSegments: Boolean = js.native
+  }
+
+  @js.native
+  @JSGlobal("WEBVR")
+  object WEBVR extends js.Any {
+    def createButton(renderer: WebGLRenderer): Element = js.native
+  }
+
+  @js.native
+  trait SomeEvent extends js.Any {
+    val detail: js.Dynamic = js.native
   }
 
 }
