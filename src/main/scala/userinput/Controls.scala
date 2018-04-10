@@ -18,8 +18,8 @@ class Controls {
   var controllers: Array[VRController] = Array(null, null)
 
   def update(timeStamp: Double): Unit = {
-    vr.update()
     fp.update(timeStamp)
+    vr.update()
   }
 }
 

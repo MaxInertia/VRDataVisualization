@@ -16,7 +16,7 @@ sealed abstract class OculusController {
   val Primary_PressEnded: String = "primary press ended"
   val Grip_PressBegan: String = "grip press began"
   val Grip_PressEnded: String = "grip press ended"
-  val Axes_Changed: String = "axes changed"
+  val Axes_Changed: String = "thumbstick axes changed"
   val Disconnected: String = "disconnected"
   // Color options for the controller mesh
   val meshColorRed: Int = 0xFF0000
@@ -25,7 +25,7 @@ sealed abstract class OculusController {
 
   var controllerMesh: MeshBasicMaterial
 
-  def createMesh(color: Int): Mesh = {
+  def createControllerMesh(color: Int): Mesh = {
     val controllerMaterial = new MeshBasicMaterial()
     controllerMaterial.color = new Color(color)
     val controllerMesh = new Mesh(
@@ -64,7 +64,7 @@ object OculusControllerLeft extends OculusController {
 
   def setup(vrc: VRController): Unit = {
     dom.console.log(s"$name Connected!")
-    vrc.add(createMesh(meshColorBlue))
+    vrc.add(createControllerMesh(meshColorBlue))
 
     vrc.addEventListener(Primary_PressBegan, ((event: Event) => {
       dom.console.log("Primary Press Began")
@@ -103,7 +103,7 @@ object OculusControllerLeft extends OculusController {
     }).asInstanceOf[Any => Unit])
 
     vrc.addEventListener(Disconnected, ((event: Event) => {
-      //vrc.parent.remove(vrc)
+      vrc.parent.remove(vrc)
       //TODO: Remove meshes & raycasters associated with this controller
       dom.console.log(s"$name Disconnected!")
     }).asInstanceOf[Any => Unit])
@@ -129,7 +129,7 @@ object OculusControllerRight extends OculusController {
 
   def setup(vrc: VRController): Unit = {
     dom.console.log(s"$name Connected!")
-    vrc.add(createMesh(meshColorRed))
+    vrc.add(createControllerMesh(meshColorRed))
 
     vrc.addEventListener(Primary_PressBegan, ((event: Event) => {
       dom.console.log("Primary Press Began")
@@ -168,7 +168,7 @@ object OculusControllerRight extends OculusController {
     }).asInstanceOf[Any => Unit])
 
     vrc.addEventListener(Disconnected, ((event: Event) => {
-      //vrc.parent.remove(vrc)
+      vrc.parent.remove(vrc)
       //TODO: Remove meshes & raycasters associated with this controller
       dom.console.log(s"$name Disconnected!")
     }).asInstanceOf[Any => Unit])
