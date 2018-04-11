@@ -36,6 +36,7 @@ object CoordinateAxes3D {
         case 1 => positions(i) = y
         case 2 => positions(i) = z
       }
+
       positions(3) += len
       positions(10) += len
       positions(17) += len
@@ -47,7 +48,6 @@ object CoordinateAxes3D {
 
     } else { // Origin of axes is on the back bottom left corner
       val (x, y, z) = (-len, -len, -len)
-
       positions = new Float32Array(15)
       positions(0) = x + 2*len
       positions(1) = y
@@ -63,11 +63,11 @@ object CoordinateAxes3D {
       positions(11) = z
       positions(12) = x
       positions(13) = y + 2*len
-      positions(14) =  z
-
+      positions(14) = z
       colors = new Float32Array(15)
       for (i <- 0 until 15) colors(i) = 0.5.toFloat
     }
+
     geometry.addAttribute("position", new THREE.BufferAttribute(positions, 3))
     geometry.addAttribute("color", new THREE.BufferAttribute(colors, 3))
     geometry.computeBoundingSphere()
@@ -78,29 +78,11 @@ object CoordinateAxes3D {
       gridXZ.rotateZ(3.1415/2)
       val gridZY = new THREE.GridHelper(1,10)
       gridZY.rotateX(3.1415/2)
-
-      gridXZ.updateMatrix()
-      //grids.merge(gridXZ.geometry, gridXZ.matrix, 0)
-      gridXY.updateMatrix()
-      //grids.merge(gridXY.geometry, gridXY.matrix, 0)
-      gridZY.updateMatrix()
-      //grids.merge(gridZY.geometry, gridZY.matrix, 0)
-
-      /*val grids = new THREE.Geometry()
-      val material = new THREE.LineBasicMaterial()
-      material.color = new THREE.Color(0xffffff) // BLACK
-      val mesh = new THREE.Mesh(grids, material)
-
-      THREE.GeometryUtils.merge(gridXZ.geometry, mesh)
-      THREE.GeometryUtils.merge(gridXY.geometry, mesh)
-      THREE.GeometryUtils.merge(gridZY.geometry, mesh)
-
-      axes.add(mesh)*/
-
       axes.add(gridXY)
       axes.add(gridXZ)
       axes.add(gridZY)
     }
+
     axes
   }
 }
