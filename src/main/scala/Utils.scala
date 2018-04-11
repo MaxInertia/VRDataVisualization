@@ -64,8 +64,8 @@ object Utils {
 
   @JSExport("collapse")
   def mergeRegions(): Unit = {
-    env.getRegions(0).position.set(0, 0, -2)
-    env.getRegions(1).position.set(0, 0, -2)
+    env.getRegions(0).position.set(0, 1, -1)
+    env.getRegions(1).position.set(0, 1, -1)
   }
 
   @JSExport("expand")

@@ -29,7 +29,7 @@ object Window {
     document.addEventListener("mousemove", (event: MouseEvent) => {
       mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1
       mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1
-      //dom.console.log("("+ mouse.x +", "+ mouse.y +")") // To check if event is firing
+      //Log("("+ mouse.x +", "+ mouse.y +")") // To check if event is firing
     })
   }
 

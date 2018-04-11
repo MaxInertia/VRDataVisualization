@@ -1,5 +1,7 @@
 package resources
 
+import util.Log
+
 /** Parser for CSVs whose first row contains identifiers for their respective columns,
   * the rest of the elements must be numbers, not expressions (ex: 1+2).
   *
@@ -22,7 +24,7 @@ private[resources] object CSVParser {
     * @return
     */
   def parse(data: String): Array[(String, Array[Double])] = { // TODO: Write tests for this method
-    println("PreProcessing Data...")
+    Log("PreProcessing Data...")
     val temp: Array[String] = data.split("""[^ -~]""").map(_.trim).filter(!_.isEmpty)
 
     // Store each line as an array of strings in an ArrayBuffer
@@ -32,9 +34,9 @@ private[resources] object CSVParser {
     }
 
     val colCount = rows(0).length
-    println(s"\tcolumns: $colCount")
-    for(i <- rows(0).indices) println(s"\t\tcolumn $i id: ${rows(0)(i)}")
-    println(s"\trows:    ${rows.length}")
+    Log(s"\tcolumns: $colCount")
+    for(i <- rows(0).indices) Log(s"\t\tcolumn $i id: ${rows(0)(i)}")
+    Log(s"\trows:    ${rows.length}")
 
     // Create an Array for each column
     var cols = Array[Array[Double]]()
@@ -48,7 +50,7 @@ private[resources] object CSVParser {
         if( isNumber( rows(r)(c) ) )
           cols(c) = cols(c) :+ rows(r)(c).toDouble
         else
-          println(s"WARNING: r${r}c$c Is NAN: ${rows(r)(c)}")
+          Log(s"WARNING: r${r}c$c Is NAN: ${rows(r)(c)}")
       }
     }
 

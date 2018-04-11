@@ -15,7 +15,7 @@
     <script src="js/lib/VRController.js"></script>
     <script src="js/lib/FirstPersonVRControls.js"></script>
     <script src="js/lib/stats.min.js"></script>
-    <script src="js/lib/webvr-polyfill.min.js"></script>
+    <<script src="js/lib/webvr-polyfill.min.js"></script>
     <!-- Internal Project Dependency -->
     <script src="../../../target/scala-2.12/ccm-vr-fastopt.js"></script>
 </head>
@@ -46,33 +46,6 @@
             gl_FragColor = gl_FragColor * texture2D( texture, gl_PointCoord );
             if ( gl_FragColor.a < ALPHATEST ) discard;
         }
-    </script>
-
-    <script>
-        //console.log("IS THIS EVEN RUNNING!?");
-        /*window.ongamepadconnected = function(event) {
-          // All buttons and axes values can be accessed through
-          event.gamepad;
-          console.log("GAMEPAD CONNECTED");
-        };*/
-
-        /*window.addEventListener('vr controller connected', function( event ) {
-             // All buttons and axes values can be accessed through
-             event.gamepad;
-             console.log("VR CONTROLLER CONNECTED!!!!");
-        });
-
-        window.addEventListener('gamepadconnected', function( event ) {
-             // All buttons and axes values can be accessed through
-             event.gamepad;
-             console.log("GAMEPAD CONNECTED?");
-        });*/
-
-        // Note that the API is still vendor-prefixed in browsers implementing it
-        /*window.addEventListener("gamepadconnected", function( event ) {
-             // All buttons and axes values can be accessed through
-             event.gamepad;
-        });*/
     </script>
 
     <div id="scene-container"></div>
@@ -107,13 +80,24 @@
     }
 
     vrDisplay = null;
-    navigator.getVRDisplays().then(function(displays) {
-        if (displays.length > 0) {
-            vrDisplay = displays[0];
-            // Kick off the render loop.
-            vrDisplay.requestAnimationFrame(animate);
-        }
-    });
+    if(navigator.getVRDisplays) {
+        console.log('WebVR 1.1 supported');
+        navigator.getVRDisplays().then(function(displays) {
+            if (displays.length > 0) {
+                vrDisplay = displays[0];
+                console.log("Display object:");
+                console.log(vrDisplay);
+                if(vrDisplay.displayName !== 'Mouse and Keyboard VRDisplay (webvr-polyfill)') {
+                    CCMVR.foundVRHeadset = true;
+                }
+                // Kick off the render loop.
+                vrDisplay.requestAnimationFrame(animate);
+            }
+        });
+    } else {
+
+    }
+
 </script>
 
 </html>

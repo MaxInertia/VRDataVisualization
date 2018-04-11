@@ -5,7 +5,7 @@ import userinput.Controls
 import env.Environment
 import window.Window
 import facades.Stats
-import facades.three.IFThree.{VRControllerManager, WEBVR}
+import facades.three.IFThree.{VRControllerManager, WEBVR, WebGLRendererExt}
 
 /**
   * Created by Dorian Thiessen on 2018-01-05.
@@ -16,21 +16,33 @@ object Main {
   var controls: Controls = _
   var env: Environment = _
   var stats: Stats = _
+  @JSExport("foundVRHeadset")
+  var foundVRHeadset: Boolean = false
 
   @JSExport("init")
   def init(): Unit = {
     // Setup the Environment (Scene, Camera, Renderer) and the Controls (Mouse, Oculus Controllers and Headset)
     val container = dom.document.getElementById("scene-container")
     env = Environment.setup(container)
-
     dom.document.body.appendChild( WEBVR.createButton(env.renderer))
 
-    Window.setupEventListeners(env.camera, env.renderer) // Setup event listeners on the Window
+    if(foundVRHeadset) {
+      dom.console.log("Found headset")
+      env.renderer.asInstanceOf[WebGLRendererExt].vr.enabled = true
+    } else {
+      dom.console.log("Moving camera position")
+      env.camera.position.setY(1.6)
+    }
+
+    Window.setupEventListeners(env.camera, env.renderer)
     controls = Controls.setup(env)
+
     // Add FPS stats to the Window
     stats = new Stats()
     container.appendChild(stats.dom)
-    animate(0) // Trigger the animation cycle
+
+    // This is only needed if we are not using either Oculus or webvr-polyfill
+    //animate(0) // Trigger the animation cycle
   }
 
   @JSExportTopLevel("animate")

@@ -4,11 +4,11 @@ import org.scalajs.{dom, threejs => THREE}
 import scala.scalajs.js
 import scala.scalajs.js.typedarray.Float32Array
 import js.JSConverters._
-
 import plots.PointsBuilder.Prop._
 import plots.PointsBuilder.{Component, makePoints}
 import plots.Plot.PARTICLE_SIZE
 import plots.PointsBuilder.Prop.CleanPlot
+import util.Log
 
 /**
   * Created by Dorian Thiessen on 2018-04-06.
@@ -87,7 +87,7 @@ object PointsBuilder{
     coordinates.map{case (x, y, z) => new THREE.Vector3(x, y, z)}
 
   private def makeShaderMaterial(textureIndex: Int) : THREE.PointsMaterial = {
-    dom.console.log("\tCreating SM material")
+    Log("\tCreating SM material")
 
     val myVertexShader = dom.document.getElementById("vertexshader").textContent
     val myFragmentShader = dom.document.getElementById("fragmentshader").textContent
@@ -149,14 +149,15 @@ object PointsBuilder{
 
       sizes(i) = PARTICLE_SIZE.toFloat
     }
-    dom.console.log("Largest values:")
-    dom.console.log(s"\tx: $maxX")
-    dom.console.log(s"\ty: $maxY")
-    dom.console.log(s"\tz: $maxZ")
-    dom.console.log("Smallest values:")
-    dom.console.log(s"\tx: $minX")
-    dom.console.log(s"\ty: $minY")
-    dom.console.log(s"\tz: $minZ")
+
+    Log("Largest values:")
+    Log(s"\tx: $maxX")
+    Log(s"\ty: $maxY")
+    Log(s"\tz: $maxZ")
+    Log("Smallest values:")
+    Log(s"\tx: $minX")
+    Log(s"\ty: $minY")
+    Log(s"\tz: $minZ")
 
     val geometry = new THREE.BufferGeometry()
     geometry.vertices = vertices.toJSArray

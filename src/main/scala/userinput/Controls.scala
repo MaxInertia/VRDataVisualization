@@ -6,6 +6,7 @@ import window.Window
 import env.Environment
 import facades.three.IFThree._
 import org.scalajs.threejs.{ArrowHelper, Matrix4}
+import util.Log
 
 /**
   * An abstraction over the users method of input.
@@ -17,10 +18,10 @@ class Controls {
   var mouse: THREE.Vector2 = _
   // Oculus Controllers; [0: Left, 1: Right]
   var controllers: Array[VRController] = Array(null, null)
-
+  def controllerConnected: Boolean = controllers(0) != null || controllers(1) != null
   def update(timeStamp: Double): Unit = {
-    fp.update(timeStamp)
     vr.update()
+    if(!controllerConnected) fp.update(timeStamp)
   }
 }
 
@@ -32,7 +33,7 @@ object Controls {
   rayCaster.params.asInstanceOf[RaycasterParametersExt].Points.threshold = 0.015
 
   def getSelectionRayCaster(camera: => THREE.PerspectiveCamera): Option[RayCaster] = {
-    if(instance.controllers(0) == null && instance.controllers(1) == null) {
+    if(!instance.controllerConnected) {
       // No Oculus Controllers connected, assume using mouse
       rayCaster.setFromCamera(getMouse, camera)
       Some(rayCaster)
@@ -40,14 +41,13 @@ object Controls {
       // Return direction a controller is pointing (if activated)
       OculusControllers.getActiveRayCaster
     }
-    // TODO: If using mobile (neither Oculus or Mouse available)
-    // ...
+    // TODO: Mobile devices?
   }
 
   def getMouse: THREE.Vector2 = instance.mouse
 
   def setup(env: Environment): Controls = {
-    dom.console.log("Controls Setup...")
+    Log("Controls Setup...")
     val controls = new Controls()
     instance = controls
 
@@ -78,11 +78,12 @@ object Controls {
         env.scene.add(controller)
 
       } else
-        println("[Controls]\t Unknown controller passed on event: \"vr controller connected\"")
+        Log("[Controls]\t Unknown controller passed on event: \"vr controller connected\"")
     })
 
     // Other Controls
     // TODO: Only initialize fpControls and mouse if no VR Headset detected
+
     controls.fp = new FirstPersonVRControls(env.camera, env.scene)
     controls.mouse = new THREE.Vector2()
     Window.setupMouseEventListener(controls.mouse)

@@ -20,7 +20,7 @@ class CoordinateAxes3D(geometry: THREE.Geometry, material: THREE.LineBasicMateri
 //TODO: CenteredAxes3D; origin matches origin of points in region.
 
 object CoordinateAxes3D {
-  def create(length: Double, centeredOrigin: Boolean, color: Int): CoordinateAxes3D = {
+  def create(length: Double, color: Int, centeredOrigin: Boolean, planeGrids: Boolean = false): CoordinateAxes3D = {
     val len = length.toFloat/2
     val geometry = new THREE.BufferGeometry()
     val material = new THREE.LineBasicMaterial()
@@ -71,6 +71,36 @@ object CoordinateAxes3D {
     geometry.addAttribute("position", new THREE.BufferAttribute(positions, 3))
     geometry.addAttribute("color", new THREE.BufferAttribute(colors, 3))
     geometry.computeBoundingSphere()
-    new CoordinateAxes3D(geometry, material.asInstanceOf[LineBasicMaterial])
+    val axes = new CoordinateAxes3D(geometry, material.asInstanceOf[LineBasicMaterial])
+    if(planeGrids) {
+      val gridXZ = new THREE.GridHelper(1,10)
+      val gridXY = new THREE.GridHelper(1,10)
+      gridXZ.rotateZ(3.1415/2)
+      val gridZY = new THREE.GridHelper(1,10)
+      gridZY.rotateX(3.1415/2)
+
+      gridXZ.updateMatrix()
+      //grids.merge(gridXZ.geometry, gridXZ.matrix, 0)
+      gridXY.updateMatrix()
+      //grids.merge(gridXY.geometry, gridXY.matrix, 0)
+      gridZY.updateMatrix()
+      //grids.merge(gridZY.geometry, gridZY.matrix, 0)
+
+      /*val grids = new THREE.Geometry()
+      val material = new THREE.LineBasicMaterial()
+      material.color = new THREE.Color(0xffffff) // BLACK
+      val mesh = new THREE.Mesh(grids, material)
+
+      THREE.GeometryUtils.merge(gridXZ.geometry, mesh)
+      THREE.GeometryUtils.merge(gridXY.geometry, mesh)
+      THREE.GeometryUtils.merge(gridZY.geometry, mesh)
+
+      axes.add(mesh)*/
+
+      axes.add(gridXY)
+      axes.add(gridXZ)
+      axes.add(gridZY)
+    }
+    axes
   }
 }
