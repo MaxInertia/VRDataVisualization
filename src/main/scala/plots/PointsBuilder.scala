@@ -97,11 +97,15 @@ object PointsBuilder{
     params.vertexShader = myVertexShader
     params.uniforms = new js.Object {
       val color: js.Object = new js.Object {
-        val value: THREE.Color = new THREE.Color(Color.WHITE)
+        val value: THREE.Color = Colors.White
       }
       val texture: js.Object = new js.Object {
         val value: THREE.Texture = resources.Res.getTexture(textureIndex)
       }
+      // Only required for pulsating points
+      /*val u_time: js.Object = new js.Object {
+        val value: Float = 0
+      }*/
     }
     params.alphaTest = 0.5
 

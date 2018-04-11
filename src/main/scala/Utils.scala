@@ -1,7 +1,7 @@
 import Main.env
 import facades.three.IFThree.{LineSegments, WireframeGeometry}
 import org.scalajs.{threejs => THREE}
-import plots.{Color, Plot}
+import plots.{Colors, Plot}
 import scala.scalajs.js.annotation.{JSExport, JSExportTopLevel}
 
 /**
@@ -28,7 +28,7 @@ object Utils {
         val params: THREE.MeshBasicMaterialParameters =
           new scala.scalajs.js.Object()
             .asInstanceOf[THREE.MeshBasicMaterialParameters]
-        params.color = Color.WHITE
+        params.color = Colors.Hex.WHITE
         new THREE.MeshBasicMaterial(params)
       }
 

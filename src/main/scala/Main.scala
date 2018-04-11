@@ -30,8 +30,8 @@ object Main {
       dom.console.log("Found headset")
       env.renderer.asInstanceOf[WebGLRendererExt].vr.enabled = true
     } else {
-      dom.console.log("Moving camera position")
-      env.camera.position.setY(1.6)
+      // This doesn't move camera! TODO: Move camera up ~1.6m when not using Oculus
+      //env.camera.translateY(1.6)
     }
 
     Window.setupEventListeners(env.camera, env.renderer)

@@ -1,7 +1,9 @@
 package plots
 
+import facades.three.IFThree.GridHelperExt
 import org.scalajs.threejs.LineBasicMaterial
 import org.scalajs.{threejs => THREE}
+
 import scala.scalajs.js
 import js.typedarray.Float32Array
 
@@ -20,11 +22,11 @@ class CoordinateAxes3D(geometry: THREE.Geometry, material: THREE.LineBasicMateri
 //TODO: CenteredAxes3D; origin matches origin of points in region.
 
 object CoordinateAxes3D {
-  def create(length: Double, color: Int, centeredOrigin: Boolean, planeGrids: Boolean = false): CoordinateAxes3D = {
+  def create(length: Double, color: THREE.Color, centeredOrigin: Boolean, planeGrids: Boolean = false): CoordinateAxes3D = {
     val len = length.toFloat/2
     val geometry = new THREE.BufferGeometry()
     val material = new THREE.LineBasicMaterial()
-    material.color = new THREE.Color(color)
+    material.color = color
     var positions: Float32Array = null
     var colors: Float32Array = null
 
@@ -72,11 +74,14 @@ object CoordinateAxes3D {
     geometry.addAttribute("color", new THREE.BufferAttribute(colors, 3))
     geometry.computeBoundingSphere()
     val axes = new CoordinateAxes3D(geometry, material.asInstanceOf[LineBasicMaterial])
-    if(planeGrids) {
-      val gridXZ = new THREE.GridHelper(1,10)
-      val gridXY = new THREE.GridHelper(1,10)
+    if(planeGrids) { // TODO: Account for the case when the origin is not centered
+      val gridXZ = new GridHelperExt(1, 10, color, color)
+      //val gridXZ = new GridHelperExt(1, 10, Colors.Blue, Colors.Blue)
+      val gridXY = new GridHelperExt(1, 10, color, color)
+      //val gridXY = new GridHelperExt(1, 10, Colors.Red, Colors.Red)
       gridXZ.rotateZ(3.1415/2)
-      val gridZY = new THREE.GridHelper(1,10)
+      val gridZY = new GridHelperExt(1, 10, color, color)
+      //val gridZY = new GridHelperExt(1, 10, Colors.Green, Colors.Green)
       gridZY.rotateX(3.1415/2)
       axes.add(gridXY)
       axes.add(gridXZ)

@@ -12,7 +12,7 @@ import userinput.{Controls, Interactions}
 import window.Window
 import resources.Res.Texture
 import Environment.{PerspectiveCamera, Scene, WebGLRenderer}
-import userinput.Controls.{RayCaster, rayCaster}
+import userinput.Controls.RayCaster
 import util.Log
 
 /**
@@ -52,17 +52,17 @@ class Environment(val scene: Scene,
       case 1 =>
         regions(0).position.set(0, 1, -2) // north
       case 2 =>
-        regions(0).position.set(-0.6, 1, -1) // north west
-        regions(1).position.set(0.6,  1, -1) // north east
+        regions(0).position.set(-1, 1, -1) // north west
+        regions(1).position.set(1, 1, -1)  // north east
       case 3 =>
-        regions(0).position.set(-2.1, 1, -2) // north west
-        regions(1).position.set(0,    1, -2) // north
-        regions(2).position.set(2.1,  1, -2) // north east
+        regions(0).position.set(-1, 1, -1) // north west
+        regions(1).position.set(1, 1, -1)  // north east
+        regions(2).position.set(-2, 1, 0)  // west
       case 4 =>
-        regions(0).position.set(-2.7, 1, -2) // north west
-        regions(1).position.set(-1.1, 1, -2) // north-north west
-        regions(2).position.set(1.1,  1, -2) // north-north east
-        regions(3).position.set(2.7,  1, -2) // north east
+        regions(0).position.set(-1, 1, -1) // north west
+        regions(1).position.set(1, 1, -1)  // north east
+        regions(2).position.set(-2, 1, 0)  // west
+        regions(3).position.set(2, 1, 0)   // east
     }
   }
 
@@ -120,8 +120,21 @@ class Environment(val scene: Scene,
     val maybeRC: Option[THREE.Raycaster] = Controls.getSelectionRayCaster(camera)
     if(maybeRC.nonEmpty) {
       // TODO: Still find a better way to ignore points while waiting for the texture to be loaded
-      if (Regions().length >= 2) pointSelection(maybeRC.get)
+      if (Regions().length >= 2) {
+        // Cause points to pulsate; requires adding u_time to Points.uniforms, and changing shaders in index.html
+        /*def pulsate(region: Int, rate: Double): Unit = {
+          val material = getActivePlot(region).getPoints
+            .material.asInstanceOf[THREE.ShaderMaterial]
+          val utime = material.uniforms.asInstanceOf[Uniform].u_time.asInstanceOf[UTime]
+          utime.value = utime.value + rate.toFloat
+        }
+        pulsate(0, 0.1)
+        pulsate(1, 0.1)*/
+
+        pointSelection(maybeRC.get)
+      }
     }
+
     renderer.render(scene, camera)
   }
 
@@ -203,11 +216,11 @@ object Environment {
       if (sm.isEmpty) return
       env.addPlots(plotNumber, sm)
       env.loadPlot(regionID = plotNumber, plotID = 0)
-      val axes = CoordinateAxes3D.create(1, color = Color.BLACK, centeredOrigin = true, planeGrids = false)
+      val axes = CoordinateAxes3D.create(1, color = Colors.Black, centeredOrigin = true, planeGrids = false)
       env.Regions(plotNumber).add(axes) // Add coordinate axes (TEMPORARY)
     }
-    makeSingle(texture, 0, "SM1_timeSeries", Color.BLUE_HUE_SHIFT)
-    makeSingle(texture, 1, "SM2_timeSeries", Color.RED_HUE_SHIFT)
+    makeSingle(texture, 0, "SM1_timeSeries", Colors.RED_HUE_SHIFT) // prev blue
+    makeSingle(texture, 1, "SM2_timeSeries", Colors.RED_HUE_SHIFT)
   }
 
   /**
@@ -219,6 +232,7 @@ object Environment {
     renderer.setSize(Window.width, Window.height)
     renderer.devicePixelRatio = Window.devicePixelRatio
     renderer.vr.enabled = false
+    //renderer.shadowMap.enabled = true
     renderer
   }
 
@@ -239,52 +253,89 @@ object Environment {
     * Creates the scene, the space in which objects can be placed for viewing.
     * @return THREE.Scene instance
     */
-  private def makeScene(): Scene = {
+  private def makeScene(): Scene = { // TODO: Make a SceneBuilder?
     val scene = new Scene()
-    scene.background = new THREE.Color(0x666666)
+    scene.background = new THREE.Color(0x7EC0EE)
 
     val delta = 0.001 // distance of grid from planes
 
+    def addRoof(height: Double) { // TODO: Seem unable to cast light on the roof?
+      /*val material = new THREE.MeshLambertMaterial()
+      material.color = new THREE.Color(0xffffff)
+      val roofGeometry = new THREE.PlaneGeometry(6, 6, 32)
+      val roof = new THREE.Mesh(roofGeometry, material)
+      roof.translateY(height)
+      roof.rotateX(3.1415 / 2)*/
+      // Add same grid on floor
+      val roofGrid: THREE.GridHelper = new GridHelperExt(6, 6, Colors.Black, Colors.Black)
+      roofGrid.position.setY(height - delta)
+      scene.add(roofGrid)
+      //scene.add(roof)
+    }
 
     def addFloor(): Unit = {
       val floorMaterial = new THREE.MeshLambertMaterial()
-      floorMaterial.color = new THREE.Color(0xdddddd)
+      floorMaterial.color = new THREE.Color(0xffffff)
       val floorGeometry = new THREE.PlaneGeometry( 6, 6, 32 )
       val floor = new THREE.Mesh(floorGeometry, floorMaterial)
+      floor.receiveShadow = true
       floor.rotateX(-3.1415/2)
       // Add 6x6m grid broken into 36 sections
-      val floorGrid: THREE.GridHelper = new THREE.GridHelper(6,6)
+      val floorGrid: THREE.GridHelper = new GridHelperExt(6, 6, Colors.Black, Colors.Black)
       floorGrid.position.setY(0.001)
+      floorGrid.material.linewidth = 2.0
       scene.add(floorGrid)
       scene.add(floor)
+
+      var boxMaterial = new THREE.MeshLambertMaterial()
+      var boxGeometry = new THREE.CubeGeometry(1, 0.35, 1)
+      def addCornerCubes(x: Double, y: Double, z: Double) {
+        var boxGeo = new THREE.CubeGeometry(1, y, 1)
+        var cube = new THREE.Mesh(boxGeo, boxMaterial)
+        cube.castShadow = true
+        cube.receiveShadow = true
+        cube.position.set(x, y/2, z)
+        scene.add(cube)
+      }
+      addCornerCubes(2.5, 0.35, 2.5)
+      addCornerCubes(-2.5, 0.35, 2.5)
+      addCornerCubes(-2.5, 0.35, -2.5)
+      addCornerCubes(2.5, 0.35, -2.5)
+
+      addCornerCubes(2.5, 0.25, 1.5)
+      addCornerCubes(-2.5, 0.25, 1.5)
+      addCornerCubes(-2.5, 0.25, -1.5)
+      addCornerCubes(2.5, 0.25, -1.5)
+
+      addCornerCubes(1.5, 0.25, 2.5)
+      addCornerCubes(-1.5, 0.25, 2.5)
+      addCornerCubes(-1.5, 0.25, -2.5)
+      addCornerCubes(1.5, 0.25, -2.5)
     }
 
-    def addRoof(height: Double) {
-      val material = new THREE.MeshBasicMaterial()
-      material.color = new THREE.Color(0xbbbbbb)
-      val roofGeometry = new THREE.PlaneGeometry(6, 6, 32)
-      val roof = new THREE.Mesh(roofGeometry, material)
-      roof.translateY(3)
-      roof.rotateX(3.1415 / 2)
-      // Add same grid on floor
-      val roofGrid: THREE.GridHelper = new THREE.GridHelper(6, 6)
-      roofGrid.position.setY(height - delta)
-      scene.add(roofGrid)
-      scene.add(roof)
-    }
+    val floorLight = makeLight(3, 0)
+    scene.add(floorLight)
 
-    val light = makeLight()
-    scene.add(light)
+    /*val dLight = new THREE.DirectionalLight(intensity = 0.2)
+    dLight.rotateX(-3.1415/2)
+    dLight.translateZ(5)
+    dLight.castShadow = true
+    scene.add(dLight)*/
+
+    //val roofLight = makeLight(0.4, 3.1415)
+    //scene.add(roofLight)
+
     addFloor()
     addRoof(3)
     scene
   }
 
-  def makeLight(): THREE.Light = {
+  def makeLight(yPos: Double, xOrientation: Double): THREE.Light = {
     val spotlight = new THREE.SpotLight(0xffffff, 0.5)
+    spotlight.distance = 10
     spotlight.castShadow = true
-    spotlight.position.set(0, 2.6, 0)
-    spotlight.rotation.set(0,0,0)
+    spotlight.position.set(0, yPos, 0)
+    spotlight.rotateX(xOrientation)
     spotlight
   }
 

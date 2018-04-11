@@ -97,6 +97,7 @@ object IFThree {
   @JSGlobal("THREE.WebGLRenderer")
   class WebGLRendererExt extends WebGLRenderer {
     var vr: WebVRManager = js.native
+    var shadowMap: ShadowMap = js.native
     def animate(callback: () => _): Unit = js.native
   }
   @js.native
@@ -114,5 +115,48 @@ object IFThree {
   trait SomeEvent extends js.Any {
     val detail: js.Dynamic = js.native
   }
+  @js.native
+  trait Uniform extends js.Any {
+    val u_time: UTime = js.native
+  }
+  @js.native
+  trait UTime extends js.Any {
+    var value: Float = js.native
+  }
 
+  @js.native
+  trait MaterialExt extends Material {
+    var shadowSide: Int = js.native
+  }
+
+  @js.native
+  trait ShadowMap extends js.Any {
+    var enabled: Boolean = js.native
+  }
+
+  @js.native
+  trait LightExt extends Light {
+    var shadow: Shadow = js.native
+  }
+  @js.native
+  trait Shadow extends js.Any {
+    var camera: ShadowCamera = js.native
+    var mapSize: MapSize = js.native
+  }
+  @js.native
+  trait ShadowCamera extends Camera {
+    var near: Double = js.native
+    var far: Double = js.native
+    var fov: Double = js.native
+  }
+
+  @js.native
+  trait MapSize extends js.Any {
+    var height: Double = js.native
+    var width: Double = js.native
+  }
+
+  @js.native
+  @JSGlobal("THREE.GridHelper")
+  class GridHelperExt(size: Double, step: Double, color1: Color, color2: Color) extends GridHelper(size, step) {}
 }

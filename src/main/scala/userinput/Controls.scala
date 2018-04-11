@@ -64,6 +64,8 @@ object Controls {
     });*/
 
     controls.vr = new VRControls(env.camera)
+    //controls.vr.standing = false
+    //controls.vr.userHeight = 1.6
     dom.window.addEventListener("vr controller connected", (event: SomeEvent) => {
       val controller: VRController = event.detail.asInstanceOf[VRController]
 
