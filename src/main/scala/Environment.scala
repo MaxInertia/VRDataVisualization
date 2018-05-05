@@ -260,17 +260,17 @@ object Environment {
     val delta = 0.001 // distance of grid from planes
 
     def addRoof(height: Double) { // TODO: Seem unable to cast light on the roof?
-      /*val material = new THREE.MeshLambertMaterial()
+      val material = new THREE.MeshLambertMaterial()
       material.color = new THREE.Color(0xffffff)
       val roofGeometry = new THREE.PlaneGeometry(6, 6, 32)
       val roof = new THREE.Mesh(roofGeometry, material)
       roof.translateY(height)
-      roof.rotateX(3.1415 / 2)*/
+      roof.rotateX(3.1415 / 2)
       // Add same grid on floor
       val roofGrid: THREE.GridHelper = new GridHelperExt(6, 6, Colors.Black, Colors.Black)
       roofGrid.position.setY(height - delta)
       scene.add(roofGrid)
-      //scene.add(roof)
+      scene.add(roof)
     }
 
     def addFloor(): Unit = {
@@ -326,7 +326,7 @@ object Environment {
     //scene.add(roofLight)
 
     addFloor()
-    addRoof(3)
+    addRoof(6)
     scene
   }
 
