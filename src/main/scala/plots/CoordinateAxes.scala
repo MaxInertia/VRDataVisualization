@@ -1,6 +1,6 @@
 package plots
 
-import facades.three.IFThree.GridHelperExt
+import facades.IFThree.GridHelperExt
 import org.scalajs.threejs.LineBasicMaterial
 import org.scalajs.{threejs => THREE}
 

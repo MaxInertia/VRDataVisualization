@@ -4,7 +4,7 @@ import org.scalajs.dom.document
 import org.scalajs.{dom, threejs => THREE}
 import window.Window
 import env.Environment
-import facades.three.IFThree._
+import facades.IFThree._
 import org.scalajs.threejs.{ArrowHelper, Matrix4}
 import util.Log
 

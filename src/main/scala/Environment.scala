@@ -1,6 +1,6 @@
 package env
 
-import facades.three.IFThree._
+import facades.IFThree._
 import org.scalajs.{threejs => THREE}
 import org.scalajs.dom
 

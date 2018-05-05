@@ -1,5 +1,5 @@
 import Main.env
-import facades.three.IFThree.{LineSegments, WireframeGeometry}
+import facades.IFThree.{LineSegments, WireframeGeometry}
 import org.scalajs.{threejs => THREE}
 import plots.{Colors, Plot}
 import scala.scalajs.js.annotation.{JSExport, JSExportTopLevel}

@@ -1,7 +1,7 @@
 package userinput
 
 import env.Environment
-import facades.three.IFThree.{RaycasterParametersExt, VRController}
+import facades.IFThree.{RaycasterParametersExt, VRController}
 import org.scalajs.dom
 import org.scalajs.dom.raw.Event
 import org.scalajs.threejs.{ArrowHelper, BoxGeometry, Color, CylinderGeometry, Matrix4, Mesh, MeshBasicMaterial, Object3D, SceneUtils, Vector3}
