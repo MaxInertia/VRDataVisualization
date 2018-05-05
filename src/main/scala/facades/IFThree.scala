@@ -1,6 +1,6 @@
-package facades.three
+package facades
 
-import org.scalajs.dom.raw.{Element, Event}
+import org.scalajs.dom.raw.Element
 import org.scalajs.threejs._
 
 import scala.scalajs.js
