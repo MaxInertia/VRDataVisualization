@@ -1,141 +1,164 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <title>CCM-VR</title>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0, shrink-to-fit=no">
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-    <link rel="stylesheet" type="text/css" href="css/style.css"/>
-    <!-- External Project Dependencies -->
-    <script src="js/lib/three.js"></script>
-    <script src="js/lib/WebVR.js"></script>
-    <script src="js/lib/VRControls.js"></script>
-    <script src="js/lib/VRController.js"></script>
-    <script src="js/lib/FirstPersonVRControls.js"></script>
-    <script src="js/lib/stats.min.js"></script>
-    <<script src="js/lib/webvr-polyfill.min.js"></script>
-    <!-- Internal Project Dependency -->
-    <script src="../../../target/scala-2.12/ccm-vr-fastopt.js"></script>
-</head>
-<body onload="CCMVR.init()">
-    <div id="buttons">
-        <button id="fullscreen">Fullscreen</button>
-        <button id="vr">VR (WebVR/Mobile only)</button>
-    </div>
+<html>
+    <head>
+        <title>CCM Options</title>
+        <meta charset="utf-8">
 
-    <!-- Shaders for pulsating points -->
-    <!--<script type="x-shader/x-vertex" id="vertexshader2">
+        <!-- styles for the first page -->
+        <!--<link rel="stylesheet" href="css/optionWindowStyle.css">-->
 
-        uniform float u_time;
+        <!-- jQuery library -->
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
 
-        attribute float size;
-        attribute vec3 customColor;
+        <!-- Source of the three links below: https://getbootstrap.com/docs/4.0/getting-started/introduction/ -->
 
-        varying vec3 vColor;
+        <!-- Latest compiled and minified CSS -->
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"
+        integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
 
-        void main() {
-            vColor.x = customColor.x *  abs(sin(u_time));
-            vColor.y = customColor.y *  abs(sin(u_time));
-            vColor.z = customColor.z *  abs(sin(u_time));
-            vec4 mvPosition = modelViewMatrix * vec4( position, 1.0 );
-            gl_PointSize = size * ( 300.0 / - mvPosition.z );
-            gl_Position = projectionMatrix * mvPosition;
-        }
-    </script>
-    <script type="x-shader/x-fragment" id="fragmentshader2">
-        #ifdef GL_ES
-            precision mediump float;
-        #endif
+        <!-- Optional theme -->
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css"
+        integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
 
-        //uniform float u_time;
-        uniform vec3 color;
-        uniform sampler2D texture;
+        <!-- Latest compiled and minified JavaScript -->
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"
+        integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+    </head>
+    <body>
+        <h1 style="text-align: center;padding-top: 50px;"> 3D Visualization Tool for Shadow Manifolds </h1>
+        <br><br><br>
 
-        varying vec3 vColor;
+        <!-- Time Series Input with Options -->
+        <div class="row">
+            <div class="col-sm-1"></div>
 
-        void main() {
-            vec3 aFloat = vColor * color;
-            gl_FragColor = vec4( aFloat , 1.0 );
-            gl_FragColor = gl_FragColor * texture2D( texture, gl_PointCoord );
-            if ( gl_FragColor.a < ALPHATEST ) discard;
-        }
-    </script>-->
+            <!-- Time Series 1 -->
+            <div class="col-sm-4 well" style="background-color:">
+                <h3 style="text-align:center;">Time Series 1</h3><br>
+                <input type="file" id="SM1_timeSeries" style="padding-left: 30px;"/><br>
+                <label style="padding-left:32px; padding-right:67px; font-weight: 100; /*font-size: 10px;*/">Tau value:</label>
+                <input id="SM1_tau" type="text" placeholder="1 - 99" style="border: inset;"/><br><br>
+                <label style="padding-left: 30px; padding-right: 12px; font-weight: 100; font-size: 10px;">Apply...</label><br>
+                <label style="padding-left: 30px; padding-right: 12px; font-weight: 100; /*font-size: 10px;*/">First Differentiation?</label>
+                <input type="checkbox" id="SM1_firstDiff"/><br>
+                <label style="padding-left: 30px; padding-right: 12px; font-weight: 100; /*font-size: 10px;*/">Standardization?</label>
+                <input type="checkbox" id="SM1_standardize"/><br>
+            </div>
+            <div class="col-sm-2"></div>
 
-    <script type="x-shader/x-vertex" id="vertexshader">
-        attribute float size;
-        attribute vec3 customColor;
-        varying vec3 vColor;
-        void main() {
-            vColor = customColor;
-            vec4 mvPosition = modelViewMatrix * vec4( position, 1.0 );
-            gl_PointSize = size * ( 300.0 / - mvPosition.z );
-            gl_Position = projectionMatrix * mvPosition;
-        }
-    </script>
+            <!-- Time Series 2 -->
+            <div class="col-sm-4 well" style="background-color:">
+                <h3 style="text-align:center;">Time Series 2</h3><br>
+                <input type="file" id="SM2_timeSeries" style="padding-left: 30px;"/><br>
+                <label style="padding-left:32px; padding-right:67px; font-weight: 100; /*font-size: 10px;*/">Tau value</label>
+                <input id="SM2_tau" type="text" placeholder="1 - 99" style="border: inset;"/><br><br>
+                <label style="padding-left: 30px; padding-right: 12px; font-weight: 100; font-size: 10px;">Apply...</label><br>
+                <label style="padding-left: 30px; padding-right: 12px; font-weight: 100; /*font-size: 10px;*/">First Differentiation?</label>
+                <input type="checkbox" id="SM2_firstDiff"/><br>
+                <label style="padding-left: 30px; padding-right: 12px; font-weight: 100; /*font-size: 10px;*/">Standardization?</label>
+                <input type="checkbox" id="SM2_standardize"/><br>
+            </div>
 
-    <script type="x-shader/x-fragment" id="fragmentshader">
-        uniform vec3 color;
-        uniform sampler2D texture;
-        varying vec3 vColor;
-        void main() {
-            gl_FragColor = vec4( color * vColor, 1.0 );
-            gl_FragColor = gl_FragColor * texture2D( texture, gl_PointCoord );
-            if ( gl_FragColor.a < ALPHATEST ) discard;
-        }
-    </script>
+            <div class="col-sm-1"></div>
+        </div>
 
-    <div id="scene-container"></div>
+        <!-- Apply options - Loads scene if inputs are valid -->
+        <div class="row" style="text-align: center">
+            <button style="position: center" onclick="validateForm()">Apply configuration</button>
+            <p>OR<p>
+            <button style="position: center" onclick="loadSample()">Use sample</button>
+        </div>
+        <br><br><br>
 
-</body>
+        <!-- Credits footer -->
+        <footer class="footer">
+            <div class="container">
+                <br>
+                <span>
+                    <p id=welc2 style="text-align:center;">A Tool developed for 3D Visualization & Manipulation of Time Series and their Shadow Manifolds</p>
+                    <p class="welbody" style="text-align:center;">Developed by Cephil Lab Usask</p>
+                </span>
+            </div>
+        </footer>
 
-<script>
-    WebVRConfig = {
-        BUFFER_SCALE: 1.0
-    };
+        <script type="text/JavaScript">
 
-    function onVRDisplayPresentChange() {
-        console.log('onVRDisplayPresentChange');
-        //onResize();
-    }
-
-    window.addEventListener('vrdisplaypresentchange', onVRDisplayPresentChange);
-
-    // Button click handlers.
-    document.querySelector('button#fullscreen').addEventListener('click', function() {
-        enterFullscreen(CCMVR.renderer.domElement);
-    });
-    document.querySelector('button#vr').addEventListener('click', function() {
-        vrDisplay.requestPresent([{source: CCMVR.renderer.domElement}]);
-    });
-
-    function enterFullscreen (el) {
-        if (el.requestFullscreen) el.requestFullscreen();
-        else if (el.mozRequestFullScreen) el.mozRequestFullScreen();
-        else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
-        else if (el.msRequestFullscreen) el.msRequestFullscreen();
-    }
-
-    vrDisplay = null;
-    if(navigator.getVRDisplays) {
-        console.log('WebVR 1.1 supported');
-        navigator.getVRDisplays().then(function(displays) {
-            if (displays.length > 0) {
-                vrDisplay = displays[0];
-                console.log("Display object:");
-                console.log(vrDisplay);
-                if(vrDisplay.displayName !== 'Mouse and Keyboard VRDisplay (webvr-polyfill)') {
-                    CCMVR.foundVRHeadset = true;
-                }
-                // Kick off the render loop.
-                vrDisplay.requestAnimationFrame(animate);
+            function loadSample() {
+                localStorage.setItem("showSamples", "true");
+                window.location.href='index.html'
             }
-        });
-    } else {
 
-    }
+            function validateForm() {
+                var regexp1 = new RegExp("[^1-99]");
+                var tau1 = $("#SM1_tau").val();
+                var tau2 = $("#SM2_tau").val();
+                var success = true;
 
-</script>
+                if(regexp1.test(tau1) || tau1 == "") {
+                    alert("Tau for Time Series 1 is invalid: Must be an integer between 1 and 99");
+                    success = false;
+                }
 
+                if(regexp1.test(tau2) || tau2 == "") {
+                    alert("Tau for Time Series 2 is invalid: Must be an integer between 1 and 99");
+                    success = false;
+                }
+
+                if(!success) { return false; }
+
+                // Storing options in local browser storage
+
+                console.log("SM1_tau: " + document.getElementById("SM1_tau").value);
+                console.log("SM1_firstDiff: " + $("#SM1_firstDiff").prop('checked'));
+                console.log("SM1_standardize: " + $("#SM1_standardize").prop('checked')); //is('checked')
+                localStorage.setItem("SM1_tau", tau1);
+                localStorage.setItem("SM1_firstDiff", $("#SM1_firstDiff").prop('checked'));
+                localStorage.setItem("SM1_standardize",  $("#SM1_standardize").prop('checked'));
+
+                console.log("SM2_tau: " + document.getElementById("SM2_tau").value);
+                console.log("SM2_firstDiff: " +  $("#SM2_firstDiff").prop('checked'));
+                console.log("SM2_standardize: " +  $("#SM2_standardize").prop('checked'));
+                localStorage.setItem("SM2_tau", tau2);
+                localStorage.setItem("SM2_firstDiff",  $("#SM2_firstDiff").prop('checked'));
+                localStorage.setItem("SM2_standardize",  $("#SM2_standardize").prop('checked'));
+
+                loadTimeSeries();
+            }
+
+            var filesLoaded = 0;
+            var timeSeries1 = [];
+            var timeSeries2 = [];
+
+            function loadTimeSeries() {
+
+                function loadCSV(fileInput) {
+                    var csv = document.getElementById(fileInput);
+                    console.log("File: "+csv.files[0]);
+
+                    var reader = new FileReader();
+                    // Other reader event handlers: onabort, onerror, onloadstart, onloadend, onprogress
+                    reader.onload = function(e) {
+                        //console.log("reader.result: \n"+ reader.result);
+
+                        // Storing dataset in local browser storage
+                        if(filesLoaded==0) {
+                            localStorage.setItem("SM1_timeSeries", reader.result);
+                        } else {
+                            localStorage.setItem("SM2_timeSeries", reader.result);
+                            window.location.href='index.html'
+                        }
+
+                        filesLoaded = filesLoaded + 1;
+                    };
+
+                    reader.readAsText(csv.files[0], 'UTF-8');
+                }
+
+                localStorage.setItem("showSamples", "false");
+                loadCSV("SM1_timeSeries");
+                loadCSV("SM2_timeSeries");
+            }
+
+        </script>
+
+    </body>
 </html>
