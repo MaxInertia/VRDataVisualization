@@ -81,12 +81,12 @@ class Environment(val scene: Scene,
     * @param regionID The region the plot belongs to. (either 0 or 1)
     * @return The Shadow Manifold
     */
-  def getActivePlot(regionID: Int): Plot = plots3D(regionID).get(active(regionID))
-  def getPlot(regionID: Int, plotID: Int): Plot = plots3D(regionID).get(plotID)
+  def getActivePlot(regionID: Int): Plot = plots3D(regionID % 2).get(active(regionID))
+  def getPlot(regionID: Int, plotID: Int): Plot = plots3D(regionID % 2).get(plotID)
 
   def nextPlot(regionID: Int) : Unit = {
     if(active.length <= regionID) loadPlot(regionID, 0)
-    else loadPlot(regionID, (active(regionID) + 1) % plots3D(regionID).get.length)
+    else loadPlot(regionID, (active(regionID) + 1) % plots3D(regionID % 2).get.length)
   }
 
   /**
