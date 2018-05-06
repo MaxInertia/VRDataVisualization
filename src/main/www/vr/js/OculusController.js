@@ -1,9 +1,13 @@
 /**
  * @author mrdoob / http://mrdoob.com
  * @author stewdio / http://stewd.io
- * @author maxinertia (Vive -> Oculus) - WIP: Incomplete
+ * @author maxinertia / https://github.com/maxinertia
  */
 
+/** 
+  * Gamepad wrapper for using Oculus Controllers with Three.js
+  * Modified version of ViveController.js from the Three.js R92 release
+  */
 THREE.OculusController = function ( id ) {
 
     THREE.Object3D.call( this );
