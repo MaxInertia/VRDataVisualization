@@ -147,19 +147,44 @@ class Environment(val scene: Scene,
     val plot1 = getActivePlot(0)
     val plot2 = getActivePlot(1)
     var (results1, results2)= ((-1, -1), (-1, -1))
+
     // Intersections with the first plot
     if(intersects(0).nonEmpty) results1 = Interactions.on(plot1, intersects(0))
+
     // Intersections with the second plot
     if(intersects(1).nonEmpty) results2 = Interactions.on(plot2, intersects(1))
 
-    // TODO: This may be specific use case for SM, not general
+    // TODO: Make this optional functionality when there are at least 2 plots showing.
     // Selecting point in opposing plot
-    val (rem1, add1) = (results1._1, results1._2)
+    /*val (rem1, add1) = (results1._1, results1._2)
     val (rem2, add2) = (results2._1, results2._2)
-    if(rem1 != -1) plot2.deselect(rem1)
     if(add1 != -1) plot2.select(add1)
-    if(rem2 != -1) plot1.deselect(rem2)
     if(add2 != -1) plot1.select(add2)
+    if(rem1 != -1 && !plot2.savedSelections.contains(rem1)) plot2.deselect(rem1)
+    if(rem2 != -1 && !plot1.savedSelections.contains(rem2)) plot1.deselect(rem2)*/
+  }
+
+  def saveSelections(): Unit = {
+    for(i <- 0 to 1) {
+      val plot = plots3D(i).get(active(i))
+      if(plot.selections(0) != -1) {
+        dom.console.log(s"Plot $i saving point ${plot.selections(0)}")
+        plot.savedSelections += plot.selections(0)
+        plot.selections(0) = -1
+      } else {
+        dom.console.log(s"Plot $i has a selection of -1")
+      }
+    }
+  }
+
+  def clearSelections(): Unit = {
+    for(i <- 0 to 1) {
+      val plot = plots3D(i).get(active(i))
+      if(plot.selections(0) != -1) {
+        plot.savedSelections += plot.selections(0)
+        plot.selections(0) = -1
+      }
+    }
   }
 }
 

@@ -14,6 +14,7 @@ trait Plot {
   var hue: Double = _
   val numPoints: Int = getSizesAttribute.array.asInstanceOf[Float32Array].length // hmm..
 
+  var savedSelections: Set[Int] = Set[Int]()
   var selections: Array[Int] = Array(-1)
   def getPoints: Points
 

@@ -74,6 +74,7 @@ object Controls {
     controls.vr.standing = false */
 
     // TODO: What if this event is fired before reaching this point? Can it miss it? Possibly add a listener earlier.
+    // OR remove VRController.js and manually handle controller retrieval and state updates...
     dom.window.addEventListener("vr controller connected", (event: SomeEvent) => {
       val controller: VRController = event.detail.asInstanceOf[VRController]
 
@@ -95,7 +96,8 @@ object Controls {
 
     controls.fp = new FirstPersonVRControls(env.camera, env.scene)
     controls.mouse = new THREE.Vector2()
-    Window.setupMouseEventListener(controls.mouse)
+    Window.setupEventListener_MouseMove(controls.mouse)
+    Window.setupEventListener_MouseDoubleClick(controls.mouse, env)
     controls
   }
 }
