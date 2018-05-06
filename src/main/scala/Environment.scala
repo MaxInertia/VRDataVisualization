@@ -139,29 +139,16 @@ class Environment(val scene: Scene,
   }
 
   def pointSelection(rayCaster: RayCaster): Unit = {
-    // Retrieve intersections on the available inputs ray caster
-    val intersects: Array[scalajs.js.Array[THREE.Intersection]] = Array(
-      rayCaster.intersectObject(getActivePlot(0).getPoints),
-      rayCaster.intersectObject(getActivePlot(1).getPoints))
-
-    val plot1 = getActivePlot(0)
-    val plot2 = getActivePlot(1)
-    var (results1, results2)= ((-1, -1), (-1, -1))
-
-    // Intersections with the first plot
-    if(intersects(0).nonEmpty) results1 = Interactions.on(plot1, intersects(0))
-
-    // Intersections with the second plot
-    if(intersects(1).nonEmpty) results2 = Interactions.on(plot2, intersects(1))
-
-    // TODO: Make this optional functionality when there are at least 2 plots showing.
-    // Selecting point in opposing plot
-    /*val (rem1, add1) = (results1._1, results1._2)
-    val (rem2, add2) = (results2._1, results2._2)
-    if(add1 != -1) plot2.select(add1)
-    if(add2 != -1) plot1.select(add2)
-    if(rem1 != -1 && !plot2.savedSelections.contains(rem1)) plot2.deselect(rem1)
-    if(rem2 != -1 && !plot1.savedSelections.contains(rem2)) plot1.deselect(rem2)*/
+    // For every region (each of which contains a plot)
+    for(index <- getRegions.indices) {
+      // Retrieve intersections on the available inputs ray caster
+      val intersects: scalajs.js.Array[THREE.Intersection] =
+        rayCaster.intersectObject(getActivePlot(index).getPoints)
+      val plot = getActivePlot(index)
+      var (results1, results2) = ((-1, -1), (-1, -1))
+      // Intersections with the current plot
+      if (intersects.nonEmpty) results1 = Interactions.on(plot, intersects)
+    }
   }
 
   def saveSelections(): Unit = {
