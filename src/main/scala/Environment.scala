@@ -121,43 +121,49 @@ class Environment(val scene: Scene,
     if(maybeRC.nonEmpty) {
       // TODO: Still find a better way to ignore points while waiting for the texture to be loaded
       if (Regions().length >= 2) {
-        // Cause points to pulsate; requires adding u_time to Points.uniforms, and changing shaders in index.html
-        /*def pulsate(region: Int, rate: Double): Unit = {
-          val material = getActivePlot(region).getPoints
-            .material.asInstanceOf[THREE.ShaderMaterial]
+        /*// Cause points to pulsate; requires adding u_time to Points.uniforms, and changing shaders in index.html
+        def pulsate(region: Int, rate: Double): Unit = {
+          val material = getActivePlot(region).getPoints.material.asInstanceOf[THREE.ShaderMaterial]
           val utime = material.uniforms.asInstanceOf[Uniform].u_time.asInstanceOf[UTime]
           utime.value = utime.value + rate.toFloat
         }
         pulsate(0, 0.1)
         pulsate(1, 0.1)*/
 
-        pointSelection(maybeRC.get)
+        pointHighlighting(maybeRC.get)
       }
     }
 
     renderer.render(scene, camera)
   }
 
-  def pointSelection(rayCaster: RayCaster): Unit = {
+  def pointHighlighting(rayCaster: RayCaster): Unit = {
     // For every region (each of which contains a plot)
-    for(index <- getRegions.indices) {
-      // Retrieve intersections on the available inputs ray caster
+    for(region <- getRegions.indices) {
+
+      // Get the active plot in this region
+      val plot = getActivePlot(region)
+
+      // Retrieve intersections on an available ray caster
       val intersects: scalajs.js.Array[THREE.Intersection] =
-        rayCaster.intersectObject(getActivePlot(index).getPoints)
-      val plot = getActivePlot(index)
-      var (results1, results2) = ((-1, -1), (-1, -1))
-      // Intersections with the current plot
-      if (intersects.nonEmpty) results1 = Interactions.on(plot, intersects)
+        rayCaster.intersectObject(plot.getPoints)
+
+      // If not intersections exist, don't initiate an interaction
+      if(intersects.nonEmpty) {
+
+        // Apply highlighting to the first point intersected
+        Interactions.on(plot, intersects)
+      }
     }
   }
 
-  def saveSelections(): Unit = {
+  def selectAllHighlightedPoints(): Unit = { // TODO: Only select the current point intersected
     for(r <- getRegions.indices) {
       val plot = getActivePlot(r)
-      if(plot.selections(0) != -1) {
-        dom.console.log(s"Plot $r saving point ${plot.selections(0)}")
-        plot.savedSelections += plot.selections(0)
-        plot.selections(0) = -1
+      if(plot.highlighted.nonEmpty) {
+        dom.console.log(s"Plot $r saving point ${plot.highlighted}")
+        plot.savedSelections += plot.highlighted.get
+        plot.highlighted = None
       } else {
         dom.console.log(s"Plot $r has a selection of -1")
       }
@@ -167,9 +173,9 @@ class Environment(val scene: Scene,
   def clearSelections(): Unit = {
     for(r <- getRegions.indices) {
       val plot = getActivePlot(r)
-      if(plot.selections(0) != -1) {
-        plot.savedSelections += plot.selections(0)
-        plot.selections(0) = -1
+      if(plot.highlighted.nonEmpty) {
+        plot.savedSelections += plot.highlighted.get
+        plot.highlighted = None
       }
     }
   }

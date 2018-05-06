@@ -14,7 +14,7 @@ import userinput.Interactions.Intersection
   * Created by Dorian Thiessen on 2018-04-07.
   */
 trait Interactions[T] {
-  def onIntersection(entity: T, intersections: scalajs.js.Array[Intersection]): (Int, Int)
+  def onIntersection(entity: T, intersections: scalajs.js.Array[Intersection]): (Option[Int], Int)
 }
 
 object Interactions {
@@ -22,24 +22,33 @@ object Interactions {
 
   implicit object PlotInteractions extends Interactions[Plot] {
 
-    override def onIntersection(entity: Plot, intersection: scalajs.js.Array[Intersection]): (Int, Int) = {
+    override def onIntersection(entity: Plot, intersection: scalajs.js.Array[Intersection]): (Option[Int], Int) = {
       val index = intersection(0).asInstanceOf[IntersectionExt].index
-      var oldIndex = entity.selections(0)
+      var oldIndexMaybe = entity.highlighted
 
-      if(entity.savedSelections.contains(oldIndex)) { // If previous selection is saved, ignore it by losing it's index
-        oldIndex = -1
-      } else if(oldIndex != index) { // Else if previous selection exists, and different than the current, deselect it
-        entity.deselect(oldIndex)
+      if(oldIndexMaybe.nonEmpty) {
+        val oldIndex = oldIndexMaybe.get
+
+        // If previously highlighted point was saved, ignore it
+        if (entity.savedSelections.contains(oldIndex)) {
+          oldIndexMaybe = None
+        }
+
+        // Else if previously highlighted exists, and different than the current, deselect it
+        else if (oldIndex != index) {
+          entity.unHighlight(oldIndex)
+        }
       }
 
-      entity.selections(0) = index
-      entity.select(index)
-      (oldIndex, entity.selections(0))
+      // Then we highlight the point!
+      entity.highlighted = Some(index)
+      entity.highlight(index)
+      (oldIndexMaybe, index)
     }
   }
 
   //TODO: Pass additional State object? One use case: For checking if a specific button is currently selected
-  def on[T: Interactions](entity: T, intersections: scalajs.js.Array[Intersection]): (Int, Int) = {
+  def on[T: Interactions](entity: T, intersections: scalajs.js.Array[Intersection]): (Option[Int], Int) = {
     implicitly[Interactions[T]].onIntersection(entity, intersections)
   }
 

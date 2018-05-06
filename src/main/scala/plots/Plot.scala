@@ -1,6 +1,7 @@
 package plots
 
-import org.scalajs.{threejs => THREE}
+import org.scalajs.{dom, threejs => THREE}
+
 import scala.scalajs.js
 import js.typedarray.Float32Array
 
@@ -15,7 +16,7 @@ trait Plot {
   val numPoints: Int = getSizesAttribute.array.asInstanceOf[Float32Array].length // hmm..
 
   var savedSelections: Set[Int] = Set[Int]()
-  var selections: Array[Int] = Array(-1) //TODO: Change this to Option[Int], no need to be able to hold more than one
+  var highlighted: Option[Int] = None
   def getPoints: Points
 
   /** Buffer Attributes for point colors as RGB values */
@@ -25,23 +26,35 @@ trait Plot {
   @inline def getSizesAttribute: js.Dynamic = getGeometry.getAttribute("size")
 
   /**
-    * Select the set of points at the provided indices.
+    * Highlights the set of points at the provided indices.
     * @param pIndices Point indices
     */
-  def select(pIndices: Int*): Unit = {
+  def highlight(pIndices: Int*): Unit = {
     if(Selection.changesColor) updateColors(Selection.red, Selection.green, Selection.blue, pIndices)
     if(Selection.changesSize)  updateSizes(Plot.PARTICLE_SIZE.toFloat*Selection.scale, pIndices)
   }
 
   /**
+    * UnHighlight the currently highlighted point.
+    * The point is restored to it's original color and size.
+    */
+  def unHighlight(index: Int): Unit = {
+    if(highlighted.isEmpty) return
+    if(index != highlighted.get) dom.console.log("[Plot.unHighlight]\tPoint at provided index is not highlighted!")
+    if(Selection.changesColor) resetColor(highlighted.get)
+    if(Selection.changesSize) updateSizes(Plot.PARTICLE_SIZE.toFloat, Seq(highlighted.get))
+    highlighted = None
+  }
+
+  /*
     * Deselect the set of points at the provided indices.
     * Deselected points are restored to their original color and size.
     * @param pIndices Point indices
     */
-  def deselect(pIndices: Int*): Unit = {
+  /*def deselect(pIndices: Int*): Unit = {
     if(Selection.changesColor) for(i <- pIndices) resetColor(i)
     if(Selection.changesSize) updateSizes(Plot.PARTICLE_SIZE.toFloat, pIndices)
-  }
+  }*/
 
   private def updateColors(r: Float, g: Float, b: Float, pIndices: Seq[Int]): Unit = {
     val colorsAttr = getColorsAttribute

@@ -38,7 +38,7 @@ object Window {
   def setupEventListener_MouseDoubleClick(mouse: THREE.Vector2, env: Environment): Unit = {
     document.addEventListener("dblclick", (event: MouseEvent) => {
 
-      env.saveSelections()
+      env.selectAllHighlightedPoints()
 
       dom.console.log("MOUSE DOUBLE CLICKED")
       Log("Mouse double clicked!") // To check if event is firing
