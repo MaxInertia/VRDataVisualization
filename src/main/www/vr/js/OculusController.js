@@ -1,128 +1,137 @@
 /**
  * @author mrdoob / http://mrdoob.com
  * @author stewdio / http://stewd.io
+ * @author maxinertia (Vive -> Oculus) - WIP: Incomplete
  */
 
-THREE.ViveController = function ( id ) {
+THREE.OculusController = function ( id ) {
 
-	THREE.Object3D.call( this );
+    THREE.Object3D.call( this );
 
-	var scope = this;
-	var gamepad;
+    var scope = this;
+    var gamepad;
 
-	var axes = [ 0, 0 ];
-	var thumbpadIsPressed = false;
-	var triggerIsPressed = false;
-	var gripsArePressed = false;
-	var menuIsPressed = false;
+    var axes = [ 0, 0 ];
+    var thumbRestTouched = false;
+    var thumbStickTouched = false;
+    var buttonOnePressed = false; // X or A
+    var buttonTwoPressed = false; // Y or B
+    var indexTriggerChanged = false;
+    var gripTriggerChanged = false;
 
-	function findGamepad( id ) {
+    // Names of buttons (should be constants...)
+    var thumbRest = 'thumbRest';
+    var thumbStick = 'thumbStick';
+    var buttonOne; // X or A // Press and Touch?
+    var buttonTwo; // Y or B // Press and Touch?
+    var indexTrigger = 'indexTrigger';
+    var gripTrigger = 'gripTrigger';
 
-		// Iterate across gamepads as Vive Controllers may not be
-		// in position 0 and 1.
+    // Names of events (should also be constants...)
+    var Events = {
+        buttonOne_On: 'buttonOne_on',
+        buttonOne_Off: 'buttonOne_off',
+        buttonTwo_On: 'buttonTwo_on',
+        buttonTwo_Off: 'buttonTwo_off',
+        thumbRestTouch_On: 'thumbRestTouch_on',
+        thumbRestTouch_Off: 'thumbRestTouch_off',
+        thumbStickTouch_On: 'thumbStickTouch_on',
+        thumbStickTouch_Off: 'thumbStickTouch_off',
+        indexTrigger_ValueChanged: 'indexTrigger_valueChanged',
+        gripTrigger_ValueChanged: 'gripTrigger_valueChanged',
+        thumbStick_ValueChanged: 'thumbStick_valueChanged'
+    };
 
-		var gamepads = navigator.getGamepads && navigator.getGamepads();
+    function findGamepad( id ) {
+        var gamepads = navigator.getGamepads && navigator.getGamepads();
 
-		for ( var i = 0, j = 0; i < gamepads.length; i ++ ) {
+        // Iterate across gamepads as the Oculus Controllers may not be in position 0 and 1.
+        for ( var i = 0; i < gamepads.length; i ++ ) {
+            var gamepad = gamepads[ i ];
 
-			var gamepad = gamepads[ i ];
+            if ( gamepad && ( gamepad.id.startsWith( 'Oculus Touch' ) || gamepad.id === 'OpenVR Gamepad'  || gamepad.id.startsWith( 'Spatial Controller' ) ) ) {
+                if ( i === id ) return gamepad;
+            }
+        }
+    }
 
-			if ( gamepad && ( gamepad.id === 'OpenVR Gamepad' || gamepad.id.startsWith( 'Oculus Touch' ) || gamepad.id.startsWith( 'Spatial Controller' ) ) ) {
+    this.matrixAutoUpdate = false;
+    this.standingMatrix = new THREE.Matrix4();
 
-				if ( j === id ) return gamepad;
+    this.getGamepad = function () {
+        return gamepad;
+    };
 
-				j ++;
+    /** Returns whether a given buttons state has changed */
+    this.getButtonState = function ( button ) {
+        if ( button === buttonOne ) return buttonOnePressed;
+        if ( button === buttonTwo ) return buttonTwoPressed;
+        if ( button === thumbRest ) return thumbRestTouched;
+        if ( button === thumbStick ) return thumbStickTouched;
+        //TODO: Return trigger values
+        //if ( button === gripTrigger ) return gripTriggerChanged;
+        //if ( button === indexTrigger ) return indexTriggerChanged;
+    };
 
-			}
+    this.update = function () {
 
-		}
+        gamepad = findGamepad( id );
+        if ( gamepad !== undefined && gamepad.pose !== undefined ) {
 
-	}
+            if ( gamepad.pose === null ) return; // No user action yet
 
-	this.matrixAutoUpdate = false;
-	this.standingMatrix = new THREE.Matrix4();
+            // Position and orientation.
+            var pose = gamepad.pose;
 
-	this.getGamepad = function () {
+            if ( pose.position !== null ) scope.position.fromArray( pose.position );
+            if ( pose.orientation !== null ) scope.quaternion.fromArray( pose.orientation );
 
-		return gamepad;
+            scope.matrix.compose( scope.position, scope.quaternion, scope.scale );
+            scope.matrix.premultiply( scope.standingMatrix );
+            scope.matrixWorldNeedsUpdate = true;
+            scope.visible = true;
 
-	};
+            // ThumbStick axes // TODO: Confirm this is the same on Oculus
 
-	this.getButtonState = function ( button ) {
+            if ( axes[ 0 ] !== gamepad.axes[ 0 ] || axes[ 1 ] !== gamepad.axes[ 1 ] ) {
+                axes[ 0 ] = gamepad.axes[ 0 ]; //  X axis: -1 = Left, +1 = Right.
+                axes[ 1 ] = gamepad.axes[ 1 ]; //  Y axis: -1 = Bottom, +1 = Top.
+                scope.dispatchEvent( { type: Events.thumbStick_ValueChanged, axes: axes } );
+            }
 
-		if ( button === 'thumbpad' ) return thumbpadIsPressed;
-		if ( button === 'trigger' ) return triggerIsPressed;
-		if ( button === 'grips' ) return gripsArePressed;
-		if ( button === 'menu' ) return menuIsPressed;
+            //TODO: Include Controller name in name of dispatched event
 
-	};
+            // Buttons
 
-	this.update = function () {
+            /* TODO: Determine the index at which each button is stored in gamepad.buttons (replace the '?'s)
+            
+            if ( buttonOnePressed !== gamepad.buttons[ ? ].pressed ) {
+                buttonOnePressed = gamepad.buttons[ ? ].pressed;
+                scope.dispatchEvent( { type: buttonOnePressed ? Events.buttonOne_On : Events.buttonOne_Off } );
+            }
 
-		gamepad = findGamepad( id );
+            if ( buttonTwoPressed !== gamepad.buttons[ ? ].pressed ) {
+                buttonTwoPressed = gamepad.buttons[ ? ].pressed;
+                scope.dispatchEvent( { type: buttonTwoPressed ? Events.buttonTwo_On : Events.buttonTwo_Off } );
+            }
 
-		if ( gamepad !== undefined && gamepad.pose !== undefined ) {
+            // Triggers
 
-			if ( gamepad.pose === null ) return; // No user action yet
+            if ( indexTriggerChanged !== gamepad.buttons[ ? ].pressed ) {
+                indexTriggerChanged = gamepad.buttons[ ? ].pressed;
+                scope.dispatchEvent( { type: Events.indexTrigger_ValueChanged, value: buttons[ ? ].value } );
+            }
 
-			//  Position and orientation.
+            if ( gripTriggerChanged !== gamepad.buttons[ ? ].pressed ) {
+                gripTriggerChanged = gamepad.buttons[ ? ].pressed;
+                scope.dispatchEvent( { type: Events.gripTrigger_ValueChanged, value: buttons[ ? ].value } );
+            }*/
 
-			var pose = gamepad.pose;
-
-			if ( pose.position !== null ) scope.position.fromArray( pose.position );
-			if ( pose.orientation !== null ) scope.quaternion.fromArray( pose.orientation );
-			scope.matrix.compose( scope.position, scope.quaternion, scope.scale );
-			scope.matrix.premultiply( scope.standingMatrix );	
-			scope.matrixWorldNeedsUpdate = true;
-			scope.visible = true;
-
-			//  Thumbpad and Buttons.
-
-			if ( axes[ 0 ] !== gamepad.axes[ 0 ] || axes[ 1 ] !== gamepad.axes[ 1 ] ) {
-
-				axes[ 0 ] = gamepad.axes[ 0 ]; //  X axis: -1 = Left, +1 = Right.
-				axes[ 1 ] = gamepad.axes[ 1 ]; //  Y axis: -1 = Bottom, +1 = Top.
-				scope.dispatchEvent( { type: 'axischanged', axes: axes } );
-
-			}
-
-			if ( thumbpadIsPressed !== gamepad.buttons[ 0 ].pressed ) {
-
-				thumbpadIsPressed = gamepad.buttons[ 0 ].pressed;
-				scope.dispatchEvent( { type: thumbpadIsPressed ? 'thumbpaddown' : 'thumbpadup', axes: axes } );
-
-			}
-
-			if ( triggerIsPressed !== gamepad.buttons[ 1 ].pressed ) {
-
-				triggerIsPressed = gamepad.buttons[ 1 ].pressed;
-				scope.dispatchEvent( { type: triggerIsPressed ? 'triggerdown' : 'triggerup' } );
-
-			}
-
-			if ( gripsArePressed !== gamepad.buttons[ 2 ].pressed ) {
-
-				gripsArePressed = gamepad.buttons[ 2 ].pressed;
-				scope.dispatchEvent( { type: gripsArePressed ? 'gripsdown' : 'gripsup' } );
-
-			}
-
-			if ( menuIsPressed !== gamepad.buttons[ 3 ].pressed ) {
-
-				menuIsPressed = gamepad.buttons[ 3 ].pressed;
-				scope.dispatchEvent( { type: menuIsPressed ? 'menudown' : 'menuup' } );
-
-			}
-
-		} else {
-
-			scope.visible = false;
-
-		}
-
-	};
-
+        } else {
+            scope.visible = false;
+        }
+    };
 };
 
-THREE.ViveController.prototype = Object.create( THREE.Object3D.prototype );
-THREE.ViveController.prototype.constructor = THREE.ViveController;
+THREE.OculusController.prototype = Object.create( THREE.Object3D.prototype );
+THREE.OculusController.prototype.constructor = THREE.OculusController;
