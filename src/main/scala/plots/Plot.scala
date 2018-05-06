@@ -15,7 +15,7 @@ trait Plot {
   val numPoints: Int = getSizesAttribute.array.asInstanceOf[Float32Array].length // hmm..
 
   var savedSelections: Set[Int] = Set[Int]()
-  var selections: Array[Int] = Array(-1)
+  var selections: Array[Int] = Array(-1) //TODO: Change this to Option[Int], no need to be able to hold more than one
   def getPoints: Points
 
   /** Buffer Attributes for point colors as RGB values */
