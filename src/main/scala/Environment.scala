@@ -152,21 +152,21 @@ class Environment(val scene: Scene,
   }
 
   def saveSelections(): Unit = {
-    for(i <- 0 to 1) {
-      val plot = plots3D(i).get(active(i))
+    for(r <- getRegions.indices) {
+      val plot = getActivePlot(r)
       if(plot.selections(0) != -1) {
-        dom.console.log(s"Plot $i saving point ${plot.selections(0)}")
+        dom.console.log(s"Plot $r saving point ${plot.selections(0)}")
         plot.savedSelections += plot.selections(0)
         plot.selections(0) = -1
       } else {
-        dom.console.log(s"Plot $i has a selection of -1")
+        dom.console.log(s"Plot $r has a selection of -1")
       }
     }
   }
 
   def clearSelections(): Unit = {
-    for(i <- 0 to 1) {
-      val plot = plots3D(i).get(active(i))
+    for(r <- getRegions.indices) {
+      val plot = getActivePlot(r)
       if(plot.selections(0) != -1) {
         plot.savedSelections += plot.selections(0)
         plot.selections(0) = -1
