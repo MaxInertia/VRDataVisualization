@@ -64,8 +64,8 @@
         <!-- Apply options - Loads scene if inputs are valid -->
         <div class="row" style="text-align: center">
             <button style="position: center" onclick="validateForm()">Apply configuration</button>
-            <p>OR<p>
-            <button style="position: center" onclick="loadSample()">Use sample</button>
+            <!--<p>OR<p>
+            <button style="position: center" onclick="loadSample()">Use sample</button>-->
         </div>
         <br><br><br>
 
@@ -82,10 +82,10 @@
 
         <script type="text/JavaScript">
 
-            function loadSample() {
+            /*function loadSample() {
                 localStorage.setItem("showSamples", "true");
                 window.location.href='vr'
-            }
+            }*/
 
             function validateForm() {
                 var regexp1 = new RegExp("[^1-99]");
