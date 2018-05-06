@@ -9,7 +9,7 @@ Anyone have a spare?! 😆
 ## Wiki
 - [Usage details]()
 
-## Somethings not working?
+## Something not working?
 
 So you ran into a problem, post a [new issue](https://github.com/MaxInertia/3JScala/issues/new)!
 
@@ -19,7 +19,7 @@ Anyone that finds a bug that can be verified to exist will be added as a contrib
 
 Everyone is free to **clone**, **modify**, and submit **pull requests**. In most cases pull requests should be to the branch **develop**. 
 
-Everyone whose contribution is accepted and reaches **master** will be added to the list of contributors, no matter how trivial the contribution (Will accept pull requests that correct typos!).
+Everyone whose contribution is accepted and reaches **master** will be added to the list of contributors, no matter how trivial the contribution (Accepting pull requests that correct typos!).
 
 ### IDE of choice
 
