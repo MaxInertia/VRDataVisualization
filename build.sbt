@@ -1,4 +1,4 @@
-name := "3JScala"
+name := "VRDataVisualization"
 version := "0.1"
 scalaVersion := "2.12.4"
 
@@ -6,9 +6,9 @@ scalaVersion := "2.12.4"
 resolvers += sbt.Resolver.bintrayRepo("scalajs-facades", "scalajs-facades-releases") //add resolver
 libraryDependencies ++= Seq(
   "org.scala-js" %%% "scalajs-dom" % "0.9.2",
+  "be.doeraene" %%% "scalajs-jquery" % "0.9.3",
   "com.lihaoyi" %%% "utest" % "0.6.0" % "test",
-  "org.scalajs" %%% "threejs-facade" % "0.0.88-0.1.9",
-  "be.doeraene" %%% "scalajs-jquery" % "0.9.3"
+  "org.scalajs" %%% "threejs-facade" % "0.0.88-0.1.9"
 )
 testFrameworks += new TestFramework("utest.runner.Framework")
 

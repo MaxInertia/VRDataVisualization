@@ -1,11 +1,9 @@
 package userinput
 
-import org.scalajs.dom.document
 import org.scalajs.{dom, threejs => THREE}
 import window.Window
 import env.Environment
 import facades.IFThree._
-import org.scalajs.threejs.{ArrowHelper, Matrix4}
 import util.Log
 
 /**
@@ -13,15 +11,22 @@ import util.Log
   * Created by Dorian Thiessen on 2018-01-13.
   */
 class Controls {
+
   var vr: VRControls = _
+
   var fp: FirstPersonVRControls = _
   var mouse: THREE.Vector2 = _
+
   // Oculus Controllers; [0: Left, 1: Right]
   var controllers: Array[VRController] = Array(null, null)
+
   def controllerConnected: Boolean = controllers(0) != null || controllers(1) != null
+
   def update(timeStamp: Double): Unit = {
+    // TODO: How is this replaced? Removal breaks rotation of camera via click and drag
     vr.update()
-    if(!controllerConnected) fp.update(timeStamp)
+    // TODO: Have fp.update disabled when pressing 'ENTER VR' if headset is connected (and enabled on exiting VR)
+    if (!controllerConnected) fp.update(timeStamp)
   }
 }
 
@@ -64,8 +69,11 @@ object Controls {
     });*/
 
     controls.vr = new VRControls(env.camera)
-    //controls.vr.standing = false
-    //controls.vr.userHeight = 1.6
+    /* These appear to have no effect outside Oculus. TODO: What about in Oculus?
+    controls.vr.userHeight = 1.6
+    controls.vr.standing = false */
+
+    // TODO: What if this event is fired before reaching this point? Can it miss it? Possibly add a listener earlier.
     dom.window.addEventListener("vr controller connected", (event: SomeEvent) => {
       val controller: VRController = event.detail.asInstanceOf[VRController]
 
@@ -84,7 +92,6 @@ object Controls {
     })
 
     // Other Controls
-    // TODO: Only initialize fpControls and mouse if no VR Headset detected
 
     controls.fp = new FirstPersonVRControls(env.camera, env.scene)
     controls.mouse = new THREE.Vector2()

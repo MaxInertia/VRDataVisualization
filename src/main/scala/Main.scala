@@ -10,7 +10,7 @@ import facades.IFThree.{VRControllerManager, WEBVR, WebGLRendererExt}
 /**
   * Created by Dorian Thiessen on 2018-01-05.
   */
-@JSExportTopLevel("CCMVR")
+@JSExportTopLevel("VRDataVisualization")
 object Main {
 
   var controls: Controls = _
@@ -24,7 +24,8 @@ object Main {
     // Setup the Environment (Scene, Camera, Renderer) and the Controls (Mouse, Oculus Controllers and Headset)
     val container = dom.document.getElementById("scene-container")
     env = Environment.setup(container)
-    dom.document.body.appendChild( WEBVR.createButton(env.renderer))
+
+    dom.document.body.appendChild( WEBVR.createButton(env.renderer) )
 
     if(foundVRHeadset) {
       dom.console.log("Found headset")

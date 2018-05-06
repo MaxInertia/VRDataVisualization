@@ -17,14 +17,13 @@
     <script src="js/lib/stats.min.js"></script>
     <<script src="js/lib/webvr-polyfill.min.js"></script>
     <!-- Internal Project Dependency -->
-    <script src="../../../../target/scala-2.12/ccm-vr-fastopt.js"></script>
+    <script src="../../../../target/scala-2.12/vrdatavisualization-fastopt.js"></script>
     <!-- Replaces project dependency above for pushing to gh-pages. TODO: Automate this -->
     <!--<script src="../target/scala-2.12/ccm-vr-fastopt.js"></script>-->
 </head>
-<body onload="CCMVR.init()">
+<body onload="VRDataVisualization.init()">
     <div id="buttons">
         <button id="fullscreen">Fullscreen</button>
-        <button id="vr">VR (WebVR/Mobile only)</button>
     </div>
 
     <!-- Shaders for pulsating points -->
@@ -106,11 +105,11 @@
 
     // Button click handlers.
     document.querySelector('button#fullscreen').addEventListener('click', function() {
-        enterFullscreen(CCMVR.renderer.domElement);
+        enterFullscreen(VRDataVisualization.renderer.domElement);
     });
-    document.querySelector('button#vr').addEventListener('click', function() {
-        vrDisplay.requestPresent([{source: CCMVR.renderer.domElement}]);
-    });
+    /*document.querySelector('button#vr').addEventListener('click', function() {
+        vrDisplay.requestPresent([{source: VRDataVisualization.renderer.domElement}]);
+    });*/
 
     function enterFullscreen (el) {
         if (el.requestFullscreen) el.requestFullscreen();
@@ -128,7 +127,7 @@
                 console.log("Display object:");
                 console.log(vrDisplay);
                 if(vrDisplay.displayName !== 'Mouse and Keyboard VRDisplay (webvr-polyfill)') {
-                    CCMVR.foundVRHeadset = true;
+                    VRDataVisualization.foundVRHeadset = true;
                 }
                 // Kick off the render loop.
                 vrDisplay.requestAnimationFrame(animate);

@@ -2,13 +2,15 @@ package userinput
 
 import env.Environment
 import facades.IFThree.{RaycasterParametersExt, VRController}
-import org.scalajs.dom
 import org.scalajs.dom.raw.Event
 import org.scalajs.threejs.{ArrowHelper, BoxGeometry, Color, CylinderGeometry, Matrix4, Mesh, MeshBasicMaterial, Object3D, SceneUtils, Vector3}
 import userinput.Controls.RayCaster
 import util.Log
 
-trait OculusTouchEvents {
+/**
+  * Touch events for the Oculus Controllers
+  */
+sealed trait OculusTouchEvents {
   val ThumbRest_TouchBegan: String = "thumbrest touch began"
   val ThumbRest_TouchEnded: String = "thumbrest touch ended"
 }
