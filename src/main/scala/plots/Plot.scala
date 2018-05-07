@@ -48,6 +48,12 @@ trait Plot {
     highlighted = None
   }
 
+  /**
+    * Causes the currently highlighted point to be selected. If no point is highlighted
+    * or the highlighted point has already been selected, does nothing.
+    */
+  def selectHighlighted(): Unit = if(highlighted.nonEmpty) savedSelections = savedSelections + highlighted.get
+
   /*
     * Deselect the set of points at the provided indices.
     * Deselected points are restored to their original color and size.

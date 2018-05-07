@@ -4,6 +4,7 @@ import env.Environment
 import facades.IFThree.{RaycasterParametersExt, SceneUtils2, VRController}
 import org.scalajs.dom.raw.Event
 import org.scalajs.threejs.{ArrowHelper, BoxGeometry, Color, CylinderGeometry, Matrix4, Mesh, MeshBasicMaterial, Object3D, SceneUtils, Vector3}
+import plots.{Colors, CoordinateAxes3D}
 import userinput.Controls.RayCaster
 import util.Log
 
@@ -22,8 +23,11 @@ sealed trait OculusTouchEvents {
 sealed abstract class OculusController extends OculusTouchEvents {
   val name: String
   // Event ID's
+  val Primary_TouchBegan: String = "primary touch began"
   val Primary_PressBegan: String = "primary press began"
+  val Primary_ValueChanged: String = "primary value changed"
   val Primary_PressEnded: String = "primary press ended"
+  val Primary_TouchEnded: String = "primary touch ended"
   val Grip_PressBegan: String = "grip press began"
   val Grip_PressEnded: String = "grip press ended"
   val Axes_Changed: String = "thumbstick axes changed"
@@ -43,6 +47,12 @@ sealed abstract class OculusController extends OculusTouchEvents {
 
   var correctedPosition: Vector3 = new Vector3()
   var yOffset: Vector3 = new Vector3(0, 1.6, 0)
+
+  protected var selecting: Boolean = false
+
+  def isConnected: Boolean = controllerEl != null
+
+  def isSelecting: Boolean = isConnected && rayCasterArrow.visible && selecting
 
   def setup(vrc: VRController): Unit
   def isPointing: Boolean = rayCasterArrow!=null && rayCasterArrow.visible
@@ -132,19 +142,48 @@ sealed abstract class OculusController extends OculusTouchEvents {
     */
   protected def commonEvents(vrc: VRController): Unit = {
 
-    // Touch Events
+    /* Primary touch doesn't seem to work?
+    vrc.addEventListener(Primary_TouchBegan, ((event: Event) => {
+      Log("Primary Touch Began")
+      if(captured.isEmpty && capturedSeparation.isEmpty) {
+        rayCasterArrow.visible = true
+      }
+    }).asInstanceOf[Any => Unit])
+    vrc.addEventListener(Primary_TouchEnded, ((event: Event) => {
+      Log("Primary Touch Ended")
+      selecting = false // Just incase the Primary Press Ended doesn't fire
+      rayCasterArrow.visible = false
+    }).asInstanceOf[Any => Unit])*/
+
+    // Primary Press - for selecting points! (requires thumbrest touch to be active)
+
+    vrc.addEventListener(Primary_PressBegan, ((event: Event) => {
+      Log("Primary Press Began")
+      if(captured.isEmpty && capturedSeparation.isEmpty && rayCasterArrow.visible) selecting = true
+    }).asInstanceOf[Any => Unit])
+
+    vrc.addEventListener(Primary_PressEnded, ((event: Event) => {
+      Log("Primary Press Ended")
+      selecting = false
+    }).asInstanceOf[Any => Unit])
+
+    // Thumbrest Touch - for highlighting points!
 
     vrc.addEventListener(ThumbRest_TouchBegan, ((event: Event) => {
       Log("Thumbrest Touch Began")
-      if(captured.nonEmpty) rayCasterArrow.visible = true
+      if(captured.isEmpty && capturedSeparation.isEmpty) rayCasterArrow.visible = true
     }).asInstanceOf[Any => Unit])
+
     vrc.addEventListener(ThumbRest_TouchEnded, ((event: Event) => {
       Log("Thumbrest Touch Ended")
       rayCasterArrow.visible = false
+      selecting = false // Cannot be selecting without the rayCaster visible
     }).asInstanceOf[Any => Unit])
 
     // Attempting to grab object!
 
+    //TODO: Operations on captured visualizations!?
+    //TODO: Make Region it's own class, pass that here for storing in captured. That way those operations can be defined in Region.
     vrc.addEventListener(Grip_PressBegan, ((event: Event) => {
       Log("Grip Press Began")
       val regions = Environment.instance.getRegions
@@ -177,15 +216,6 @@ sealed abstract class OculusController extends OculusTouchEvents {
       } else if(capturedSeparation.nonEmpty) capturedSeparation = None
     }).asInstanceOf[Any => Unit])
 
-    // Primary Press! - Currently no action
-
-    vrc.addEventListener(Primary_PressBegan, ((event: Event) => {
-      Log("Primary Press Began")
-    }).asInstanceOf[Any => Unit])
-    vrc.addEventListener(Primary_PressEnded, ((event: Event) => {
-      Log("Primary Press Ended")
-    }).asInstanceOf[Any => Unit])
-
     // Axes changed! - Currently no action
 
     vrc.addEventListener(Axes_Changed, ((event: Event) => {
@@ -197,8 +227,24 @@ sealed abstract class OculusController extends OculusTouchEvents {
     vrc.addEventListener(Disconnected, ((event: Event) => {
       vrc.parent.remove(vrc)
       //TODO: Remove meshes & raycasters associated with this controller
+      controllerEl = null
       Log(s"$name Disconnected!")
     }).asInstanceOf[Any => Unit])
+  }
+
+  protected def modifyCaptured(option: Boolean): Unit = {
+    if(captured.isEmpty) return
+    val cid = captured.get.id
+    val env = Environment.instance
+    for(r <- env.getRegions) {
+      if(r.id == cid) {
+        if(r.children.length == 2) { //TODO: Fix this, too easy to break
+          val axes = CoordinateAxes3D.create(1, color = Colors.White, centeredOrigin = true, planeGrids = option)
+          r.remove(r.children(1))
+          r.add(axes)
+        }
+      }
+    }
   }
 
 }
@@ -230,13 +276,19 @@ object OculusControllerLeft extends OculusController {
 
     vrc.addEventListener(X_PressBegan, ((event: Event) => {
       Log("X Press Began")
+      modifyCaptured(true)
     }).asInstanceOf[Any => Unit])
+
     vrc.addEventListener(X_PressEnded, ((event: Event) => {
       Log("X Press Ended")
     }).asInstanceOf[Any => Unit])
+
     vrc.addEventListener(Y_PressBegan, ((event: Event) => {
       Log("Y Press Began")
+
+      modifyCaptured(false)
     }).asInstanceOf[Any => Unit])
+
     vrc.addEventListener(Y_PressEnded, ((event: Event) => {
       Log("Y Press Ended")
     }).asInstanceOf[Any => Unit])
@@ -281,12 +333,14 @@ object OculusControllerRight extends OculusController {
 
     vrc.addEventListener(A_PressBegan, ((event: Event) => {
       Log("A Press Began")
+      modifyCaptured(true)
     }).asInstanceOf[Any => Unit])
     vrc.addEventListener(A_PressEnded, ((event: Event) => {
       Log("A Press Ended")
     }).asInstanceOf[Any => Unit])
     vrc.addEventListener(B_PressBegan, ((event: Event) => {
       Log("B Press Began")
+      modifyCaptured(false)
     }).asInstanceOf[Any => Unit])
     vrc.addEventListener(B_PressEnded, ((event: Event) => {
       Log("B Press Ended")

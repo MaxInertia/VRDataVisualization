@@ -43,6 +43,11 @@ object Interactions {
       // Then we highlight the point!
       entity.highlighted = Some(index)
       entity.highlight(index)
+
+      // TODO: Remove undesireable coupling with Controller instances (Replaceable with idea in TODO below)
+      if(OculusControllerRight.isSelecting || OculusControllerLeft.isSelecting)
+        entity.selectHighlighted()
+
       (oldIndexMaybe, index)
     }
   }

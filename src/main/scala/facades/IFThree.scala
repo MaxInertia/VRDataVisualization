@@ -37,12 +37,10 @@ object IFThree {
     * Created by Dorian Thiessen on 2018-01-13.
     */
   @js.native
-  //@JSGlobal("THREE.VRController")
   trait VRController extends Object3D {
+    var primary: Double = js.native
     def update(): Unit = js.native
-    //def addEventListener[T <: Event](`type`: String, listener: js.Function1[T, _]): Unit = js.native
   }
-
   @js.native
   @JSGlobal("THREE.VRController")
   object VRControllerManager extends js.Object {
