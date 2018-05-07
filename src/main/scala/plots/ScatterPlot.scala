@@ -3,6 +3,8 @@ package plots
 import org.scalajs.{threejs => THREE}
 import plots.ScatterPlot.CoordinateAxisIDs
 
+import scala.scalajs.js
+
 /**
   * Container of a simple scatter-plot.
   *
@@ -12,6 +14,7 @@ class ScatterPlot(tag: String, points: THREE.Points) extends Plot {
   private var xid: CoordinateAxisIDs = _
   private var yid: CoordinateAxisIDs = _
   private var zid: CoordinateAxisIDs = _
+  override def getName: String = tag
   override def getPoints: Points = points
   def getGeometry: BufferGeometry = points.geometry.asInstanceOf[BufferGeometry]
 }

@@ -11,6 +11,7 @@ package plots
 class ShadowManifold(val tag: String, var points: Points) extends Plot {
   override def getPoints: Points = points
   def getGeometry: BufferGeometry = points.geometry.asInstanceOf[BufferGeometry]
+  def getName: String = tag
 }
 
 

@@ -6,6 +6,7 @@ package plots
 class TimeSeries(val tag: String, points: Points) extends Plot {
   override def getPoints: Points = points
   def getGeometry: BufferGeometry = points.geometry.asInstanceOf[BufferGeometry]
+  override def getName: String = tag
 }
 
 object TimeSeries {

@@ -19,6 +19,8 @@ trait Plot {
   var highlighted: Option[Int] = None
   def getPoints: Points
 
+  def getName: String
+
   /** Buffer Attributes for point colors as RGB values */
   @inline def getColorsAttribute: js.Dynamic = getGeometry.getAttribute("customColor")
 
