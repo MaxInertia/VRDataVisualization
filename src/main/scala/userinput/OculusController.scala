@@ -119,46 +119,31 @@ sealed abstract class OculusController extends OculusTouchEvents {
     controllerMesh.add( handleMesh )
     controllerMesh
   }
-}
 
-/**
-  * Contains the name, event id's and setup method for the left Oculus Controller.
-  * All event listeners for inputs to this controller are here.
-  *
-  * Can be thought of as a mapping from a subset of the available
-  * inputs to interactions (see plots.Interactions).
-  */
-object OculusControllerLeft extends OculusController {
-  override val name: String = "Oculus Touch (Left)"
-  // Event ID's specific to the Left controller
-  val X_PressBegan: String = "X press began"
-  val X_PressEnded: String = "X press ended"
-  val Y_PressBegan: String = "Y press began"
-  val Y_PressEnded: String = "Y press ended"
+  /**
+    * All input event listeners that are shared
+    * by the left and right Oculus controllers.
+    *
+    * If specializing an input for one of the controllers,
+    * distribute the event listener to the setup method of
+    * both OculusControllerLeft and OculusControllerRight.
+    *
+    * @param vrc VRController instance
+    */
+  protected def commonEvents(vrc: VRController): Unit = {
 
-  def setup(vrc: VRController): Unit = {
-    Log(s"$name Connected!")
-    init(vrc, meshColorBlue)
-
-    // Touch events
+    // Touch Events
 
     vrc.addEventListener(ThumbRest_TouchBegan, ((event: Event) => {
       Log("Thumbrest Touch Began")
-      rayCasterArrow.visible = true
+      if(captured.nonEmpty) rayCasterArrow.visible = true
     }).asInstanceOf[Any => Unit])
     vrc.addEventListener(ThumbRest_TouchEnded, ((event: Event) => {
       Log("Thumbrest Touch Ended")
       rayCasterArrow.visible = false
     }).asInstanceOf[Any => Unit])
 
-    // Other events
-
-    vrc.addEventListener(Primary_PressBegan, ((event: Event) => {
-      Log("Primary Press Began")
-    }).asInstanceOf[Any => Unit])
-    vrc.addEventListener(Primary_PressEnded, ((event: Event) => {
-      Log("Primary Press Ended")
-    }).asInstanceOf[Any => Unit])
+    // Attempting to grab object!
 
     vrc.addEventListener(Grip_PressBegan, ((event: Event) => {
       Log("Grip Press Began")
@@ -181,6 +166,8 @@ object OculusControllerLeft extends OculusController {
       }
     }).asInstanceOf[Any => Unit])
 
+    // Releasing object (if holding)!
+
     vrc.addEventListener(Grip_PressEnded, ((event: Event) => {
       Log("Grip Press Ended")
       if(captured.nonEmpty) {
@@ -190,9 +177,57 @@ object OculusControllerLeft extends OculusController {
       } else if(capturedSeparation.nonEmpty) capturedSeparation = None
     }).asInstanceOf[Any => Unit])
 
+    // Primary Press! - Currently no action
+
+    vrc.addEventListener(Primary_PressBegan, ((event: Event) => {
+      Log("Primary Press Began")
+    }).asInstanceOf[Any => Unit])
+    vrc.addEventListener(Primary_PressEnded, ((event: Event) => {
+      Log("Primary Press Ended")
+    }).asInstanceOf[Any => Unit])
+
+    // Axes changed! - Currently no action
+
     vrc.addEventListener(Axes_Changed, ((event: Event) => {
       Log("Axes Changed")
     }).asInstanceOf[Any => Unit])
+
+    // Controller Disconnected!
+
+    vrc.addEventListener(Disconnected, ((event: Event) => {
+      vrc.parent.remove(vrc)
+      //TODO: Remove meshes & raycasters associated with this controller
+      Log(s"$name Disconnected!")
+    }).asInstanceOf[Any => Unit])
+  }
+
+}
+
+/**
+  * Contains the name, event id's and setup method for the left Oculus Controller.
+  * All event listeners for inputs to this controller are here.
+  *
+  * Can be thought of as a mapping from a subset of the available
+  * inputs to interactions (see plots.Interactions).
+  */
+object OculusControllerLeft extends OculusController {
+  override val name: String = "Oculus Touch (Left)"
+  // Event ID's specific to the Left controller
+  val X_PressBegan: String = "X press began"
+  val X_PressEnded: String = "X press ended"
+  val Y_PressBegan: String = "Y press began"
+  val Y_PressEnded: String = "Y press ended"
+
+  def setup(vrc: VRController): Unit = {
+    Log(s"$name Connected!")
+    init(vrc, meshColorBlue)
+
+    // Setup events common to both controllers
+
+    commonEvents(vrc)
+
+    // Setup events unique for this controller
+
     vrc.addEventListener(X_PressBegan, ((event: Event) => {
       Log("X Press Began")
     }).asInstanceOf[Any => Unit])
@@ -204,12 +239,6 @@ object OculusControllerLeft extends OculusController {
     }).asInstanceOf[Any => Unit])
     vrc.addEventListener(Y_PressEnded, ((event: Event) => {
       Log("Y Press Ended")
-    }).asInstanceOf[Any => Unit])
-
-    vrc.addEventListener(Disconnected, ((event: Event) => {
-      vrc.parent.remove(vrc)
-      //TODO: Remove meshes & raycasters associated with this controller
-      Log(s"$name Disconnected!")
     }).asInstanceOf[Any => Unit])
   }
 
@@ -244,56 +273,12 @@ object OculusControllerRight extends OculusController {
     Log(s"$name Connected!")
     init(vrc, meshColorRed)
 
-    // Touch Events
+    // Setup events common to both controllers
 
-    vrc.addEventListener(ThumbRest_TouchBegan, ((event: Event) => {
-      Log("Thumbrest Touch Began")
-      rayCasterArrow.visible = true
-    }).asInstanceOf[Any => Unit])
-    vrc.addEventListener(ThumbRest_TouchEnded, ((event: Event) => {
-      Log("Thumbrest Touch Ended")
-      rayCasterArrow.visible = false
-    }).asInstanceOf[Any => Unit])
+    commonEvents(vrc)
 
-    // Other Events
+    // Setup events unique for this controller
 
-    vrc.addEventListener(Primary_PressBegan, ((event: Event) => {
-      Log("Primary Press Began")
-    }).asInstanceOf[Any => Unit])
-    vrc.addEventListener(Primary_PressEnded, ((event: Event) => {
-      Log("Primary Press Ended")
-    }).asInstanceOf[Any => Unit])
-
-    vrc.addEventListener(Grip_PressBegan, ((event: Event) => {
-      Log("Grip Press Began")
-      val regions = Environment.instance.getRegions
-      for(r <- regions) {
-        val controllerPos = getCorrectedPosition()
-        if(captured.isEmpty && r.position.distanceTo(controllerPos) < 0.5) {
-          if(r.parent == Environment.instance.scene) {
-            // In this case, that region can be grabbed
-            SceneUtils2.attach(r, Environment.instance.scene, vrc)
-            captured = Some(r)
-          } else {
-            // Ditto
-            capturedSeparation = Some(OculusControllers.separationDistance())
-          }
-        }
-      }
-    }).asInstanceOf[Any => Unit])
-
-    vrc.addEventListener(Grip_PressEnded, ((event: Event) => {
-      Log("Grip Press Ended")
-      if(captured.nonEmpty) {
-        val dropped = captured.get
-        SceneUtils2.detach(dropped, vrc, Environment.instance.scene)
-        captured = None
-      } else if(capturedSeparation.nonEmpty) capturedSeparation = None
-    }).asInstanceOf[Any => Unit])
-
-    vrc.addEventListener(Axes_Changed, ((event: Event) => {
-      Log("Axes Changed")
-    }).asInstanceOf[Any => Unit])
     vrc.addEventListener(A_PressBegan, ((event: Event) => {
       Log("A Press Began")
     }).asInstanceOf[Any => Unit])
@@ -305,12 +290,6 @@ object OculusControllerRight extends OculusController {
     }).asInstanceOf[Any => Unit])
     vrc.addEventListener(B_PressEnded, ((event: Event) => {
       Log("B Press Ended")
-    }).asInstanceOf[Any => Unit])
-
-    vrc.addEventListener(Disconnected, ((event: Event) => {
-      vrc.parent.remove(vrc)
-      //TODO: Remove meshes & raycasters associated with this controller
-      Log(s"$name Disconnected!")
     }).asInstanceOf[Any => Unit])
   }
 
