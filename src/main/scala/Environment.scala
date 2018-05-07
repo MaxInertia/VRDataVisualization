@@ -16,6 +16,10 @@ import facades.Dat
 import userinput.Controls.RayCaster
 import util.Log
 
+import scala.scalajs.js
+import js.JSConverters._
+import scala.scalajs.js.annotation._
+
 /**
   * Created by Dorian Thiessen on 2018-01-11.
   */
@@ -123,6 +127,23 @@ class Environment(val scene: Scene,
   def addPlots(regionID: Int, plots: Option[Array[Plot]]): Unit = {
     Log(s"Added plots to region #$regionID")
     plots3D(regionID) = plots
+
+    var names: Array[String] = Array()
+    if(plots.nonEmpty) {
+
+      for(p <- plots.get) names = names :+ p.getName
+
+      val myPlotNames: js.Object = new js.Object({
+        @JSName("plotNames")
+        val plotNames: js.Object = new js.Object {
+          val value: js.Array[String] = names.toJSArray
+        }
+      })
+
+      Log.show(myPlotNames)
+      datgui.add(myPlotNames, "plotNames")
+    }
+
   }
 
   def render(): Unit = {
@@ -234,7 +255,7 @@ object Environment {
     }
 
     val gui = makeDatGUI()
-    gui.position.set(0,1,0)
+    gui.position.set(0, 1, 0)
     env.datgui = gui
     scene.add(gui)
 

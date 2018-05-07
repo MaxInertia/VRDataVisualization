@@ -5,6 +5,10 @@ import org.scalajs.threejs.{Camera, Object3D, Scene}
 import scala.scalajs.js
 import scala.scalajs.js.annotation.JSGlobal
 
+/**
+  * Facades for DatGUIVR by the Google Data Arts Team!
+  * Find it here: https://github.com/dataarts/dat.guiVR
+  */
 object Dat {
 
   /**
@@ -20,7 +24,8 @@ object Dat {
   }
   @js.native
   class GUIVR extends Object3D {
-    def add(something: js.Object): GUIVR = js.native
+    def add(something: js.Object): Unit = js.native
+    def add(something: js.Object, id: String): Unit = js.native
   }
 
 }
