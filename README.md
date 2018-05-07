@@ -1,4 +1,4 @@
-# 3JScala [[Try me!](https://maxinertia.github.io/3JScala/)] [![Build Status](https://travis-ci.org/MaxInertia/3JScala.svg?branch=develop)](https://travis-ci.org/MaxInertia/3JScala)
+# VR Data Visualization [[Try me!](https://maxinertia.github.io/VRDataVisualization/)] [![Build Status](https://travis-ci.org/MaxInertia/VRDataVisualization.svg?branch=develop)](https://travis-ci.org/MaxInertia/VRDataVisualization)
 
 A 3D/VR Data Visualization tool using Three.js, written in Scala!
 
@@ -7,7 +7,7 @@ The only VR device available during development of this project so far has been 
 Anyone have a spare?! 😆
 
 ## Wiki
-- [Usage details]()
+- [Usage Details](https://github.com/MaxInertia/VRDataVisualization/wiki/Usage-Details)
 
 ## Something not working?
 
