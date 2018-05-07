@@ -16,7 +16,7 @@ object Dat {
     def create(title: String): GUIVR = js.native
     def addInputObject(obj: Object3D): Unit = js.native
     def addInputObject(obj: js.Any): Unit = js.native
-    def update(timestamp: Double): Unit = js.native
+    def enableMouse(camera: Camera): Unit = js.native
   }
   @js.native
   class GUIVR extends Object3D {

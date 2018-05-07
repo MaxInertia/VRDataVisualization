@@ -3,6 +3,7 @@ package userinput
 import org.scalajs.{dom, threejs => THREE}
 import window.Window
 import env.Environment
+import facades.Dat
 import facades.IFThree._
 import util.Log
 
@@ -106,6 +107,9 @@ object Controls {
     controls.mouse = new THREE.Vector2()
     Window.setupEventListener_MouseMove(controls.mouse)
     Window.setupEventListener_MouseDoubleClick(controls.mouse, env)
+
+    Dat.GUIVR.enableMouse(env.camera)
+
     controls
   }
 }
