@@ -25,13 +25,17 @@ class Controls {
   def update(timeStamp: Double): Unit = {
     // TODO: How is this replaced? Removal breaks rotation of camera via click and drag
     vr.update()
+
     VRControllerManager.update()
     if(controllers(0) != null) {
       controllers(0).update()
+      OculusControllerLeft.update()
     }
     if(controllers(1) != null) {
       controllers(1).update()
+      OculusControllerRight.update()
     }
+
     // TODO: Have fp.update disabled when pressing 'ENTER VR' if headset is connected (and enabled on exiting VR)
     if (!controllerConnected) fp.update(timeStamp)
   }

@@ -240,7 +240,7 @@ object Environment {
       if (sm.isEmpty) return
       env.addPlots(plotNumber, sm)
       env.loadPlot(regionID = plotNumber, plotID = 0)
-      val axes = CoordinateAxes3D.create(1, color = Colors.Black, centeredOrigin = true, planeGrids = false)
+      val axes = CoordinateAxes3D.create(1, color = Colors.White, centeredOrigin = true, planeGrids = true)
       env.Regions(plotNumber).add(axes) // Add coordinate axes (TEMPORARY)
     }
     makeSingle(texture, 0, "SM1_timeSeries", Colors.RED_HUE_SHIFT) // prev blue
@@ -279,7 +279,7 @@ object Environment {
     */
   private def makeScene(): Scene = { // TODO: Make a SceneBuilder?
     val scene = new Scene()
-    scene.background = new THREE.Color(0x7EC0EE)
+    scene.background = new THREE.Color(0x111111) // <- dark gray. Use 0x7EC0EE for light blue
 
     val delta = 0.001 // distance of grid from planes
 

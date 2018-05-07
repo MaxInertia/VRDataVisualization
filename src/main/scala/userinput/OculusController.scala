@@ -2,7 +2,6 @@ package userinput
 
 import env.Environment
 import facades.IFThree.{RaycasterParametersExt, SceneUtils2, VRController}
-import org.scalajs.dom
 import org.scalajs.dom.raw.Event
 import org.scalajs.threejs.{ArrowHelper, BoxGeometry, Color, CylinderGeometry, Matrix4, Mesh, MeshBasicMaterial, Object3D, SceneUtils, Vector3}
 import userinput.Controls.RayCaster
@@ -38,6 +37,9 @@ sealed abstract class OculusController extends OculusTouchEvents {
   protected var controllerMesh: Mesh = _
   protected var rayCasterEl: RayCaster = _
   protected[userinput] var rayCasterArrow: ArrowHelper = _ // effectively the rayCaster mesh
+
+  var captured: Option[Object3D] = None
+  var capturedSeparation: Option[Double] = None
 
   var correctedPosition: Vector3 = new Vector3()
   var yOffset: Vector3 = new Vector3(0, 1.6, 0)
@@ -157,12 +159,37 @@ object OculusControllerLeft extends OculusController {
     vrc.addEventListener(Primary_PressEnded, ((event: Event) => {
       Log("Primary Press Ended")
     }).asInstanceOf[Any => Unit])
+
     vrc.addEventListener(Grip_PressBegan, ((event: Event) => {
       Log("Grip Press Began")
+      val regions = Environment.instance.getRegions
+      for(r <- regions) {
+        val controllerPos = getCorrectedPosition()
+        if(captured.isEmpty && r.position.distanceTo(controllerPos) < 0.5) {
+          if(r.parent == Environment.instance.scene) {
+            // In this case, that region can be grabbed
+            SceneUtils2.attach(r, Environment.instance.scene, vrc)
+            captured = Some(r)
+          } else {
+            // That region has already been grabbed...
+            // The value of the ratio of the updated distance between the controllers over
+            // the current distance will be applied to the region as a scale.
+            // This should appear to the user as stretching the plot.
+            capturedSeparation = Some(OculusControllers.separationDistance())
+          }
+        }
+      }
     }).asInstanceOf[Any => Unit])
+
     vrc.addEventListener(Grip_PressEnded, ((event: Event) => {
       Log("Grip Press Ended")
+      if(captured.nonEmpty) {
+        val dropped = captured.get
+        SceneUtils2.detach(dropped, vrc, Environment.instance.scene)
+        captured = None
+      } else if(capturedSeparation.nonEmpty) capturedSeparation = None
     }).asInstanceOf[Any => Unit])
+
     vrc.addEventListener(Axes_Changed, ((event: Event) => {
       Log("Axes Changed")
     }).asInstanceOf[Any => Unit])
@@ -186,6 +213,16 @@ object OculusControllerLeft extends OculusController {
     }).asInstanceOf[Any => Unit])
   }
 
+  def update(): Unit = {
+    // Apply scaling to the plot being stretched
+    if(capturedSeparation.nonEmpty && OculusControllerRight.captured.nonEmpty) {
+      val scale = OculusControllers.separationDistance() / capturedSeparation.get
+      val region = OculusControllerRight.captured.get
+      region.scale.set(scale, scale, scale)
+      //region.matrixWorldNeedsUpdate = true
+    }
+  }
+
 }
 
 /**
@@ -202,9 +239,6 @@ object OculusControllerRight extends OculusController {
   val A_PressEnded: String = "A press ended"
   val B_PressBegan: String = "B press began"
   val B_PressEnded: String = "B press ended"
-
-  var captured: Option[Object3D] = None
-  var capturedDiff: Vector3 = _
 
   def setup(vrc: VRController): Unit = {
     Log(s"$name Connected!")
@@ -229,26 +263,34 @@ object OculusControllerRight extends OculusController {
     vrc.addEventListener(Primary_PressEnded, ((event: Event) => {
       Log("Primary Press Ended")
     }).asInstanceOf[Any => Unit])
+
     vrc.addEventListener(Grip_PressBegan, ((event: Event) => {
+      Log("Grip Press Began")
       val regions = Environment.instance.getRegions
       for(r <- regions) {
         val controllerPos = getCorrectedPosition()
-        dom.console.log(controllerPos)
         if(captured.isEmpty && r.position.distanceTo(controllerPos) < 0.5) {
-          SceneUtils2.attach(r, Environment.instance.scene, vrc)
-          captured = Some(r)
+          if(r.parent == Environment.instance.scene) {
+            // In this case, that region can be grabbed
+            SceneUtils2.attach(r, Environment.instance.scene, vrc)
+            captured = Some(r)
+          } else {
+            // Ditto
+            capturedSeparation = Some(OculusControllers.separationDistance())
+          }
         }
       }
-      Log("Grip Press Began")
     }).asInstanceOf[Any => Unit])
+
     vrc.addEventListener(Grip_PressEnded, ((event: Event) => {
+      Log("Grip Press Ended")
       if(captured.nonEmpty) {
         val dropped = captured.get
         SceneUtils2.detach(dropped, vrc, Environment.instance.scene)
         captured = None
-      }
-      Log("Grip Press Ended")
+      } else if(capturedSeparation.nonEmpty) capturedSeparation = None
     }).asInstanceOf[Any => Unit])
+
     vrc.addEventListener(Axes_Changed, ((event: Event) => {
       Log("Axes Changed")
     }).asInstanceOf[Any => Unit])
@@ -270,8 +312,18 @@ object OculusControllerRight extends OculusController {
       //TODO: Remove meshes & raycasters associated with this controller
       Log(s"$name Disconnected!")
     }).asInstanceOf[Any => Unit])
-
   }
+
+  def update(): Unit = {
+    // Apply scaling to the plot being stretched
+    if(capturedSeparation.nonEmpty && OculusControllerLeft.captured.nonEmpty) {
+      val scale = OculusControllers.separationDistance() / capturedSeparation.get
+      val region = OculusControllerLeft.captured.get
+      region.scale.set(scale, scale, scale)
+      //region.matrixWorldNeedsUpdate = true
+    }
+  }
+
 }
 
 object OculusControllers {
@@ -280,4 +332,9 @@ object OculusControllers {
     else if(OculusControllerLeft.isPointing) Some(OculusControllerLeft.updatedRayCaster)
     else None
   }
+
+  def separationDistance(): Double =
+    OculusControllerRight.getCorrectedPosition().distanceTo(
+      OculusControllerLeft.getCorrectedPosition()
+    )
 }
