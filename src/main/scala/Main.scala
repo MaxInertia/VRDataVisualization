@@ -25,6 +25,14 @@ object Main {
     val container = dom.document.getElementById("scene-container")
     env = Environment.setup(container)
 
+    /* TODO: Make the button unfocusable to prevent it from being highlighted on dblclick
+    val button = WEBVR.createButton(env.renderer)
+    val hasIt = button.hasAttribute("focusable")
+    dom.console.log(hasIt)
+    if(hasIt) {
+      dom.console.log(button.getAttribute("focusable"))
+      button.setAttribute("focusable", "false")
+    }*/
     dom.document.body.appendChild( WEBVR.createButton(env.renderer) )
 
     if(foundVRHeadset) {
