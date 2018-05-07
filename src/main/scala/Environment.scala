@@ -233,6 +233,7 @@ object Environment {
     env
   }
 
+  // TODO: Default should be scatterplot, whose axes can be selected by the user from data columns
   def makePlots(env: Environment, texture: Texture): Unit = { // Not happy with this method
     def makeSingle(texture: Texture, plotNumber: Int, storageID: String, hue: Double): Unit = {
       // Create the plot
@@ -243,7 +244,7 @@ object Environment {
       val axes = CoordinateAxes3D.create(1, color = Colors.White, centeredOrigin = true, planeGrids = true)
       env.Regions(plotNumber).add(axes) // Add coordinate axes (TEMPORARY)
     }
-    makeSingle(texture, 0, "SM1_timeSeries", Colors.RED_HUE_SHIFT) // prev blue
+    makeSingle(texture, 0, "SM1_timeSeries", Colors.BLUE_HUE_SHIFT)
     makeSingle(texture, 1, "SM2_timeSeries", Colors.RED_HUE_SHIFT)
   }
 
@@ -381,6 +382,32 @@ object Environment {
           .usingTexture(textureIndex)
           .build3D()
         plots = plots :+ ShadowManifold(id, points, hue)
+        i += 1
+      }
+
+      Some(plots.asInstanceOf[Array[Plot]])
+    }
+  }
+
+  def createScatterPlot(localStorageID: String, hue: Double, textureIndex: Int): Option[Array[Plot]] = {
+    val csvData = BrowserStorage.timeSeriesFromCSV(localStorageID)
+    if (csvData.isEmpty) None
+    else {
+      // Standardize the values
+      val standardizedData = csvData.get.map { case (id, vs) => (id, Stats.standardize(vs)) }
+
+      var plots: Array[ScatterPlot] = Array()
+      var i = 0
+      for ((id, data) <- standardizedData) {
+        /*val points = PointsBuilder()
+          .withXS(data)
+          .withYS(data)
+          .withZS(data)
+          .usingHue(Some(hue))
+          .usingTexture(textureIndex)
+          .build3D()
+        plots = plots :+ ScatterPlot(id, hue, points, hue)
+        */
         i += 1
       }
 
