@@ -12,6 +12,7 @@ import userinput.{Controls, Interactions}
 import window.Window
 import resources.Res.Texture
 import Environment.{PerspectiveCamera, Scene, WebGLRenderer}
+import facades.Dat
 import userinput.Controls.RayCaster
 import util.Log
 
@@ -31,6 +32,8 @@ class Environment(val scene: Scene,
   val fakeOrigin: Group = new Group
   fakeOrigin.position.set(0, 1.6, 0)
   scene.add(fakeOrigin)
+
+  var datgui: Dat.GUIVR = _
 
   /** Regions are represent positions in the scene,
     * used to anchor multiple objects to one another */
@@ -230,7 +233,18 @@ object Environment {
       case Failure(err) => err.printStackTrace()
     }
 
+    val gui = makeDatGUI()
+    gui.position.set(0,1,0)
+    env.datgui = gui
+    scene.add(gui)
+
     env
+  }
+
+  def makeDatGUI(): Dat.GUIVR = {
+    Log.show("Creating DATGUI!")
+    val gui = Dat.GUIVR.create("Empty Gui")
+    gui
   }
 
   // TODO: Default should be scatterplot, whose axes can be selected by the user from data columns

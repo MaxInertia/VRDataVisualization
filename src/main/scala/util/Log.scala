@@ -11,8 +11,11 @@ object Log {
   val showLogs: Boolean = false
 
   def apply(message: String): Unit =
-    if(showLogs) dom.console.log(message)
+    if(showLogs) show(message)
 
   def apply(anything: js.Any): Unit =
-    if(showLogs) dom.console.log(anything)
+    if(showLogs) show(anything)
+
+  def show(message: String): Unit = dom.console.log(message)
+  def show(anything: js.Any): Unit = dom.console.log(anything)
 }
