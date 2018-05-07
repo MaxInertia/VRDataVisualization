@@ -1,7 +1,8 @@
 package userinput
 
 import env.Environment
-import facades.IFThree.{RaycasterParametersExt, VRController}
+import facades.IFThree.{RaycasterParametersExt, SceneUtils2, VRController}
+import org.scalajs.dom
 import org.scalajs.dom.raw.Event
 import org.scalajs.threejs.{ArrowHelper, BoxGeometry, Color, CylinderGeometry, Matrix4, Mesh, MeshBasicMaterial, Object3D, SceneUtils, Vector3}
 import userinput.Controls.RayCaster
@@ -45,17 +46,30 @@ sealed abstract class OculusController extends OculusTouchEvents {
   def isPointing: Boolean = rayCasterArrow!=null && rayCasterArrow.visible
   def updatedRayCaster: RayCaster = {
     // Adjust raycaster origin to account for fakeOrigin (The controllers parent)
-    correctedPosition = controllerEl.position
-    correctedPosition.add(yOffset)
-    rayCasterEl.set(
-      correctedPosition,
-    controllerDirection())
+    rayCasterEl.set(getCorrectedPosition(), controllerDirection())
 
     /*rayCasterEl.set(
       controllerEl.position,
       controllerDirection())*/
 
     rayCasterEl
+  }
+
+  /**
+    * Get the real position of the controller!
+    * The place I hide away half of the fix for the controllers in the floor issue.
+    * Note: The other half in Environment.fakeOrigin
+    */
+  def getCorrectedPosition(): Vector3 = {
+    correctedPosition.set(
+      controllerEl.position.x,
+      controllerEl.position.y,
+      controllerEl.position.z
+    )
+    // If the controllers appear to be above the user
+    // by ~1.5 meters, comment out the next line.
+    correctedPosition.add(yOffset)
+    correctedPosition
   }
 
   protected def init(vrc: VRController, hexColor: Int): Unit = {
@@ -218,9 +232,10 @@ object OculusControllerRight extends OculusController {
     vrc.addEventListener(Grip_PressBegan, ((event: Event) => {
       val regions = Environment.instance.getRegions
       for(r <- regions) {
-        val controllerPos = vrc.position
+        val controllerPos = getCorrectedPosition()
+        dom.console.log(controllerPos)
         if(captured.isEmpty && r.position.distanceTo(controllerPos) < 0.5) {
-          SceneUtils.attach(r, Environment.instance.scene, vrc)
+          SceneUtils2.attach(r, Environment.instance.scene, vrc)
           captured = Some(r)
         }
       }
@@ -229,7 +244,7 @@ object OculusControllerRight extends OculusController {
     vrc.addEventListener(Grip_PressEnded, ((event: Event) => {
       if(captured.nonEmpty) {
         val dropped = captured.get
-        SceneUtils.detach(dropped, vrc, Environment.instance.scene)
+        SceneUtils2.detach(dropped, vrc, Environment.instance.scene)
         captured = None
       }
       Log("Grip Press Ended")

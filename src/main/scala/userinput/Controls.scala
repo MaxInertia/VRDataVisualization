@@ -76,9 +76,6 @@ object Controls {
     });*/
 
     controls.vr = new VRControls(env.camera)
-    // These appear to have no effect outside Oculus. TODO: What about in Oculus?
-    //controls.vr.userHeight = 1.6
-    //controls.vr.standing = true
 
     // TODO: What if this event is fired before reaching this point? Can it miss it? Possibly add a listener earlier.
     // OR remove VRController.js and manually handle controller retrieval and state updates...

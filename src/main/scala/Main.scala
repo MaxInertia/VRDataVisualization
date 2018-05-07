@@ -5,7 +5,7 @@ import userinput.Controls
 import env.Environment
 import window.Window
 import facades.Stats
-import facades.IFThree.{VRControllerManager, WEBVR, WebGLRendererExt}
+import facades.IFThree.{WEBVR, WebGLRendererExt}
 
 /**
   * Created by Dorian Thiessen on 2018-01-05.

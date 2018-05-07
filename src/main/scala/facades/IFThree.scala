@@ -159,4 +159,11 @@ object IFThree {
   @js.native
   @JSGlobal("THREE.GridHelper")
   class GridHelperExt(size: Double, step: Double, color1: Color, color2: Color) extends GridHelper(size, step) {}
+
+  @js.native
+  @JSGlobal("THREE.SceneUtils")
+  object SceneUtils2 extends js.Object {
+    def attach(child: Object3D, scene: Scene, parent: Object3D): Unit = js.native
+    def detach(child: Object3D, parent: Object3D, scene: Scene): Unit = js.native
+  }
 }
