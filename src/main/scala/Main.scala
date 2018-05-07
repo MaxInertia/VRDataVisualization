@@ -57,10 +57,9 @@ object Main {
   @JSExportTopLevel("animate")
   def animate(timeStamp: Double): Unit = {
     dom.window.requestAnimationFrame(animate)
-    VRControllerManager.update()
     if(controls != null) controls.update(timeStamp)
-    if(stats != null) stats.update()
     if(env != null) env.render()
+    if(stats != null) stats.update()
   }
 
   @JSExport("renderer") // Temporary. renderer currently required in global scope.

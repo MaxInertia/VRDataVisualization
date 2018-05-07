@@ -26,6 +26,12 @@ class Environment(val scene: Scene,
     * that should always move and rotate together */
   type Group = THREE.Object3D // TODO: Use THREE.Group? Not in facade.
 
+  // This will be the parent of the controllers
+  // Fixes the issue where the controllers are in the floor
+  val fakeOrigin: Group = new Group
+  fakeOrigin.position.set(0, 1.6, 0)
+  scene.add(fakeOrigin)
+
   /** Regions are represent positions in the scene,
     * used to anchor multiple objects to one another */
   private object Regions {

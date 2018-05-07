@@ -25,6 +25,13 @@ class Controls {
   def update(timeStamp: Double): Unit = {
     // TODO: How is this replaced? Removal breaks rotation of camera via click and drag
     vr.update()
+    VRControllerManager.update()
+    if(controllers(0) != null) {
+      controllers(0).update()
+    }
+    if(controllers(1) != null) {
+      controllers(1).update()
+    }
     // TODO: Have fp.update disabled when pressing 'ENTER VR' if headset is connected (and enabled on exiting VR)
     if (!controllerConnected) fp.update(timeStamp)
   }
@@ -69,9 +76,9 @@ object Controls {
     });*/
 
     controls.vr = new VRControls(env.camera)
-    /* These appear to have no effect outside Oculus. TODO: What about in Oculus?
-    controls.vr.userHeight = 1.6
-    controls.vr.standing = false */
+    // These appear to have no effect outside Oculus. TODO: What about in Oculus?
+    //controls.vr.userHeight = 1.6
+    //controls.vr.standing = true
 
     // TODO: What if this event is fired before reaching this point? Can it miss it? Possibly add a listener earlier.
     // OR remove VRController.js and manually handle controller retrieval and state updates...
@@ -81,12 +88,12 @@ object Controls {
       if(controller.name == OculusControllerRight.name) {
         OculusControllerRight.setup(controller)
         controls.controllers(1) = controller
-        env.scene.add(controller)
+        env.fakeOrigin.add(controller)
 
       } else if(controller.name == OculusControllerLeft.name) {
         OculusControllerLeft.setup(controller)
         controls.controllers(0) = controller
-        env.scene.add(controller)
+        env.fakeOrigin.add(controller)
 
       } else
         Log("[Controls]\t Unknown controller passed on event: \"vr controller connected\"")

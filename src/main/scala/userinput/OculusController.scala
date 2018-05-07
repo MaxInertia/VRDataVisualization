@@ -33,17 +33,28 @@ sealed abstract class OculusController extends OculusTouchEvents {
   val meshColorBlue: Int = 0x0000FF
   val meshColorWhite: Int = 0xFFFFFF
 
-  protected var controllerEl: VRController = _
+  /*protected[userinput] */var controllerEl: VRController = _
   protected var controllerMesh: Mesh = _
   protected var rayCasterEl: RayCaster = _
   protected[userinput] var rayCasterArrow: ArrowHelper = _ // effectively the rayCaster mesh
 
+  var correctedPosition: Vector3 = new Vector3()
+  var yOffset: Vector3 = new Vector3(0, 1.6, 0)
+
   def setup(vrc: VRController): Unit
   def isPointing: Boolean = rayCasterArrow!=null && rayCasterArrow.visible
   def updatedRayCaster: RayCaster = {
+    // Adjust raycaster origin to account for fakeOrigin (The controllers parent)
+    correctedPosition = controllerEl.position
+    correctedPosition.add(yOffset)
     rayCasterEl.set(
+      correctedPosition,
+    controllerDirection())
+
+    /*rayCasterEl.set(
       controllerEl.position,
-      controllerDirection())
+      controllerDirection())*/
+
     rayCasterEl
   }
 
