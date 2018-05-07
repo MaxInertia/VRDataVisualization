@@ -1,42 +1,35 @@
 package plots
 
+import env.Environment.Column
 import org.scalajs.{threejs => THREE}
 import plots.ScatterPlot.CoordinateAxisIDs
-
-import scala.scalajs.js
 
 /**
   * Container of a simple scatter-plot.
   *
   * Created by Dorian Thiessen on 2018-04-05.
   */
-class ScatterPlot(tag: String, points: THREE.Points) extends Plot {
-  private var xid: CoordinateAxisIDs = _
-  private var yid: CoordinateAxisIDs = _
-  private var zid: CoordinateAxisIDs = _
-  override def getName: String = tag
+class ScatterPlot(points: THREE.Points, columns: (Column, Column, Column)) extends Plot {
+  def xid: CoordinateAxisIDs = columns._1._1 // 1st column, 1st field
+  def yid: CoordinateAxisIDs = columns._2._1 // 2nd column, 1st field
+  def zid: CoordinateAxisIDs = columns._3._1 // 3rd column, 1st field
+
+  override def getName: String = "Scatterplot!" // Why do these need a name?
   override def getPoints: Points = points
+
   def getGeometry: BufferGeometry = points.geometry.asInstanceOf[BufferGeometry]
 }
-
-// Tried some unconventional spacing on this one. I have mixed feelings about it.
 object ScatterPlot {
   type CoordinateAxisIDs = String
 
-  // Ignoring this for now...
-  /*def apply(title: String,          hue: Double = 0.0,
-            xs: Array[Double],      ys: Array[Double],      zs: Array[Double],
-            xid: CoordinateAxisIDs, yid: CoordinateAxisIDs, zid: CoordinateAxisIDs): ScatterPlot = {
-    val coordinates: Array[Coordinate] = Plot.zip3(xs, ys, zs)
-    val scatterPlot = new ScatterPlot(title, Plot.makePoints(coordinates, Some(hue), 0))
-    setAxisIDs(scatterPlot, xid, yid, zid)
-    scatterPlot
-  }*/
-
-  private def setAxisIDs(sp: ScatterPlot,      x: CoordinateAxisIDs,
-                         y: CoordinateAxisIDs, z: CoordinateAxisIDs): Unit = {
-    sp.xid = x
-    sp.yid = y
-    sp.zid = z
+  def apply(xColumn: Column, yColumn: Column, zColumn: Column, texture: Int, hue: Double = 0.0): ScatterPlot = {
+    val points = PointsBuilder()
+      .withXS(xColumn._2)
+      .withYS(yColumn._2)
+      .withZS(zColumn._2)
+      .usingHue(Some(hue))
+      .usingTexture(texture)
+      .build3D()
+    new ScatterPlot(points, (xColumn, yColumn, zColumn))
   }
 }

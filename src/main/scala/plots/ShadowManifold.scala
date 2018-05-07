@@ -1,5 +1,7 @@
 package plots
 
+import env.Environment.Column
+
 
 /**
   * A reconstruction of an attractor manifold generated from data on a single variable.
@@ -36,6 +38,24 @@ object ShadowManifold {
   def apply(id: String, points: Points): ShadowManifold = {
     val sm = new ShadowManifold(id, points)
     sm
+  }
+
+  def many(columns: Array[Column], hue: Double, texture: Int): Array[Plot] = {
+    var plots: Array[ShadowManifold] = Array()
+    var i = 0
+    for ((id, data) <- columns) {
+      val points = PointsBuilder()
+        .withXS(data.drop(2))
+        .withYS(data.tail)
+        .withZS(data)
+        .usingHue(Some(hue))
+        .usingTexture(texture)
+        .build3D()
+      plots = plots :+ ShadowManifold(id, points, hue)
+      i += 1
+    }
+
+    plots.asInstanceOf[Array[Plot]]
   }
 
   def lagZip3(ts: Array[Double]): Array[Coordinate] = Plot.zip3(ts.drop(2), ts.tail, ts) // TODO: Generalize Tau

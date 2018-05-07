@@ -250,7 +250,32 @@ object Environment {
     val loadTexture = Res.loadPointTexture(1)
     import scala.concurrent.ExecutionContext.Implicits.global
     loadTexture andThen {
-      case Success(texture) => makePlots(env, texture)
+      case Success(texture) =>
+
+        val columnSet1 = prepareData("SM1_timeSeries")
+        if(columnSet1.nonEmpty) {
+          val sm: Array[Plot] = ShadowManifold.many(columnSet1, Colors.RED_HUE_SHIFT, 1)
+
+          if(sm.nonEmpty) {
+            val plotNum: Int = 0
+            env.addPlots(plotNum, Some(sm))
+            env.loadPlot(regionID = plotNum, plotID = 0)
+            val axes = CoordinateAxes3D.create(1, color = Colors.White, centeredOrigin = true, planeGrids = true)
+            env.Regions(plotNum).add(axes) // Add coordinate axes (TEMPORARY)
+          }
+        }
+
+        val columnSet2 = prepareData("SM2_timeSeries")
+        if(columnSet2.nonEmpty) {
+          val scatterPlot: Plot = ScatterPlot(columnSet2(0), columnSet2(1), columnSet2(2), 1, Colors.RED_HUE_SHIFT).asInstanceOf[Plot]
+
+          val plotNum: Int = 1
+          env.addPlots(plotNum, Some(Array(scatterPlot)))
+          env.loadPlot(regionID = plotNum, plotID = 0)
+          val axes = CoordinateAxes3D.create(1, color = Colors.White, centeredOrigin = true, planeGrids = true)
+          env.Regions(plotNum).add(axes) // Add coordinate axes (TEMPORARY)
+        }
+
       case Failure(err) => err.printStackTrace()
     }
 
@@ -266,21 +291,6 @@ object Environment {
     Log.show("Creating DATGUI!")
     val gui = Dat.GUIVR.create("Empty Gui")
     gui
-  }
-
-  // TODO: Default should be scatterplot, whose axes can be selected by the user from data columns
-  def makePlots(env: Environment, texture: Texture): Unit = { // Not happy with this method
-    def makeSingle(texture: Texture, plotNumber: Int, storageID: String, hue: Double): Unit = {
-      // Create the plot
-      val sm = createSMPlots(storageID, hue, 1)
-      if (sm.isEmpty) return
-      env.addPlots(plotNumber, sm)
-      env.loadPlot(regionID = plotNumber, plotID = 0)
-      val axes = CoordinateAxes3D.create(1, color = Colors.White, centeredOrigin = true, planeGrids = true)
-      env.Regions(plotNumber).add(axes) // Add coordinate axes (TEMPORARY)
-    }
-    makeSingle(texture, 0, "SM1_timeSeries", Colors.BLUE_HUE_SHIFT)
-    makeSingle(texture, 1, "SM2_timeSeries", Colors.RED_HUE_SHIFT)
   }
 
   /**
@@ -399,56 +409,34 @@ object Environment {
     spotlight
   }
 
-  def createSMPlots(localStorageID: String, hue: Double, textureIndex: Int): Option[Array[Plot]] = {
+  type Column = (String, Array[Double])
+
+  /**
+    * Prepares raw data for being turned into points then plotted
+    * @param localStorageID ID of data in browser storage // TODO: This should be generalized to DataSource
+    * @return Preprocessed data, ready to be turned into points and plotted!
+    */
+  def prepareData(localStorageID: String): Array[Column] = {
     val timeSeries = BrowserStorage.timeSeriesFromCSV(localStorageID)
     if (timeSeries.isEmpty) None
-    else {
-      // Standardize the values
-      val standardizedData = timeSeries.get.map { case (id, vs) => (id, Stats.standardize(vs)) }
-
-      var plots: Array[ShadowManifold] = Array()
-      var i = 0
-      for ((id, data) <- standardizedData) {
-        val points = PointsBuilder()
-          .withXS(data.drop(2))
-          .withYS(data.tail)
-          .withZS(data)
-          .usingHue(Some(hue))
-          .usingTexture(textureIndex)
-          .build3D()
-        plots = plots :+ ShadowManifold(id, points, hue)
-        i += 1
-      }
-
-      Some(plots.asInstanceOf[Array[Plot]])
-    }
+    timeSeries.get.map{ case (id, vs) => (id, Stats.standardize(vs)) }
   }
 
-  def createScatterPlot(localStorageID: String, hue: Double, textureIndex: Int): Option[Array[Plot]] = {
-    val csvData = BrowserStorage.timeSeriesFromCSV(localStorageID)
-    if (csvData.isEmpty) None
-    else {
-      // Standardize the values
-      val standardizedData = csvData.get.map { case (id, vs) => (id, Stats.standardize(vs)) }
+  /*def createScatterPlot(columns: Array[Column], hue: Double, textureIndex: Int): Option[Array[Plot]] = {
+    var plots: Array[ScatterPlot] = Array()
+    var i = 0
+    val points = PointsBuilder()
+      .withXS(columns(0)._2)
+      .withYS(columns(1)._2)
+      .withZS(columns(2)._2)
+      .usingHue(Some(hue))
+      .usingTexture(textureIndex)
+      .build3D()
+    plots = plots :+ ScatterPlot(points, hue, textureIndex)
+    i += 1
 
-      var plots: Array[ScatterPlot] = Array()
-      var i = 0
-      for ((id, data) <- standardizedData) {
-        /*val points = PointsBuilder()
-          .withXS(data)
-          .withYS(data)
-          .withZS(data)
-          .usingHue(Some(hue))
-          .usingTexture(textureIndex)
-          .build3D()
-        plots = plots :+ ScatterPlot(id, hue, points, hue)
-        */
-        i += 1
-      }
-
-      Some(plots.asInstanceOf[Array[Plot]])
-    }
-  }
+    Some(plots.asInstanceOf[Array[Plot]])
+  }*/
 
   implicit def toSceneExt(scene: THREE.Scene): SceneExt = scene.asInstanceOf[SceneExt]
 }
