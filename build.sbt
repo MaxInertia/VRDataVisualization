@@ -41,5 +41,5 @@ mappings in makeSite ++= Seq(
   file(s"${Paths.vrSrc}/js/lib/VRControls.js") -> "vr/js/lib/VRControls.js",
   file(s"${Paths.vrSrc}/js/lib/WebVR.js") -> "vr/js/lib/WebVR.js",
   file(s"${Paths.vrSrc}/js/lib/webvr-polyfill.min.js") -> "vr/js/lib/webvr-polyfill.min.js",
-  file("target/scala-2.12/ccm-vr-fastopt.js") -> "target/scala-2.12/ccm-vr-fastopt.js"
+  file("target/scala-2.12/vrdatavisualization-fullopt.js") -> "target/scala-2.12/vrdatavisualization-fullopt.js"
 )
