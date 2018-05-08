@@ -165,7 +165,8 @@ object Environment {
 
     // Create in-vr-gui
     val gui = makeDatGUI()
-    gui.position.set(0, 1, 0)
+    gui.position.set(2, 1, -1)
+    gui.rotateY(-3.14/2)
     env.datgui = gui
     scene.add(gui)
     env
@@ -205,7 +206,7 @@ object Environment {
 
   def makeDatGUI(): Dat.GUIVR = {
     Log.show("Creating DATGUI!")
-    val gui = Dat.GUIVR.create("Empty Gui")
+    val gui = Dat.GUIVR.create("Hello! I don't do anything!")
     gui
   }
 
