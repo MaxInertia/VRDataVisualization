@@ -30,6 +30,8 @@ object ScatterPlot {
       .usingHue(Some(hue))
       .usingTexture(texture)
       .build3D()
-    new ScatterPlot(points, (xColumn, yColumn, zColumn))
+    val scatterPlot = new ScatterPlot(points, (xColumn, yColumn, zColumn))
+    scatterPlot.hue = hue
+    scatterPlot
   }
 }
