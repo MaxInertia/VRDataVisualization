@@ -68,11 +68,12 @@ trait Plot {
       * The point is restored to it's original color and size.
       */
     def unHighlight(index: Int): Unit = {
-      if(!hasHighlighted) return
-      if(index != getHighlighted) Log("[Plot.unHighlight] - Point at provided index is not highlighted!")
-      if(SelectionProperties.changesColor) resetColor(getHighlighted)
-      if(SelectionProperties.changesSize) updateSizes(Plot.PARTICLE_SIZE.toFloat, Seq(getHighlighted))
-      highlighted = None
+      if(hasHighlighted) {
+        if (index != getHighlighted) Log("[Plot.unHighlight] - Point at provided index is not highlighted!")
+        if (SelectionProperties.changesColor) resetColor(getHighlighted)
+        if (SelectionProperties.changesSize) updateSizes(Plot.PARTICLE_SIZE.toFloat, Seq(getHighlighted))
+        highlighted = None
+      }
     }
 
     // ---- Selecting

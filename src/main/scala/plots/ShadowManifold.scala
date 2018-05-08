@@ -2,7 +2,6 @@ package plots
 
 import env.Environment.Column // TODO: Unwanted dependency
 
-
 /**
   * A reconstruction of an attractor manifold generated from data on a single variable.
   * Each point can be thought of as the history of the variable over some interval of time,
