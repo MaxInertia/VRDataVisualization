@@ -1,6 +1,6 @@
 package plots
 
-import env.Environment.Column
+import env.Environment.Column // TODO: Unwanted dependency
 
 
 /**

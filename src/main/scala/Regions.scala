@@ -1,14 +1,12 @@
 package env
 
-import org.scalajs.threejs.Vector3
-import org.scalajs.threejs.Object3D
+import org.scalajs.threejs.{Object3D, Vector3}
 import plots.{Colors, CoordinateAxes3D, Plot}
 import util.Log
 
 
 object Regions {
   type MaybeRegion = Option[Region]
-  type Group = Object3D // TODO: Use Group? Not in facade.
 
   private val regions: Array[MaybeRegion] = Array(None, None, None, None)
 

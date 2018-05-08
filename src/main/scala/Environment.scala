@@ -1,7 +1,6 @@
 package env
 
 import facades.IFThree._
-import org.scalajs.{threejs => THREE}
 import org.scalajs.dom
 
 import scala.util.{Failure, Success}
@@ -10,16 +9,12 @@ import plots._
 import resources._
 import userinput.{Controls, Interactions}
 import window.Window
-import resources.Res.Texture
-import Environment.{PerspectiveCamera, Scene, WebGLRenderer}
-import env.Regions.{Group, regions, reposition}
 import facades.Dat
-import userinput.Controls.RayCaster
+import org.scalajs.threejs.{Colors => _, _}
 import util.Log
 
 import scala.scalajs.js
 import js.JSConverters._
-import scala.scalajs.js.annotation._
 
 /**
   * Created by Dorian Thiessen on 2018-01-11.
@@ -52,7 +47,7 @@ class Environment(val scene: Scene,
   // ----- Rendering!
 
   def render(): Unit = {
-    val maybeRC: Option[THREE.Raycaster] = Controls.getSelectionRayCaster(camera)
+    val maybeRC: Option[Raycaster] = Controls.getSelectionRayCaster(camera)
     if(maybeRC.nonEmpty) {
       // TODO: Still find a better way to ignore points while waiting for the texture to be loaded
       if (Regions.numOccupied() >= 2) {
@@ -72,14 +67,14 @@ class Environment(val scene: Scene,
     renderer.render(scene, camera)
   }
 
-  def pointHighlighting(rayCaster: RayCaster): Unit = {
+  def pointHighlighting(rayCaster: Raycaster): Unit = {
     // For every region (each of which contains a plot)
     for(region <- Regions.getNonEmpties) {
       if(region.plot.nonEmpty) {
         // Get the active plot in this )
         val plot = region.plot.get
         // Retrieve intersections on an available ray caster
-        val intersects: scalajs.js.Array[THREE.Intersection] = rayCaster.intersectObject(plot.getPoints)
+        val intersects: scalajs.js.Array[Intersection] = rayCaster.intersectObject(plot.getPoints)
         // If not intersections exist, don't initiate an interaction
         if (intersects.nonEmpty) {
           // Apply highlighting to the first point intersected
@@ -118,10 +113,6 @@ class Environment(val scene: Scene,
 }
 
 object Environment {
-  type Scene = THREE.Scene
-  type WebGLRenderer = THREE.WebGLRenderer
-  type PerspectiveCamera = THREE.PerspectiveCamera
-
   var instance: Environment = _
 
   type Column = (String, Array[Double])
@@ -239,43 +230,43 @@ object Environment {
   private def makeScene(): Scene = {
     import facades.IFThree.ImplicitConversions._
     val scene = new Scene()
-    scene.background = new THREE.Color(0x111111) // <- dark gray. Use 0x7EC0EE for light blue
+    scene.background = new Color(0x111111) // <- dark gray. Use 0x7EC0EE for light blue
 
     val delta = 0.001 // distance of grid from planes
 
     def addRoof(height: Double) { // TODO: Seem unable to cast light on the roof?
-      val material = new THREE.MeshLambertMaterial()
-      material.color = new THREE.Color(0xffffff)
-      val roofGeometry = new THREE.PlaneGeometry(6, 6, 32)
-      val roof = new THREE.Mesh(roofGeometry, material)
+      val material = new MeshLambertMaterial()
+      material.color = new Color(0xffffff)
+      val roofGeometry = new PlaneGeometry(6, 6, 32)
+      val roof = new Mesh(roofGeometry, material)
       roof.translateY(height)
       roof.rotateX(3.1415 / 2)
       // Add same grid on floor
-      val roofGrid: THREE.GridHelper = new GridHelperExt(6, 6, Colors.Black, Colors.Black)
+      val roofGrid: GridHelper = new GridHelperExt(6, 6, Colors.Black, Colors.Black)
       roofGrid.position.setY(height - delta)
       scene.add(roofGrid)
       scene.add(roof)
     }
 
     def addFloor(): Unit = {
-      val floorMaterial = new THREE.MeshLambertMaterial()
-      floorMaterial.color = new THREE.Color(0xffffff)
-      val floorGeometry = new THREE.PlaneGeometry( 6, 6, 32 )
-      val floor = new THREE.Mesh(floorGeometry, floorMaterial)
+      val floorMaterial = new MeshLambertMaterial()
+      floorMaterial.color = new Color(0xffffff)
+      val floorGeometry = new PlaneGeometry( 6, 6, 32 )
+      val floor = new Mesh(floorGeometry, floorMaterial)
       floor.receiveShadow = true
       floor.rotateX(-3.1415/2)
       // Add 6x6m grid broken into 36 sections
-      val floorGrid: THREE.GridHelper = new GridHelperExt(6, 6, Colors.Black, Colors.Black)
+      val floorGrid: GridHelper = new GridHelperExt(6, 6, Colors.Black, Colors.Black)
       floorGrid.position.setY(0.001)
       floorGrid.material.linewidth = 2.0
       scene.add(floorGrid)
       scene.add(floor)
 
-      var boxMaterial = new THREE.MeshLambertMaterial()
-      var boxGeometry = new THREE.CubeGeometry(1, 0.35, 1)
+      var boxMaterial = new MeshLambertMaterial()
+      var boxGeometry = new CubeGeometry(1, 0.35, 1)
       def addCornerCubes(x: Double, y: Double, z: Double) {
-        var boxGeo = new THREE.CubeGeometry(1, y, 1)
-        var cube = new THREE.Mesh(boxGeo, boxMaterial)
+        var boxGeo = new CubeGeometry(1, y, 1)
+        var cube = new Mesh(boxGeo, boxMaterial)
         cube.castShadow = true
         cube.receiveShadow = true
         cube.position.set(x, y/2, z)
@@ -304,8 +295,8 @@ object Environment {
     scene
   }
 
-  def makeLight(yPos: Double, xOrientation: Double): THREE.Light = {
-    val spotlight = new THREE.SpotLight(0xffffff, 0.5)
+  def makeLight(yPos: Double, xOrientation: Double): Light = {
+    val spotlight = new SpotLight(0xffffff, 0.5)
     spotlight.distance = 10
     spotlight.castShadow = true
     spotlight.position.set(0, yPos, 0)

@@ -1,6 +1,9 @@
 package userinput
 
-import org.scalajs.{dom, threejs => THREE}
+import org.scalajs
+import scalajs.dom
+import scalajs.threejs._
+
 import window.Window
 import env.Environment
 import facades.Dat
@@ -16,7 +19,7 @@ class Controls {
   var vr: VRControls = _
 
   var fp: FirstPersonVRControls = _
-  var mouse: THREE.Vector2 = _
+  var mouse: Vector2 = _
 
   // Oculus Controllers; [0: Left, 1: Right]
   var controllers: Array[VRController] = Array(null, null)
@@ -45,11 +48,11 @@ class Controls {
 object Controls {
   private var instance: Controls = _
 
-  type RayCaster = THREE.Raycaster
+  type RayCaster = Raycaster
   private val rayCaster: RayCaster = new RayCaster() // Used for the mouse
   rayCaster.params.asInstanceOf[RaycasterParametersExt].Points.threshold = 0.015
 
-  def getSelectionRayCaster(camera: => THREE.PerspectiveCamera): Option[RayCaster] = {
+  def getSelectionRayCaster(camera: => PerspectiveCamera): Option[RayCaster] = {
     if(!instance.controllerConnected) {
       // No Oculus Controllers connected, assume using mouse
       rayCaster.setFromCamera(getMouse, camera)
@@ -61,7 +64,7 @@ object Controls {
     // TODO: Mobile devices?
   }
 
-  def getMouse: THREE.Vector2 = instance.mouse
+  def getMouse: Vector2 = instance.mouse
 
   def setup(env: Environment): Controls = {
     Log("Controls Setup...")
@@ -104,7 +107,7 @@ object Controls {
     // Other Controls
 
     controls.fp = new FirstPersonVRControls(env.camera, env.scene)
-    controls.mouse = new THREE.Vector2()
+    controls.mouse = new Vector2()
     Window.setupEventListener_MouseMove(controls.mouse)
     Window.setupEventListener_MouseDoubleClick(controls.mouse, env)
 

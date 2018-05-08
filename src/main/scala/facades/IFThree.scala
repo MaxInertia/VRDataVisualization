@@ -168,4 +168,8 @@ object IFThree {
     def attach(child: Object3D, scene: Scene, parent: Object3D): Unit = js.native
     def detach(child: Object3D, parent: Object3D, scene: Scene): Unit = js.native
   }
+
+  @js.native
+  @JSGlobal("THREE.Group")
+  class Group extends Object3D
 }

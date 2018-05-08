@@ -1,10 +1,9 @@
 package plots
 
-import org.scalajs.threejs.{BufferGeometry, Color, Points}
-import util.Log
-
 import scala.scalajs.js
 import js.typedarray.Float32Array
+
+import util.Log
 
 /**
   * An abstract wrapper for THREE.Points that includes various

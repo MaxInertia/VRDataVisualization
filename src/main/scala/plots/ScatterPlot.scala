@@ -1,7 +1,6 @@
 package plots
 
 import env.Environment.Column
-import org.scalajs.{threejs => THREE}
 import plots.ScatterPlot.CoordinateAxisIDs
 
 /**
@@ -9,7 +8,7 @@ import plots.ScatterPlot.CoordinateAxisIDs
   *
   * Created by Dorian Thiessen on 2018-04-05.
   */
-class ScatterPlot(points: THREE.Points, columns: (Column, Column, Column)) extends Plot {
+class ScatterPlot(points: Points, columns: (Column, Column, Column)) extends Plot {
   override val ops: SelectionOps = new SelectionOps{}
   def xid: CoordinateAxisIDs = columns._1._1 // 1st column, 1st field
   def yid: CoordinateAxisIDs = columns._2._1 // 2nd column, 1st field
