@@ -50,7 +50,7 @@ class Environment(val scene: Scene,
     val maybeRC: Option[Raycaster] = Controls.getSelectionRayCaster(camera)
     if(maybeRC.nonEmpty) {
       // TODO: Still find a better way to ignore points while waiting for the texture to be loaded
-      if (Regions.numOccupied() >= 2) {
+      if (Regions.numOccupied() >= 1) {
         /*// Cause points to pulsate; requires adding u_time to Points.uniforms, and changing shaders in index.html
         def pulsate(region: Int, rate: Double): Unit = {
           val material = getActivePlot(region).getPoints.material.asInstanceOf[THREE.ShaderMaterial]
@@ -158,25 +158,33 @@ object Environment {
     import scala.concurrent.ExecutionContext.Implicits.global
     loadTexture andThen {
       case Success(texture) =>
+
+        var plotNum = 0
+
         Log.show("ColumnSet 1")
         val columnSet1 = prepareData("SM1_timeSeries")
         if (columnSet1.nonEmpty) {
+          Log("NOT EMPTY")
           val sm: Array[Plot] = ShadowManifold.many(columnSet1, Colors.RED_HUE_SHIFT, 1)
           if (sm.nonEmpty) {
-            val plotNum: Int = 0
             env.plots3D(plotNum) = Some(sm)
             val maybeNewRegion = Regions.add(env.plots3D(plotNum).get(0))
             if(maybeNewRegion.nonEmpty) scene.add(maybeNewRegion.get.object3D)
+            plotNum += 1
           }
+        } else {
+          Log("EMPTY")
         } // <-- Do spots like this really bother anyone else? (p.s. I fixed it with this comment)
         Log.show("ColumnSet 2")
         val columnSet2 = prepareData("SM2_timeSeries")
         if (columnSet2.nonEmpty) {
-          val plotNum: Int = 1
+          Log("NOT EMPTY")
           val scatterPlot: Plot = ScatterPlot(columnSet2(0), columnSet2(0), columnSet2(0), 1, Colors.BLUE_HUE_SHIFT).asInstanceOf[Plot]
           env.plots3D(plotNum) = Some(Array(scatterPlot)) // Currently we assume we're only generating one.
           val maybeNewRegion = Regions.add(env.plots3D(plotNum).get(0))
           if(maybeNewRegion.nonEmpty) scene.add(maybeNewRegion.get.object3D)
+        } else {
+          Log("EMPTY")
         }
 
       case Failure(err) =>
