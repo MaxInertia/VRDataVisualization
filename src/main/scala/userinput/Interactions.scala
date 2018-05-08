@@ -1,9 +1,8 @@
 package userinput
 
 import facades.IFThree.IntersectionExt
-import org.scalajs.{threejs => THREE}
+import org.scalajs.threejs.Intersection
 import plots.Plot
-import userinput.Interactions.Intersection
 
 /**
   * Implemented by plots that can be manipulated via user input.
@@ -18,8 +17,6 @@ trait Interactions[T] {
 }
 
 object Interactions {
-  type Intersection = THREE.Intersection
-
   implicit object PlotInteractions extends Interactions[Plot] {
 
     override def onIntersection(entity: Plot, intersection: scalajs.js.Array[Intersection]): (Option[Int], Int) = {
@@ -36,17 +33,18 @@ object Interactions {
 
         // Else if previously highlighted exists, and different than the current, deselect it
         else if (oldIndex != index) {
-          entity.unHighlight(oldIndex)
+          entity.ops.unHighlight(oldIndex)
         }
       }
 
       // Then we highlight the point!
       entity.highlighted = Some(index)
-      entity.highlight(index)
+      entity.ops.highlight(index)
 
       // TODO: Remove undesireable coupling with Controller instances (Replaceable with idea in TODO below)
-      if(OculusControllerRight.isSelecting || OculusControllerLeft.isSelecting)
-        entity.selectHighlighted()
+      if(OculusControllerRight.isSelecting || OculusControllerLeft.isSelecting) {
+        entity.ops.selectHighlighted()
+      }
 
       (oldIndexMaybe, index)
     }

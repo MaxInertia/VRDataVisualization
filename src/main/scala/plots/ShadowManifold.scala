@@ -11,6 +11,7 @@ import env.Environment.Column
   * Created by Dorian Thiessen on 2018-01-13.
   */
 class ShadowManifold(val tag: String, var points: Points) extends Plot {
+  override val ops: SelectionOps = new SelectionOps{}
   override def getPoints: Points = points
   def getGeometry: BufferGeometry = points.geometry.asInstanceOf[BufferGeometry]
   def getName: String = tag

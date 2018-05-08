@@ -1,6 +1,7 @@
 package plots
 
-import org.scalajs.{dom, threejs => THREE}
+import org.scalajs.threejs.{BufferGeometry, Color, Points}
+import util.Log
 
 import scala.scalajs.js
 import js.typedarray.Float32Array
@@ -12,104 +13,167 @@ import js.typedarray.Float32Array
   * Created by Dorian Thiessen on 2018-02-08.
   */
 trait Plot {
-  var hue: Double = _
-  val numPoints: Int = getSizesAttribute.array.asInstanceOf[Float32Array].length // hmm..
+  val ops: SelectionOps = new SelectionOps{}
+  val numPoints: Int = getSizes.array.asInstanceOf[Float32Array].length
 
+  var hue: Double = 0 // Default to be overwritten if points are to have color
   var savedSelections: Set[Int] = Set[Int]()
   var highlighted: Option[Int] = None
-  def getPoints: Points
 
+  def getPoints: Points
   def getName: String
 
-  /** Buffer Attributes for point colors as RGB values */
-  @inline def getColorsAttribute: js.Dynamic = getGeometry.getAttribute("customColor")
+  /** Buffer Attribute for point colors as RGB values */
+  @inline def getColors: js.Dynamic = getGeometry.getAttribute("customColor")
 
-  /** Buffer Attributes for point sizes */
-  @inline def getSizesAttribute: js.Dynamic = getGeometry.getAttribute("size")
+  /** Buffer Attribute for point sizes */
+  @inline def getSizes: js.Dynamic = getGeometry.getAttribute("size")
 
-  /**
-    * Highlights the set of points at the provided indices.
-    * @param pIndices Point indices
-    */
-  def highlight(pIndices: Int*): Unit = {
-    if(Selection.changesColor) updateColors(Selection.red, Selection.green, Selection.blue, pIndices)
-    if(Selection.changesSize)  updateSizes(Plot.PARTICLE_SIZE.toFloat*Selection.scale, pIndices)
-  }
+  /** Buffer Attribute for point alpha values */
+  @inline def getAlphas: js.Dynamic = getGeometry.getAttribute("alpha")
+
+  private[plots] def getGeometry: BufferGeometry
 
   /**
-    * UnHighlight the currently highlighted point.
-    * The point is restored to it's original color and size.
+    * Contains all methods related to highlighting and selecting of points.
     */
-  def unHighlight(index: Int): Unit = {
-    if(highlighted.isEmpty) return
-    if(index != highlighted.get) dom.console.log("[Plot.unHighlight]\tPoint at provided index is not highlighted!")
-    if(Selection.changesColor) resetColor(highlighted.get)
-    if(Selection.changesSize) updateSizes(Plot.PARTICLE_SIZE.toFloat, Seq(highlighted.get))
-    highlighted = None
-  }
+  trait SelectionOps {
 
-  /**
-    * Causes the currently highlighted point to be selected. If no point is highlighted
-    * or the highlighted point has already been selected, does nothing.
-    */
-  def selectHighlighted(): Unit = if(highlighted.nonEmpty) savedSelections = savedSelections + highlighted.get
+    // -- Public Ops
 
-  /*
-    * Deselect the set of points at the provided indices.
-    * Deselected points are restored to their original color and size.
-    * @param pIndices Point indices
-    */
-  /*def deselect(pIndices: Int*): Unit = {
-    if(Selection.changesColor) for(i <- pIndices) resetColor(i)
-    if(Selection.changesSize) updateSizes(Plot.PARTICLE_SIZE.toFloat, pIndices)
-  }*/
+    // ---- Highlighting
 
-  private def updateColors(r: Float, g: Float, b: Float, pIndices: Seq[Int]): Unit = {
-    val colorsAttr = getColorsAttribute
-    val cArr = colorsAttr.array.asInstanceOf[Float32Array]
-    for(i <- pIndices) {
-      cArr(3*i) = r
-      cArr(3*i + 1) = g
-      cArr(3*i + 2) = b
+    /**
+      * Highlights the set of points at the provided indices.
+      * @param pIndices Point indices
+      */
+    def highlight(pIndices: Int*): Unit = {
+
+      if(SelectionProperties.changesColor)
+        updateColors(
+          SelectionProperties.red,
+          SelectionProperties.green,
+          SelectionProperties.blue,
+          pIndices
+        )
+
+      if(SelectionProperties.changesSize)
+        updateSizes(
+          Plot.PARTICLE_SIZE.toFloat * SelectionProperties.scale,
+          pIndices
+        )
     }
-    colorsAttr.needsUpdate = true
-  }
 
-  private def resetColor(pIndex: Int): Unit = {
-    // Recompute this points original color
-    val color: THREE.Color = new THREE.Color()
-    val newHue: Double = hue + 0.1 * ( pIndex * 1.0 / numPoints )
-    color.setHSL( newHue, 1.0, 0.5 )
-    // Assign color to point
-    val colorsAttr = getColorsAttribute
-    val cArr = colorsAttr.array.asInstanceOf[Float32Array]
-    cArr(3*pIndex) = color.r.toFloat
-    cArr(3*pIndex + 1) = color.g.toFloat
-    cArr(3*pIndex + 2) = color.b.toFloat
-    colorsAttr.needsUpdate = true
-  }
+    /**
+      * UnHighlight the currently highlighted point.
+      * The point is restored to it's original color and size.
+      */
+    def unHighlight(index: Int): Unit = {
+      if(!hasHighlighted) return
+      if(index != getHighlighted) Log("[Plot.unHighlight] - Point at provided index is not highlighted!")
+      if(SelectionProperties.changesColor) resetColor(getHighlighted)
+      if(SelectionProperties.changesSize) updateSizes(Plot.PARTICLE_SIZE.toFloat, Seq(getHighlighted))
+      highlighted = None
+    }
 
-  private def updateSizes(newSize: Float, pIndices: Seq[Int]): Unit = {
-    val sizesAttr = getSizesAttribute
-    val sArr = sizesAttr.array.asInstanceOf[Float32Array]
-    for(i <- pIndices) sArr(i) = newSize
-    sizesAttr.needsUpdate = true
-  }
+    // ---- Selecting
 
-  private[plots] def getGeometry: THREE.BufferGeometry
+    /**
+      * Causes the currently highlighted point to be selected. If no point is highlighted
+      * or the highlighted point has already been selected, does nothing.
+      * See inverse: `deselectHighlighted`
+      */
+    def selectHighlighted(): Unit = if(hasHighlighted) savedSelections = savedSelections + highlighted.get
 
-  /**
-    * Properties of selected points.
-    */
-  private object Selection {
-    var changesColor: Boolean = true
-    var red: Float = 1.toFloat   //
-    var green: Float = 1.toFloat // Selected points are white
-    var blue: Float = 1.toFloat  //
-    var changesSize: Boolean = true
-    var scale: Float = 1.5.toFloat // Selected points are 1.5x larger
+    /**
+      * Causes the currently highlighted point to be deselected. If no point is highlighted
+      * or the highlighted point has not been selected, does nothing.
+      * Inverse to selectHighlighted when dependent variable `highlighted` is held constant.
+      */
+    def deselectHighlighted(): Unit = if(hasHighlighted) savedSelections = savedSelections - highlighted.get
+
+    /**
+      * Deselect the set of points at the provided indices.
+      * Deselected points are restored to their original color and size.
+      * @param pIndices Point indices
+      */
+    def deselect(pIndices: Int*): Unit = {
+      if(SelectionProperties.changesColor) for(i <- pIndices) resetColor(i)
+      if(SelectionProperties.changesSize) updateSizes(Plot.PARTICLE_SIZE.toFloat, pIndices)
+    }
+
+    // -- Other
+
+    private def updateColors(r: Float, g: Float, b: Float, pIndices: Seq[Int]): Unit = {
+      val colorsAttr = getColors
+      val cArr = colorsAttr.array.asInstanceOf[Float32Array]
+      for(i <- pIndices) {
+        cArr(3*i) = r
+        cArr(3*i + 1) = g
+        cArr(3*i + 2) = b
+      }
+      colorsAttr.needsUpdate = true
+    }
+
+    private def resetColor(pIndex: Int): Unit = {
+      // Recompute this points original color
+      val color: Color = new Color()
+      val newHue: Double = hue + 0.1 * ( pIndex * 1.0 / numPoints )
+      color.setHSL( newHue, 1.0, 0.5 )
+      // Assign color to point
+      val colorsAttr = getColors
+      val cArr = colorsAttr.array.asInstanceOf[Float32Array]
+      cArr(3*pIndex) = color.r.toFloat
+      cArr(3*pIndex + 1) = color.g.toFloat
+      cArr(3*pIndex + 2) = color.b.toFloat
+      colorsAttr.needsUpdate = true
+    }
+
+    private def updateSizes(newSize: Float, pIndices: Seq[Int]): Unit = {
+      val sizesAttr = getSizes
+      val sArr = sizesAttr.array.asInstanceOf[Float32Array]
+      for(i <- pIndices) sArr(i) = newSize
+      sizesAttr.needsUpdate = true
+    }
+
+    // --  Getters and Setters
+
+    /** @return original point hue */
+    def getHue: Double = hue
+
+    /** @return True if some point is highlighted */
+    def hasHighlighted: Boolean = highlighted.nonEmpty
+
+    /**
+      * Convenience getter.
+      * Precondition: hasHighlighted == true
+      * @return Index of highlighted point
+      */
+    def getHighlighted: Int = {
+      require(highlighted.nonEmpty)
+      highlighted.get
+    }
+
+    /**
+      * Set highlighted point index
+      * @param hpi highlighted point index
+      */
+    protected def setHighlighted(hpi: Option[Int]): Unit = highlighted = hpi
+
+    /**
+      * Properties of selected points.
+      */
+    protected object SelectionProperties {
+      var changesColor: Boolean = true
+      var red: Float = 1.toFloat   //
+      var green: Float = 1.toFloat // Selected points are white
+      var blue: Float = 1.toFloat  //
+      var changesSize: Boolean = true
+      var scale: Float = 1.5.toFloat // Selected points are 1.5x larger
+    }
   }
 }
+
 
 /**
   * The companion object for the Plot class.

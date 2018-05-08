@@ -10,6 +10,7 @@ import plots.ScatterPlot.CoordinateAxisIDs
   * Created by Dorian Thiessen on 2018-04-05.
   */
 class ScatterPlot(points: THREE.Points, columns: (Column, Column, Column)) extends Plot {
+  override val ops: SelectionOps = new SelectionOps{}
   def xid: CoordinateAxisIDs = columns._1._1 // 1st column, 1st field
   def yid: CoordinateAxisIDs = columns._2._1 // 2nd column, 1st field
   def zid: CoordinateAxisIDs = columns._3._1 // 3rd column, 1st field
