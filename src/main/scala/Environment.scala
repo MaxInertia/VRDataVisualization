@@ -157,36 +157,7 @@ object Environment {
     val loadTexture = Res.loadPointTexture(1)
     import scala.concurrent.ExecutionContext.Implicits.global
     loadTexture andThen {
-      case Success(texture) =>
-
-        var plotNum = 0
-
-        Log.show("ColumnSet 1")
-        val columnSet1 = prepareData("SM1_timeSeries")
-        if (columnSet1.nonEmpty) {
-          Log("NOT EMPTY")
-          val sm: Array[Plot] = ShadowManifold.many(columnSet1, Colors.RED_HUE_SHIFT, 1)
-          if (sm.nonEmpty) {
-            env.plots3D(plotNum) = Some(sm)
-            val maybeNewRegion = Regions.add(env.plots3D(plotNum).get(0))
-            if(maybeNewRegion.nonEmpty) scene.add(maybeNewRegion.get.object3D)
-            plotNum += 1
-          }
-        } else {
-          Log("EMPTY")
-        } // <-- Do spots like this really bother anyone else? (p.s. I fixed it with this comment)
-        Log.show("ColumnSet 2")
-        val columnSet2 = prepareData("SM2_timeSeries")
-        if (columnSet2.nonEmpty) {
-          Log("NOT EMPTY")
-          val scatterPlot: Plot = ScatterPlot(columnSet2(0), columnSet2(0), columnSet2(0), 1, Colors.BLUE_HUE_SHIFT).asInstanceOf[Plot]
-          env.plots3D(plotNum) = Some(Array(scatterPlot)) // Currently we assume we're only generating one.
-          val maybeNewRegion = Regions.add(env.plots3D(plotNum).get(0))
-          if(maybeNewRegion.nonEmpty) scene.add(maybeNewRegion.get.object3D)
-        } else {
-          Log("EMPTY")
-        }
-
+      case Success(texture) => plot(env)
       case Failure(err) =>
         Log.show("Failed to load the texture!")
         err.printStackTrace()
@@ -199,6 +170,38 @@ object Environment {
     scene.add(gui)
     env
   }
+
+  def plot(env: Environment, plotNum: Int = 0): Unit = {
+    val columnSet: Array[Column] = prepareData(localStorageID = s"SM${plotNum + 1}_timeSeries")
+    if(columnSet.nonEmpty) {
+      val scatterPlot: Plot = ScatterPlot(columnSet(0), columnSet(0), columnSet(0), 1, Colors.BLUE_HUE_SHIFT)
+
+      // The following three lines use Scene, Environment AND Regions...
+
+      env.plots3D(plotNum) = Some(Array(scatterPlot)) // Currently we assume we're only generating one.
+      val maybeNewRegion = Regions.add(env.plots3D(plotNum).get(0))
+      if(maybeNewRegion.nonEmpty) env.scene.add(maybeNewRegion.get.object3D)
+
+      // Attempts to load more data
+      plot(env, plotNum+1)
+    } else if( plotNum == 1 && columnSet.isEmpty) {
+      Log.show("No data was found in the browsers LocalStorage! Unable to create plots.")
+    } else {
+      Log.show(s"Was able to create ${plotNum + 1} plots!")
+    }
+  }
+
+  /*
+    if (columnSet1.nonEmpty) {
+      Log("NOT EMPTY")
+      val sm: Array[Plot] = ShadowManifold.many(columnSet1, Colors.RED_HUE_SHIFT, 1)
+      if (sm.nonEmpty) {
+        env.plots3D(plotNum) = Some(sm)
+        val maybeNewRegion = Regions.add(env.plots3D(plotNum).get(0))
+        if(maybeNewRegion.nonEmpty) env.scene.add(maybeNewRegion.get.object3D)
+      }
+    }
+   */
 
   def makeDatGUI(): Dat.GUIVR = {
     Log.show("Creating DATGUI!")
