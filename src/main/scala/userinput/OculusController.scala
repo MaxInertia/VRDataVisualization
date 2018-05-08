@@ -1,6 +1,6 @@
 package userinput
 
-import env.Environment
+import env.{Environment, Regions}
 import facades.IFThree.{RaycasterParametersExt, SceneUtils2, VRController}
 import org.scalajs.dom.raw.Event
 import org.scalajs.threejs.{ArrowHelper, BoxGeometry, Color, CylinderGeometry, Matrix4, Mesh, MeshBasicMaterial, Object3D, SceneUtils, Vector3}
@@ -37,7 +37,7 @@ sealed abstract class OculusController extends OculusTouchEvents {
   val meshColorBlue: Int = 0x0000FF
   val meshColorWhite: Int = 0xFFFFFF
 
-  /*protected[userinput] */var controllerEl: VRController = _
+  /*protected[userinput] */ var controllerEl: VRController = _
   protected var controllerMesh: Mesh = _
   protected var rayCasterEl: RayCaster = _
   protected[userinput] var rayCasterArrow: ArrowHelper = _ // effectively the rayCaster mesh
@@ -55,15 +55,12 @@ sealed abstract class OculusController extends OculusTouchEvents {
   def isSelecting: Boolean = isConnected && rayCasterArrow.visible && selecting
 
   def setup(vrc: VRController): Unit
-  def isPointing: Boolean = rayCasterArrow!=null && rayCasterArrow.visible
+
+  def isPointing: Boolean = rayCasterArrow != null && rayCasterArrow.visible
+
   def updatedRayCaster: RayCaster = {
     // Adjust raycaster origin to account for fakeOrigin (The controllers parent)
-    rayCasterEl.set(getCorrectedPosition(), controllerDirection())
-
-    /*rayCasterEl.set(
-      controllerEl.position,
-      controllerDirection())*/
-
+    rayCasterEl.set(getCorrectedPosition, controllerDirection())
     rayCasterEl
   }
 
@@ -72,7 +69,7 @@ sealed abstract class OculusController extends OculusTouchEvents {
     * The place I hide away half of the fix for the controllers in the floor issue.
     * Note: The other half in Environment.fakeOrigin
     */
-  def getCorrectedPosition(): Vector3 = {
+  def getCorrectedPosition: Vector3 = {
     correctedPosition.set(
       controllerEl.position.x,
       controllerEl.position.y,
@@ -107,8 +104,8 @@ sealed abstract class OculusController extends OculusTouchEvents {
 
   protected def controllerDirection(): Vector3 = {
     val matrix = new Matrix4()
-    matrix.extractRotation( controllerEl.matrix )
-    var direction = new Vector3( 0, 0, 1 )
+    matrix.extractRotation(controllerEl.matrix)
+    var direction = new Vector3(0, 0, 1)
     direction = direction.applyMatrix4(matrix).negate()
     direction
   }
@@ -117,7 +114,7 @@ sealed abstract class OculusController extends OculusTouchEvents {
     val controllerMaterial = new MeshBasicMaterial()
     controllerMaterial.color = new Color(color)
     val controllerMesh = new Mesh(
-      new CylinderGeometry( 0.005, 0.05, 0.1, 6 ),
+      new CylinderGeometry(0.005, 0.05, 0.1, 6),
       controllerMaterial)
     val handleMesh = new Mesh(
       new BoxGeometry(0.03, 0.1, 0.03),
@@ -126,7 +123,7 @@ sealed abstract class OculusController extends OculusTouchEvents {
     //controllerMaterial.flatShading = true;
     controllerMesh.rotation.x = -Math.PI / 2
     handleMesh.position.y = -0.05
-    controllerMesh.add( handleMesh )
+    controllerMesh.add(handleMesh)
     controllerMesh
   }
 
@@ -142,24 +139,11 @@ sealed abstract class OculusController extends OculusTouchEvents {
     */
   protected def commonEvents(vrc: VRController): Unit = {
 
-    /* Primary touch doesn't seem to work?
-    vrc.addEventListener(Primary_TouchBegan, ((event: Event) => {
-      Log("Primary Touch Began")
-      if(captured.isEmpty && capturedSeparation.isEmpty) {
-        rayCasterArrow.visible = true
-      }
-    }).asInstanceOf[Any => Unit])
-    vrc.addEventListener(Primary_TouchEnded, ((event: Event) => {
-      Log("Primary Touch Ended")
-      selecting = false // Just incase the Primary Press Ended doesn't fire
-      rayCasterArrow.visible = false
-    }).asInstanceOf[Any => Unit])*/
-
     // Primary Press - for selecting points! (requires thumbrest touch to be active)
 
     vrc.addEventListener(Primary_PressBegan, ((event: Event) => {
       Log("Primary Press Began")
-      if(captured.isEmpty && capturedSeparation.isEmpty && rayCasterArrow.visible) selecting = true
+      if (captured.isEmpty && capturedSeparation.isEmpty && rayCasterArrow.visible) selecting = true
     }).asInstanceOf[Any => Unit])
 
     vrc.addEventListener(Primary_PressEnded, ((event: Event) => {
@@ -171,7 +155,7 @@ sealed abstract class OculusController extends OculusTouchEvents {
 
     vrc.addEventListener(ThumbRest_TouchBegan, ((event: Event) => {
       Log("Thumbrest Touch Began")
-      if(captured.isEmpty && capturedSeparation.isEmpty) rayCasterArrow.visible = true
+      if (captured.isEmpty && capturedSeparation.isEmpty) rayCasterArrow.visible = true
     }).asInstanceOf[Any => Unit])
 
     vrc.addEventListener(ThumbRest_TouchEnded, ((event: Event) => {
@@ -186,11 +170,12 @@ sealed abstract class OculusController extends OculusTouchEvents {
     //TODO: Make Region it's own class, pass that here for storing in captured. That way those operations can be defined in Region.
     vrc.addEventListener(Grip_PressBegan, ((event: Event) => {
       Log("Grip Press Began")
-      val regions = Environment.instance.getRegions
-      for(r <- regions) {
-        val controllerPos = getCorrectedPosition()
-        if(captured.isEmpty && r.position.distanceTo(controllerPos) < 0.5) {
-          if(r.parent == Environment.instance.scene) {
+      val regions = Regions.getNonEmpties
+      for (i <- regions.indices) {
+        val r = regions(i).object3D
+        val controllerPos = getCorrectedPosition
+        if (captured.isEmpty && r.position.distanceTo(controllerPos) < 0.5) {
+          if (r.parent == Environment.instance.scene) {
             // In this case, that region can be grabbed
             SceneUtils2.attach(r, Environment.instance.scene, vrc)
             captured = Some(r)
@@ -209,11 +194,11 @@ sealed abstract class OculusController extends OculusTouchEvents {
 
     vrc.addEventListener(Grip_PressEnded, ((event: Event) => {
       Log("Grip Press Ended")
-      if(captured.nonEmpty) {
+      if (captured.nonEmpty) {
         val dropped = captured.get
         SceneUtils2.detach(dropped, vrc, Environment.instance.scene)
         captured = None
-      } else if(capturedSeparation.nonEmpty) capturedSeparation = None
+      } else if (capturedSeparation.nonEmpty) capturedSeparation = None
     }).asInstanceOf[Any => Unit])
 
     // Axes changed! - Currently no action
@@ -233,16 +218,18 @@ sealed abstract class OculusController extends OculusTouchEvents {
   }
 
   protected def modifyCaptured(option: Boolean): Unit = {
-    if(captured.isEmpty) return
-    val cid = captured.get.id
+    if (captured.isEmpty) return
+
+    val cid = captured.get
     val env = Environment.instance
-    for(r <- env.getRegions) {
-      if(r.id == cid) {
-        if(r.children.length == 2) { //TODO: Fix this, too easy to break
-          val axes = CoordinateAxes3D.create(1, color = Colors.White, centeredOrigin = true, planeGrids = option)
-          r.remove(r.children(1))
-          r.add(axes)
-        }
+
+    for (r <- Regions.getNonEmpties) {
+      if (r.object3D == cid) {
+        val maybeAxes = r.maybeGetAxes()
+        if (maybeAxes.nonEmpty) r.object3D.remove(maybeAxes.get)
+
+        val newAxes = CoordinateAxes3D.create(1, color = Colors.White, centeredOrigin = true, planeGrids = option)
+        r.addAxes(newAxes)
       }
     }
   }
@@ -367,7 +354,7 @@ object OculusControllers {
   }
 
   def separationDistance(): Double =
-    OculusControllerRight.getCorrectedPosition().distanceTo(
-      OculusControllerLeft.getCorrectedPosition()
+    OculusControllerRight.getCorrectedPosition.distanceTo(
+      OculusControllerLeft.getCorrectedPosition
     )
 }

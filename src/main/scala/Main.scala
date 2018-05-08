@@ -21,26 +21,19 @@ object Main {
 
   @JSExport("init")
   def init(): Unit = {
-    // Setup the Environment (Scene, Camera, Renderer) and the Controls (Mouse, Oculus Controllers and Headset)
+
+    // Setup the Environment (Scene, Camera, Renderer) and
+    // the Controls (Mouse, Oculus Controllers and Headset)
+
     val container = dom.document.getElementById("scene-container")
     env = Environment.setup(container)
 
-    /* TODO: Make the button unfocusable to prevent it from being highlighted on dblclick
-    val button = WEBVR.createButton(env.renderer)
-    val hasIt = button.hasAttribute("focusable")
-    dom.console.log(hasIt)
-    if(hasIt) {
-      dom.console.log(button.getAttribute("focusable"))
-      button.setAttribute("focusable", "false")
-    }*/
+    // TODO: Make the button unfocusable to prevent it from being highlighted on dblclick
     dom.document.body.appendChild( WEBVR.createButton(env.renderer) )
 
     if(foundVRHeadset) {
       dom.console.log("Found headset")
       env.renderer.asInstanceOf[WebGLRendererExt].vr.enabled = true
-    } else {
-      // This doesn't move camera! TODO: Move camera up ~1.6m when not using Oculus
-      //env.camera.translateY(1.6)
     }
 
     Window.setupEventListeners(env.camera, env.renderer)
@@ -49,9 +42,6 @@ object Main {
     // Add FPS stats to the Window
     stats = new Stats()
     container.appendChild(stats.dom)
-
-    // This is only needed if we are not using either Oculus or webvr-polyfill
-    //animate(0) // Trigger the animation cycle
   }
 
   @JSExportTopLevel("animate")

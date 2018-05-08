@@ -12,6 +12,10 @@ import scala.scalajs.js.annotation.JSGlobal
   */
 object IFThree {
 
+  object ImplicitConversions {
+    implicit def toSceneExt(scene: Scene): SceneExt = scene.asInstanceOf[SceneExt]
+  }
+
   /**
     * Created by Dorian Thiessen on 2018-01-11.
     */
