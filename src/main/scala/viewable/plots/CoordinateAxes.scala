@@ -1,4 +1,4 @@
-package plots
+package viewable.plots
 
 import facades.IFThree.GridHelperExt
 import org.scalajs.threejs.LineBasicMaterial

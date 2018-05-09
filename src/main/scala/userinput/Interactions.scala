@@ -2,7 +2,7 @@ package userinput
 
 import facades.IFThree.IntersectionExt
 import org.scalajs.threejs.Intersection
-import plots.Plot
+import viewable.plots.Plot
 
 /**
   * Implemented by plots that can be manipulated via user input.

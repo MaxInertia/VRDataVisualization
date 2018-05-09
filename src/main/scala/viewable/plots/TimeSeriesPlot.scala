@@ -1,4 +1,4 @@
-package plots
+package viewable.plots
 
 /**
   * Created by Dorian Thiessen on 2018-01-13.

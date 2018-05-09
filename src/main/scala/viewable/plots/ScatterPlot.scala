@@ -1,7 +1,7 @@
-package plots
+package viewable.plots
 
 import env.Environment.Column
-import plots.ScatterPlot.CoordinateAxisIDs
+import viewable.plots.ScatterPlot.CoordinateAxisIDs
 
 /**
   * Container of a simple scatter-plot.

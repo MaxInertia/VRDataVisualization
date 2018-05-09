@@ -1,3 +1,5 @@
+package viewable
+
 import org.scalajs.threejs
 
 /**

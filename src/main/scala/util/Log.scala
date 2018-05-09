@@ -8,7 +8,7 @@ import scala.scalajs.js
   * Created by Dorian Thiessen on 2018-04-10.
   */
 object Log {
-  val showLogs: Boolean = false
+  val showLogs: Boolean = true
 
   def apply(message: String): Unit =
     if(showLogs) show(message)

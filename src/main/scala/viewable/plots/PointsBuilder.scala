@@ -1,15 +1,15 @@
-package plots
+package viewable.plots
 
 import org.scalajs.dom
 import org.scalajs.threejs._
+
 import scala.scalajs.js
 import scala.scalajs.js.typedarray.Float32Array
 import js.JSConverters._
-
-import plots.PointsBuilder.Prop._
-import plots.PointsBuilder.{Component, makePoints}
-import plots.Plot.PARTICLE_SIZE
-import plots.PointsBuilder.Prop.CleanPlot
+import viewable.plots.PointsBuilder.Prop._
+import viewable.plots.PointsBuilder.{Component, makePoints}
+import viewable.plots.Plot.PARTICLE_SIZE
+import viewable.plots.PointsBuilder.Prop.CleanPlot
 import util.Log
 
 /**
@@ -104,7 +104,7 @@ object PointsBuilder{
     params.alphaTest = 0.5
     params.uniforms = new js.Object {
       val color: js.Object = new js.Object {
-        val value: Color = Colors.White
+        val value: Color = viewable.Colors.White
       }
       val texture: js.Object = new js.Object {
         val value: Texture = resources.Res.getTexture(textureIndex)

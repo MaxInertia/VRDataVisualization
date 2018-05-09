@@ -1,8 +1,9 @@
 package env
 
 import org.scalajs.threejs.{Object3D, Vector3}
-import plots.{Colors, CoordinateAxes3D, Plot, ScatterPlot}
+import viewable.plots.{CoordinateAxes3D, Plot, ScatterPlot}
 import util.Log
+import viewable.Colors
 
 object Regions {
   type MaybeRegion = Option[Region]

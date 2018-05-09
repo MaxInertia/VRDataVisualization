@@ -1,20 +1,23 @@
 package env
 
-import facades.IFThree._
 import org.scalajs.dom
-
-import scala.util.{Failure, Success}
-import math.Stats
-import plots._
-import resources._
-import userinput.{Controls, Interactions}
-import window.Window
-import facades.Dat
-import org.scalajs.threejs.{Colors => _, _}
-import util.Log
+import scala.collection.mutable
 
 import scala.scalajs.js
+import scala.util.{Failure, Success}
 import js.JSConverters._
+import facades.IFThree._
+import facades.Dat
+import math.Stats
+import org.scalajs.threejs.{Colors => _, _}
+import resources._
+import userinput.{Controls, Interactions}
+import viewable.Colors
+import viewable.displays.PlaneDisplay
+import viewable.plots._
+import util.Log
+import window.Window
+
 
 /**
   * Created by Dorian Thiessen on 2018-01-11.
@@ -23,19 +26,20 @@ class Environment(val scene: Scene,
                   val camera: PerspectiveCamera,
                   val renderer: WebGLRenderer) {
 
-  /** Used to group multiple objects in the environment
-    * that should always move and rotate together */
   // This will be the parent of the controllers
   // Fixes the issue where the controllers are in the floor
   val fakeOrigin: Group = new Group
   fakeOrigin.position.set(0, 1.6, 0)
   scene.add(fakeOrigin)
 
+  // -- VR GUIs!
+
+  val displays: mutable.MutableList[PlaneDisplay] = mutable.MutableList()
   var datgui: Dat.GUIVR = _
 
-  private val plots3D: Array[Option[Array[Plot]]] = Array(None, None)
-
   // ------ Plot stuff
+
+  private val plots3D: Array[Option[Array[Plot]]] = Array(None, None)
 
   /*def getPlot(regionID: Int, plotID: Int): Plot = plots3D(regionID % 2).get(plotID)
 
@@ -63,6 +67,7 @@ class Environment(val scene: Scene,
         pointHighlighting(maybeRC.get)
       }
     }
+    displays.foreach(d => d.update()) // May not want to update material.maps every frame!
 
     renderer.render(scene, camera)
   }
@@ -154,7 +159,7 @@ object Environment {
     instance = env
 
     // Load texture for plots
-    val loadTexture = Res.loadPointTexture(1)
+    val loadTexture = Res.loadPointTexture(1) // TODO: The texture should be an option
     import scala.concurrent.ExecutionContext.Implicits.global
     loadTexture andThen {
       case Success(texture) => plot(env)
@@ -162,6 +167,18 @@ object Environment {
         Log.show("Failed to load the texture!")
         err.printStackTrace()
     }
+
+    // In-VR Bitmap Display!
+    val monitor: PlaneDisplay = PlaneDisplay(0.25, 0.25)
+    monitor.object3D.position.set(1, 0.1, -1)
+    scene.add(monitor.object3D)
+    env.displays += monitor
+    monitor.setUpdateFunction(d => {
+      d.clear()
+      d.write("Hello World!", (x, x))
+      x += dx
+      if(x >= 1000 || x <= 40) dx *= -1
+    })
 
     // Create in-vr-gui
     val gui = makeDatGUI()
@@ -172,10 +189,14 @@ object Environment {
     env
   }
 
+  // Temp Rubbish just for experimenting with displays
+  var dx: Int = 2
+  var x: Int = 42
+
   def plot(env: Environment, plotNum: Int = 0): Unit = {
     val columnSet: Array[Column] = prepareData(localStorageID = s"SM${plotNum + 1}_timeSeries")
     if(columnSet.nonEmpty) {
-      val scatterPlot: Plot = ScatterPlot(columnSet(0), columnSet(0), columnSet(0), 1, Colors.BLUE_HUE_SHIFT)
+      val scatterPlot: Plot = ScatterPlot(columnSet(0), columnSet(1), columnSet(0), 1, Colors.BLUE_HUE_SHIFT)
 
       // The following three lines use Scene, Environment AND Regions...
 
@@ -191,18 +212,6 @@ object Environment {
       Log.show(s"Was able to create ${plotNum + 1} plots!")
     }
   }
-
-  /*
-    if (columnSet1.nonEmpty) {
-      Log("NOT EMPTY")
-      val sm: Array[Plot] = ShadowManifold.many(columnSet1, Colors.RED_HUE_SHIFT, 1)
-      if (sm.nonEmpty) {
-        env.plots3D(plotNum) = Some(sm)
-        val maybeNewRegion = Regions.add(env.plots3D(plotNum).get(0))
-        if(maybeNewRegion.nonEmpty) env.scene.add(maybeNewRegion.get.object3D)
-      }
-    }
-   */
 
   def makeDatGUI(): Dat.GUIVR = {
     Log.show("Creating DATGUI!")

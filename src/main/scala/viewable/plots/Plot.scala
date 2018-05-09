@@ -1,4 +1,4 @@
-package plots
+package viewable.plots
 
 import scala.scalajs.js
 import js.typedarray.Float32Array

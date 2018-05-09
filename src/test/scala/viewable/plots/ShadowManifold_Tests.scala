@@ -1,4 +1,4 @@
-package plots
+package viewable.plots
 
 import utest._
 

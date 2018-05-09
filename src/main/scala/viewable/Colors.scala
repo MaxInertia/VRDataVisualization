@@ -1,6 +1,6 @@
-package plots
+package viewable
 
-import org.scalajs.threejs.Color
+import org.scalajs.threejs
 
 /**
   * Created by Dorian Thiessen on 2018-04-05.
@@ -21,11 +21,11 @@ object Colors {
 
   val MintGreen: Int = 0x71e58e
 
-  val Black: Color = new Color(Hex.BLACK)
-  val White: Color = new Color(Hex.WHITE)
+  val Black: Color = new threejs.Color(Hex.BLACK)
+  val White: Color = new threejs.Color(Hex.WHITE)
 
-  val Red: Color = new Color(0xff0000)
-  val Green: Color = new Color(0x00ff00)
-  val Blue: Color = new Color(0x0000ff)
+  val Red: Color = new threejs.Color(0xff0000)
+  val Green: Color = new threejs.Color(0x00ff00)
+  val Blue: Color = new threejs.Color(0x0000ff)
 }
 

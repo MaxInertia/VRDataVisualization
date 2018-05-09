@@ -1,4 +1,4 @@
-package plots
+package viewable.plots
 
 import env.Environment.Column // TODO: Unwanted dependency
 
