@@ -205,7 +205,9 @@ object Environment {
       if(maybeNewRegion.nonEmpty) env.scene.add(maybeNewRegion.get.object3D)
 
       // Attempts to load more data
-      plot(env, plotNum+1)
+      if(plotNum == 0) plot(env, plotNum+1)
+      // Recursive call above should work without the conditional since columnSet SHOULD be None
+      // in the recursive call. It works when terminating on plotNum = 1 (when only one dataset is provided)
     } else if( plotNum == 1 && columnSet.isEmpty) {
       Log.show("No data was found in the browsers LocalStorage! Unable to create plots.")
     } else {
