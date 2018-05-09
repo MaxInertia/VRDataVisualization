@@ -5,7 +5,7 @@ scalaVersion := "2.12.4"
 
 resolvers += sbt.Resolver.bintrayRepo("scalajs-facades", "scalajs-facades-releases") //add resolver
 libraryDependencies ++= Seq(
-  "org.scala-js" %%% "scalajs-dom" % "0.9.2",
+  "org.scala-js" %%% "scalajs-dom" % "0.9.5",
   "be.doeraene" %%% "scalajs-jquery" % "0.9.3",
   "com.lihaoyi" %%% "utest" % "0.6.0" % "test",
   "org.scalajs" %%% "threejs-facade" % "0.0.88-0.1.9"
