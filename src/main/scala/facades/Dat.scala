@@ -23,7 +23,7 @@ object Dat {
     def enableMouse(camera: Camera): Unit = js.native
   }
   @js.native
-  class GUIVR extends Object3D {
+  trait GUIVR extends Object3D {
     def add(something: js.Object): Unit = js.native
     def add(something: js.Object, id: String): Unit = js.native
   }
