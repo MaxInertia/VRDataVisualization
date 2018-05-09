@@ -1,9 +1,8 @@
-package env
+package viewable
 
 import org.scalajs.threejs.{Object3D, Vector3}
-import viewable.plots.{CoordinateAxes3D, Plot, ScatterPlot}
 import util.Log
-import viewable.Colors
+import viewable.plots.{CoordinateAxes3D, Plot}
 
 object Regions {
   type MaybeRegion = Option[Region]
@@ -41,7 +40,7 @@ object Regions {
     * Default positions vary with the number of regions loaded.
     * @return The number of regions available to be moved
     */
-  protected[env] def reposition(): Int = {
+  protected[viewable] def reposition(): Int = {
     def getPos(i: Int): Vector3 = regions(i).get.object3D.position
     val num = numOccupied()
      num match {

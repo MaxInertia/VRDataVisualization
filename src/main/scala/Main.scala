@@ -2,10 +2,10 @@ import scala.scalajs.js.annotation.{JSExport, JSExportTopLevel}
 import org.scalajs.{threejs => THREE}
 import org.scalajs.dom
 import userinput.Controls
-import env.Environment
 import window.Window
 import facades.Stats
 import facades.IFThree.{WEBVR, WebGLRendererExt}
+import viewable.Environment
 
 /**
   * Created by Dorian Thiessen on 2018-01-05.

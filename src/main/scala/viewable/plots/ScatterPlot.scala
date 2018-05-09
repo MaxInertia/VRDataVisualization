@@ -1,6 +1,6 @@
 package viewable.plots
 
-import env.Environment.Column
+import viewable.Environment.Column
 import viewable.plots.ScatterPlot.CoordinateAxisIDs
 
 /**

@@ -1,13 +1,12 @@
 package userinput
 
-import env.{Environment, Regions}
 import facades.IFThree.{RaycasterParametersExt, SceneUtils2, VRController}
 import org.scalajs.dom.raw.Event
 import org.scalajs.threejs.{ArrowHelper, BoxGeometry, Color, CylinderGeometry, Matrix4, Mesh, MeshBasicMaterial, Object3D, SceneUtils, Vector3}
 import viewable.plots.CoordinateAxes3D
 import userinput.Controls.RayCaster
 import util.Log
-import viewable.Colors
+import viewable.{Colors, Environment, Regions}
 
 /**
   * Touch events for the Oculus Controllers

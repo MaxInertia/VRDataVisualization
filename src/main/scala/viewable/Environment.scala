@@ -1,25 +1,25 @@
-package env
+package viewable
 
-import org.scalajs.dom
-import scala.collection.mutable
-
-import scala.scalajs.js
-import scala.util.{Failure, Success}
-import js.JSConverters._
-import facades.IFThree._
 import facades.Dat
+import facades.IFThree._
 import math.Stats
+import org.scalajs.dom
 import org.scalajs.threejs.{Colors => _, _}
 import resources._
 import userinput.{Controls, Interactions}
-import viewable.Colors
+import util.Log
 import viewable.displays.PlaneDisplay
 import viewable.plots._
-import util.Log
 import window.Window
+
+import scala.collection.mutable
+import scala.util.{Failure, Success}
 
 
 /**
+  * Serves as a wrapper for the Three.js Scene, PerspectiveCamera, and WebGLRenderer.
+  * Provides methods for the insertion, removal, and updating of scene contents.
+  * TODO: Insertion and removal via addition and removal of regions (Env should contain the list of regions)
   * Created by Dorian Thiessen on 2018-01-11.
   */
 class Environment(val scene: Scene,
@@ -67,10 +67,12 @@ class Environment(val scene: Scene,
         pointHighlighting(maybeRC.get)
       }
     }
-    displays.foreach(d => d.update()) // May not want to update material.maps every frame!
+    //displays.foreach(d => d.update()) // May not want to update material.maps every frame!
 
     renderer.render(scene, camera)
   }
+
+  // TODO: pointHighlighting is a user interaction, and the Environment should be ignorant of those
 
   def pointHighlighting(rayCaster: Raycaster): Unit = {
     // For every region (each of which contains a plot)

@@ -1,6 +1,6 @@
 package viewable.plots
 
-import env.Environment.Column // TODO: Unwanted dependency
+import viewable.Environment.Column // TODO: Unwanted dependency
 
 /**
   * A reconstruction of an attractor manifold generated from data on a single variable.

@@ -3,12 +3,11 @@ package userinput
 import org.scalajs
 import scalajs.dom
 import scalajs.threejs._
-
 import window.Window
-import env.Environment
 import facades.Dat
 import facades.IFThree._
 import util.Log
+import viewable.Environment
 
 /**
   * An abstraction over the users method of input.

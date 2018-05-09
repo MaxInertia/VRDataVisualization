@@ -1,10 +1,10 @@
 package window
 
-import env.{Environment, Regions}
 import org.scalajs.{dom, threejs => THREE}
 import org.scalajs.dom.raw.MouseEvent
 import org.scalajs.dom.{Event, document, window}
 import util.Log
+import viewable.{Environment, Regions}
 
 /**
   * Event listeners on the Window are defined and set here.
