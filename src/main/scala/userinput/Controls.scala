@@ -73,16 +73,6 @@ object Controls {
 
     // Oculus & Headset Controls
 
-    /* // TODO: Convert to Scala
-    var vrDisplay = null;
-    navigator.getVRDisplays().then(function(displays) {
-      if (displays.length > 0) {
-        vrDisplay = displays[0];
-        // Kick off the render loop.
-        vrDisplay.requestAnimationFrame(animate);
-      }
-    });*/
-
     controls.vr = new VRControls(env.camera)
 
     // TODO: What if this event is fired before reaching this point? Can it miss it? Possibly add a listener earlier.
@@ -100,8 +90,7 @@ object Controls {
         controls.controllers(0) = controller
         env.fakeOrigin.add(controller)
 
-      } else
-        Log("[Controls]\t Unknown controller passed on event: \"vr controller connected\"")
+      } else Log("[Controls]\t Unknown controller passed on event: \"vr controller connected\"")
     })
 
     // Other Controls
@@ -110,7 +99,6 @@ object Controls {
     controls.mouse = new Vector2()
     Window.setupEventListener_MouseMove(controls.mouse)
     Window.setupEventListener_MouseDoubleClick(controls.mouse, env)
-
     Dat.GUIVR.enableMouse(env.camera)
 
     controls

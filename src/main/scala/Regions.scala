@@ -96,7 +96,7 @@ object Regions {
     // Private methods
 
     private def defaultAxes(): CoordinateAxes3D = {
-      val axes = CoordinateAxes3D.create(1, color = Colors.White, centeredOrigin = true, planeGrids = true)
+      val axes = CoordinateAxes3D.create(1, color = Colors.White, centeredOrigin = true, planeGrids = false)
       axes
     }
   }
