@@ -14,6 +14,9 @@ class ScatterPlot(points: Points, columns: (Column, Column, Column)) extends Plo
   def yid: CoordinateAxisIDs = columns._2._1 // 2nd column, 1st field
   def zid: CoordinateAxisIDs = columns._3._1 // 3rd column, 1st field
 
+  override def xVar: String = columns._1._1
+  override def yVar: String = columns._2._1
+  override def zVar: String = columns._3._1
   override def getName: String = "Scatterplot!" // Why do these need a name?
   override def getPoints: Points = points
 

@@ -1,8 +1,7 @@
 package env
 
 import org.scalajs.threejs.{Object3D, Vector3}
-
-import plots.{Colors, CoordinateAxes3D, Plot}
+import plots.{Colors, CoordinateAxes3D, Plot, ScatterPlot}
 import util.Log
 
 object Regions {
@@ -81,11 +80,19 @@ object Regions {
       if(plot.nonEmpty) remove(plot.get.getPoints)
       add(p.getPoints)
       plot = Some(p)
+      updateAxes()
     }
 
     def addAxes(axes: CoordinateAxes3D): Unit = {
       maybeAxes = Some(axes)
       add(axes)
+    }
+
+    def updateAxes(): Unit = {
+      if(plot.nonEmpty) {
+        val p = plot.get//.asInstanceOf[ScatterPlot]
+        Log.show(s"${p.xVar}, ${p.yVar}, ${p.zVar}")
+      }
     }
 
     // Convenience methods for Object3D

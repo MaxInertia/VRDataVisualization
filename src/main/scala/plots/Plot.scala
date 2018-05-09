@@ -22,6 +22,11 @@ trait Plot {
   def getPoints: Points
   def getName: String
 
+  // Assuming it's 3D...
+  def xVar: String = "x"
+  def yVar: String = "y"
+  def zVar: String = "z"
+
   /** Buffer Attribute for point colors as RGB values */
   @inline def getColors: js.Dynamic = getGeometry.getAttribute("customColor")
 
