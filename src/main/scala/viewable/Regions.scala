@@ -91,7 +91,7 @@ object Regions {
     def updateAxes(): Unit = {
       if(plot.nonEmpty) {
         val p = plot.get//.asInstanceOf[ScatterPlot]
-        Log.show(s"${p.xVar}, ${p.yVar}, ${p.zVar}")
+        Log(s"${p.xVar}, ${p.yVar}, ${p.zVar}")
       }
     }
 

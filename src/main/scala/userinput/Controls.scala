@@ -98,7 +98,7 @@ object Controls {
     controls.mouse = new Vector2()
     Window.setupEventListener_MouseMove(controls.mouse)
     Window.setupEventListener_MouseDoubleClick(controls.mouse, env)
-    Dat.GUIVR.enableMouse(env.camera)
+    //Dat.GUIVR.enableMouse(env.camera)
 
     controls
   }

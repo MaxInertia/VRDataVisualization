@@ -166,12 +166,12 @@ object Environment {
     loadTexture andThen {
       case Success(texture) => plot(env)
       case Failure(err) =>
-        Log.show("Failed to load the texture!")
+        Log("Failed to load the texture!")
         err.printStackTrace()
     }
 
     // In-VR Bitmap Display!
-    val monitor: PlaneDisplay = PlaneDisplay(0.25, 0.25)
+    /*val monitor: PlaneDisplay = PlaneDisplay(0.25, 0.25)
     monitor.object3D.position.set(1, 0.1, -1)
     scene.add(monitor.object3D)
     env.displays += monitor
@@ -187,18 +187,26 @@ object Environment {
     gui.position.set(2, 1, -1)
     gui.rotateY(-3.14/2)
     env.datgui = gui
-    scene.add(gui)
+    scene.add(gui)*/
     env
   }
-
-  // Temp Rubbish just for experimenting with displays
-  var dx: Int = 2
-  var x: Int = 42
 
   def plot(env: Environment, plotNum: Int = 0): Unit = {
     val columnSet: Array[Column] = prepareData(localStorageID = s"SM${plotNum + 1}_timeSeries")
     if(columnSet.nonEmpty) {
-      val scatterPlot: Plot = ScatterPlot(columnSet(0), columnSet(1), columnSet(0), 1, Colors.BLUE_HUE_SHIFT)
+      var x, y, z: Column = null
+      x = columnSet(0)
+      if(columnSet.length >=3) {
+        y = columnSet(1)
+        z = columnSet(2)
+      } else if(columnSet.length == 2) { // make a 2D plot?
+        y = columnSet(1)
+        z = columnSet(0)
+      } else { // make a 1D plot?
+        y = columnSet(0)
+        z = columnSet(0)
+      }
+      val scatterPlot: Plot = ScatterPlot(x, y, z, 1, Colors.BLUE_HUE_SHIFT)
 
       // The following three lines use Scene, Environment AND Regions...
 
@@ -210,15 +218,15 @@ object Environment {
       if(plotNum == 0) plot(env, plotNum+1)
       // Recursive call above should work without the conditional since columnSet SHOULD be None
       // in the recursive call. It works when terminating on plotNum = 1 (when only one dataset is provided)
-    } else if( plotNum == 1 && columnSet.isEmpty) {
-      Log.show("No data was found in the browsers LocalStorage! Unable to create plots.")
+    } else if( plotNum == 0 && columnSet.isEmpty) {
+      Log("No data was found in the browsers LocalStorage! Unable to create plots.")
     } else {
-      Log.show(s"Was able to create ${plotNum + 1} plots!")
+      Log(s"Was able to create $plotNum plots!")
     }
   }
 
   def makeDatGUI(): Dat.GUIVR = {
-    Log.show("Creating DATGUI!")
+    Log("Creating DATGUI!")
     val gui = Dat.GUIVR.create("Hello! I don't do anything!")
     gui
   }
@@ -278,7 +286,7 @@ object Environment {
       floorMaterial.color = new Color(0xffffff)
       val floorGeometry = new PlaneGeometry( 6, 6, 32 )
       val floor = new Mesh(floorGeometry, floorMaterial)
-      floor.receiveShadow = true
+      floor.receiveShadow = false
       floor.rotateX(-3.1415/2)
       // Add 6x6m grid broken into 36 sections
       val floorGrid: GridHelper = new GridHelperExt(6, 6, Colors.Black, Colors.Black)
@@ -287,7 +295,7 @@ object Environment {
       scene.add(floorGrid)
       scene.add(floor)
 
-      var boxMaterial = new MeshLambertMaterial()
+      /*var boxMaterial = new MeshLambertMaterial()
       var boxGeometry = new CubeGeometry(1, 0.35, 1)
       def addCornerCubes(x: Double, y: Double, z: Double) {
         var boxGeo = new CubeGeometry(1, y, 1)
@@ -310,13 +318,13 @@ object Environment {
       addCornerCubes(1.5, 0.25, 2.5)
       addCornerCubes(-1.5, 0.25, 2.5)
       addCornerCubes(-1.5, 0.25, -2.5)
-      addCornerCubes(1.5, 0.25, -2.5)
+      addCornerCubes(1.5, 0.25, -2.5)*/
     }
 
     val floorLight = makeLight(3, 0)
     scene.add(floorLight)
     addFloor()
-    addRoof(6)
+    //addRoof(6)
     scene
   }
 

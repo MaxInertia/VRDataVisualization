@@ -1,6 +1,9 @@
 package resources
 
+import facades.PapaParser.{Config, Meta, Papa, RowedResults}
 import util.Log
+
+import scala.scalajs.js
 
 /** Parser for CSVs whose first row contains identifiers for their respective columns,
   * the rest of the elements must be numbers, not expressions (ex: 1+2).
@@ -25,39 +28,48 @@ private[resources] object CSVParser {
     */
   def parse(data: String): Array[(String, Array[Double])] = { // TODO: Write tests for this method
     Log("PreProcessing Data...")
-    val temp: Array[String] = data.split("""[^ -~]""").map(_.trim).filter(!_.isEmpty)
 
-    // Store each line as an array of strings in an ArrayBuffer
-    var rows = Array[Array[String]]()
-    for(line <- temp) {
-      rows = rows :+ line.split(",") //.map(_.trim)
-    }
+    type Row = js.Array[Double] // what we get (mostly)
 
-    val colCount = rows(0).length
-    Log(s"\tcolumns: $colCount")
-    for(i <- rows(0).indices) Log(s"\t\tcolumn $i id: ${rows(0)(i)}")
-    Log(s"\trows:    ${rows.length}")
+    val config = (new js.Object).asInstanceOf[Config]
+    config.dynamicTyping = true
+    config.newline = "\n"
+    val result = Papa.parse(data, config)
+    Log(result.asInstanceOf[RowedResults])
+    val parsedData: js.Array[js.Array[Any]] = result.data
 
-    // Create an Array for each column
-    var cols = Array[Array[Double]]()
-    for(i <- 0 until colCount) {
-      cols = cols :+ Array[Double]()
-    }
+    /*if(result.errors.length > 0) {
+      for(err <- result.errors) Log.show(err)
+      return Array()
+    }*/
 
-    // Store the values in the Array corresponding to the values column
-    for(r <- rows.indices) {
-      if(r != 0) for (c <- rows(r).indices) {
-        if( isNumber( rows(r)(c) ) )
-          cols(c) = cols(c) :+ rows(r)(c).toDouble
-        else
-          Log(s"WARNING: r${r}c$c Is NAN: ${rows(r)(c)}")
+    type Column = (String, Array[Double]) // what we want
+    var formattedData: Array[Column] = Array()
+    if(isNumber(parsedData(0)(0).toString)) {
+      Log("CSV has no column titles, generic titles will be provided")
+      for (c <- parsedData(0).indices) {
+        var cdata: Array[Double] = Array()
+        for (r <- parsedData.indices) {
+          Log(s"$c - $r")
+          if(parsedData(r)(c) != js.undefined) cdata = cdata :+ parsedData(r)(c).asInstanceOf[Double]
+        }
+
+        formattedData = formattedData :+ (s"column$c", cdata)
+      }
+
+    } else {
+      Log("CSV has colunm titles!")
+      for (c <- parsedData(0).indices) {
+        var cdata: Array[Double] = Array()
+        for (r <- 1 until parsedData.length) {
+          if(parsedData(r)(c) != js.undefined)  cdata = cdata :+ parsedData(r)(c).asInstanceOf[Double]
+        }
+
+        formattedData = formattedData :+ (parsedData(0)(c).asInstanceOf[String], cdata)
       }
     }
 
-    // Wrap the processed data and column ID's into an Array of Tuples
-    var processedData = Array[(String, Array[Double])]()
-    for(i <- 0 until colCount) processedData = processedData :+ (rows(0)(i), cols(i))
-    processedData
+    formattedData
   }
 
 }

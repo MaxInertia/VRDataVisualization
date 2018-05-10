@@ -22,6 +22,7 @@ class ScatterPlot(points: Points, columns: (Column, Column, Column)) extends Plo
 
   def getGeometry: BufferGeometry = points.geometry.asInstanceOf[BufferGeometry]
 }
+
 object ScatterPlot {
   type CoordinateAxisIDs = String
 
