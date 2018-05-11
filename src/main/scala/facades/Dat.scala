@@ -29,7 +29,9 @@ object Dat {
     def add(something: js.Object, id: String): Unit = js.native
     def add(something: js.Object, id: String, min: Double, max: Double): GuiSlider = js.native
     def addFolder(folder: GUI): GUI = js.native
+    def addButton(fn: js.Function, id: String = "Button"): Unit = js.native
     def open(): Unit = js.native
+    def removeFolder(gui: GUI): Unit = js.native
   }
 
   @js.native

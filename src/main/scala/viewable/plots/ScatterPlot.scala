@@ -17,11 +17,6 @@ class ScatterPlot(points: Points, columns: Array[Column], viewing: Array[Int]) e
   var stats: Array[(Double, Double)] = Array()
   val viewingColumns: Array[Int] = Array(0, 1, 2)
 
-  override def restoredValue(modified: Double, col: Int): Double = {
-    // TODO: Create 2D & 3D variants, then remove ` % stats.length` from here
-    Stats.restore(modified, stats(col % stats.length)._1, stats(col % stats.length)._2)
-  }
-
   def xid: CoordinateAxisIDs = columns(viewing(0))._1 // 1st column, 1st field
   def yid: CoordinateAxisIDs = columns(viewing(1))._1 // 2nd column, 1st field
   def zid: CoordinateAxisIDs = columns(viewing(2))._1 // 3rd column, 1st field
@@ -30,6 +25,15 @@ class ScatterPlot(points: Points, columns: Array[Column], viewing: Array[Int]) e
   override def yVar: String = columns(viewing(1))._1
   override def zVar: String = columns(viewing(2))._1
   override def column(c: Int): Array[Double] = columns(viewing(c))._2
+
+  def switchAxis(i: Int): Unit = {
+    viewing(i) = (viewing(i) + 1) % viewing.length
+  }
+
+  override def restoredValue(modified: Double, col: Int): Double = {
+    // TODO: Create 2D & 3D variants, then remove ` % stats.length` from here
+    Stats.restore(modified, stats(col % stats.length)._1, stats(col % stats.length)._2)
+  }
 
   def coordOfHighlighted(): (Double, Double, Double) = {
     if(highlighted.nonEmpty) {
