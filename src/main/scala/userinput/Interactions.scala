@@ -23,29 +23,29 @@ object Interactions {
       val index = intersection(0).asInstanceOf[IntersectionExt].index
       var oldIndexMaybe = entity.highlighted
 
+      // If there is currently a highlighted point
       if(oldIndexMaybe.nonEmpty) {
         val oldIndex = oldIndexMaybe.get
 
-        // If previously highlighted point was saved, ignore it
+        // If that highlighted point was selected we ignore it
         if (entity.savedSelections.contains(oldIndex)) {
           oldIndexMaybe = None
         }
 
-        // Else if previously highlighted exists, and different than the current, deselect it
+        // Else if highlighted point is different than the currently intersected point we deselect it
         else if (oldIndex != index) {
           entity.ops.unHighlight(oldIndex)
         }
-      } else {
-
-        // Then we highlight the point!
-        entity.highlighted = Some(index)
-        entity.ops.highlight(index)
-
       }
+
+      // Then we highlight the point provided
+      entity.ops.highlight(index)
 
       // TODO: Remove undesireable coupling with Controller instances (Replaceable with idea in TODO below)
       if(OculusControllerRight.isSelecting || OculusControllerLeft.isSelecting) {
         entity.ops.selectHighlighted()
+        OculusControllers.stopSelecting()
+
       }
 
       (oldIndexMaybe, index)

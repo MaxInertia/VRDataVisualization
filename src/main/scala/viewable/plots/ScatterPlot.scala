@@ -16,8 +16,7 @@ class ScatterPlot(points: Points, columns: (Column, Column, Column)) extends Plo
   override val ops: SelectionOps = new SelectionOps{}
   var stats: Array[(Double, Double)] = Array()
 
-  override def restoredValue(i: Int, col: Int): Double = {
-    val modified = column(col)(i)
+  override def restoredValue(modified: Double, col: Int): Double = {
     // TODO: Create 2D & 3D variants, then remove ` % stats.length` from here
     Stats.restore(modified, stats(col % stats.length)._1, stats(col % stats.length)._2)
   }

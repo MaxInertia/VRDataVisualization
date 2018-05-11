@@ -19,7 +19,7 @@ class ShadowManifold(val tag: String, var points: Points) extends Plot {
 
   override def column(c: Int): Array[Double] = ???
 
-  override def restoredValue(i: Int, col: Int): Double = ???
+  override def restoredValue(modified: Double, col: Int): Double = ???
 }
 
 

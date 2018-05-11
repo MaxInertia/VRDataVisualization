@@ -28,14 +28,8 @@ object Dat {
     def add(something: js.Object): Unit = js.native
     def add(something: js.Object, id: String): Unit = js.native
     def add(something: js.Object, id: String, min: Double, max: Double): GuiSlider = js.native
-    def addFolder(title: String): Folder = js.native
+    def addFolder(folder: GUI): GUI = js.native
     def open(): Unit = js.native
-  }
-
-  @js.native
-  trait Folder extends GUI {
-    /*override def add(something: js.Object): Unit = js.native
-    override def add(something: js.Object, id: String): Unit = js.native*/
   }
 
   @js.native
@@ -46,16 +40,4 @@ object Dat {
     def max(n: Double): GuiSlider = js.native
     def step(n: Double): GuiSlider = js.native
   }
-
-  /*@js.native
-  @JSGlobal("createGUI")
-  object createGUI extends js.Function {
-    def apply(): Unit = js.native
-  }
-
-  @js.native
-  @JSGlobal("updateGUI")
-  object updateGUI extends js.Function {
-    def apply(`object`: js.Object): Unit = js.native
-  }*/
 }

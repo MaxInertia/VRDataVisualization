@@ -1,7 +1,7 @@
 package viewable
 
 import facades.Dat
-import facades.Dat.{Folder, GuiSlider}
+import facades.Dat.GuiSlider
 import org.scalajs.threejs.{Object3D, Vector3}
 import util.Log
 import viewable.plots.{CoordinateAxes3D, Plot, ScatterPlot}

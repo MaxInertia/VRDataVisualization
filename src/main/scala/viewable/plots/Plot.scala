@@ -1,5 +1,7 @@
 package viewable.plots
 
+import math.Stats
+
 import scala.scalajs.js
 import js.typedarray.Float32Array
 import util.Log
@@ -15,15 +17,55 @@ trait Plot {
   val numPoints: Int = getSizes.array.asInstanceOf[Float32Array].length
 
   var hue: Double = 0 // Default to be overwritten if points are to have color
+
   var savedSelections: Set[Int] = Set[Int]()
-  var highlighted: Option[Int] = None
-  var highlightedDetails: js.Object = js.Dynamic.literal(
+  val selectedSummary: js.Object = js.Dynamic.literal(
     s"$xVar" -> 0.001,
     s"$yVar" -> 0.001,
     s"$zVar" -> 0.001
   )
 
-  def restoredValue(i: Int, col: Int): Double
+  var highlighted: Option[Int] = None
+  val highlightedDetails: js.Object = js.Dynamic.literal(
+    s"$xVar" -> 0.001,
+    s"$yVar" -> 0.001,
+    s"$zVar" -> 0.001
+  )
+
+  def updateHighlightedDetails(index: Int): Unit = {
+    import js.JSConverters._
+    // If restored value desired (~ original)
+    highlightedDetails.asInstanceOf[js.Dynamic].updateDynamic(s"$xVar")(restoredValue(column(0)(index), 0))
+    highlightedDetails.asInstanceOf[js.Dynamic].updateDynamic(s"$yVar")(restoredValue(column(1)(index), 1))
+    highlightedDetails.asInstanceOf[js.Dynamic].updateDynamic(s"$zVar")(restoredValue(column(2)(index), 2))
+    // If standardized output desired
+    /*highlightedDetails.asInstanceOf[js.Dynamic].updateDynamic(s"$xVar")(column(0)(index).toFloat)
+    highlightedDetails.asInstanceOf[js.Dynamic].updateDynamic(s"$yVar")(column(1)(index).toFloat)
+    highlightedDetails.asInstanceOf[js.Dynamic].updateDynamic(s"$zVar")(column(2)(index).toFloat)*/
+  }
+
+  def updateSelectedSummary(): Unit = {
+    var sumX: Double = 0
+    var sumY: Double = 0
+    var sumZ: Double = 0
+    var c = 0
+    for(i <- savedSelections) {
+      sumX += column(0)(i)
+      sumY += column(1)(i)
+      sumZ += column(2)(i)
+      c += 1
+    }
+
+    val meanX = sumX/c
+    val meanY = sumY/c
+    val meanZ = sumZ/c
+
+    selectedSummary.asInstanceOf[js.Dynamic].updateDynamic(s"$xVar")(restoredValue(meanX, 0))
+    selectedSummary.asInstanceOf[js.Dynamic].updateDynamic(s"$yVar")(restoredValue(meanY, 1))
+    selectedSummary.asInstanceOf[js.Dynamic].updateDynamic(s"$zVar")(restoredValue(meanZ, 2))
+  }
+
+  def restoredValue(modified: Double, col: Int): Double
 
   def getPoints: Points
   def getName: String
@@ -60,15 +102,8 @@ trait Plot {
       * @param index Index of point to highlight
       */
     def highlight(index: Int): Unit = {
-      import js.JSConverters._
-      // If restored value desired (~ original)
-      highlightedDetails.asInstanceOf[js.Dynamic].updateDynamic(s"$xVar")(restoredValue(index, 0))
-      highlightedDetails.asInstanceOf[js.Dynamic].updateDynamic(s"$yVar")(restoredValue(index, 1))
-      highlightedDetails.asInstanceOf[js.Dynamic].updateDynamic(s"$zVar")(restoredValue(index, 2))
-      // If standardized output desired
-      /*highlightedDetails.asInstanceOf[js.Dynamic].updateDynamic(s"$xVar")(column(0)(index).toFloat)
-      highlightedDetails.asInstanceOf[js.Dynamic].updateDynamic(s"$yVar")(column(1)(index).toFloat)
-      highlightedDetails.asInstanceOf[js.Dynamic].updateDynamic(s"$zVar")(column(2)(index).toFloat)*/
+      highlighted = Some(index)
+      updateHighlightedDetails(index)
 
       if(SelectionProperties.changesColor)
         updateColors(
@@ -105,14 +140,23 @@ trait Plot {
       * or the highlighted point has already been selected, does nothing.
       * See inverse: `deselectHighlighted`
       */
-    def selectHighlighted(): Unit = if(hasHighlighted) savedSelections = savedSelections + highlighted.get
+    def selectHighlighted(): Unit = {
+      if(hasHighlighted) {
+        val index = highlighted.get
+        savedSelections = savedSelections + index
+        updateSelectedSummary()
+      }
+    }
 
     /**
       * Causes the currently highlighted point to be deselected. If no point is highlighted
       * or the highlighted point has not been selected, does nothing.
       * Inverse to selectHighlighted when dependent variable `highlighted` is held constant.
       */
-    def deselectHighlighted(): Unit = if(hasHighlighted) savedSelections = savedSelections - highlighted.get
+    def deselectHighlighted(): Unit = if(hasHighlighted) {
+      savedSelections = savedSelections - highlighted.get
+      updateSelectedSummary()
+    }
 
     /**
       * Deselect the set of points at the provided indices.
@@ -120,8 +164,12 @@ trait Plot {
       * @param pIndices Point indices
       */
     def deselect(pIndices: Int*): Unit = {
-      if(SelectionProperties.changesColor) for(i <- pIndices) resetColor(i)
+      if(SelectionProperties.changesColor) for(i <- pIndices) {
+        resetColor(i)
+        savedSelections -= i
+      }
       if(SelectionProperties.changesSize) updateSizes(Plot.PARTICLE_SIZE.toFloat, pIndices)
+      updateSelectedSummary()
     }
 
     // -- Other

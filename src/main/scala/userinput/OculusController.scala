@@ -48,7 +48,7 @@ sealed abstract class OculusController extends OculusTouchEvents {
   var correctedPosition: Vector3 = new Vector3()
   var yOffset: Vector3 = new Vector3(0, 1.6, 0)
 
-  protected var selecting: Boolean = false
+  protected[userinput] var selecting: Boolean = false
 
   def isConnected: Boolean = controllerEl != null
 
@@ -357,4 +357,9 @@ object OculusControllers {
     OculusControllerRight.getCorrectedPosition.distanceTo(
       OculusControllerLeft.getCorrectedPosition
     )
+
+  def stopSelecting(): Unit = {
+    OculusControllerLeft.selecting = false
+    OculusControllerRight.selecting = false
+  }
 }
