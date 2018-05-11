@@ -1,18 +1,21 @@
 package viewable
 
+import facades.Dat
+import facades.Dat.{Folder, GuiSlider}
 import org.scalajs.threejs.{Object3D, Vector3}
 import util.Log
-import viewable.plots.{CoordinateAxes3D, Plot}
+import viewable.plots.{CoordinateAxes3D, Plot, ScatterPlot}
+
+import scala.scalajs.js
 
 object Regions {
   type MaybeRegion = Option[Region]
 
   private val regions: Array[MaybeRegion] = Array(None, None, None, None)
 
+  def getNonEmpties: Array[Region] = Regions.regions.filter(_.nonEmpty).map(_.get)
   def numOccupied(): Int = getNonEmpties.length
   def isFull: Boolean = numOccupied() == 4
-
-  def getNonEmpties: Array[Region] = Regions.regions.filter(_.nonEmpty).map(_.get)
 
   /**
     * Adds a plot to a region in the scene if there is room, otherwise does nothing.
@@ -25,13 +28,20 @@ object Regions {
       regions(i) = Some(Region(i))
       regions(i).get.addPlot(plot)
       reposition()
+
+      val gui = DatGui(plot.asInstanceOf[ScatterPlot])
+      regions(i).get.gui = Some(gui)
+      Environment.instance.scene.add(gui.object3D)
+      //DatGui.update(i)
       return regions(i)
 
     } else if(regions(i).nonEmpty && regions(i).get.plot.isEmpty) {
       Log("[Regions] - Adding plot to empty region")
       regions(i).get.addPlot(plot)
+      //DatGui.update(i)
       return regions(i)
     }
+
     None
   }
 
@@ -70,6 +80,7 @@ object Regions {
     */
   case class Region(id: Int, object3D: Object3D = new Object3D()) {
     var plot: Option[Plot] = None // TODO: Make this private (required changes to rendering section in Environment)
+    var gui: Option[DatGui] = None
 
     private var maybeAxes: Option[CoordinateAxes3D] = Some(defaultAxes())
     def maybeGetAxes(): Option[CoordinateAxes3D] = maybeAxes

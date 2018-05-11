@@ -18,6 +18,12 @@ trait Plot {
   var hue: Double = 0 // Default to be overwritten if points are to have color
   var savedSelections: Set[Int] = Set[Int]()
   var highlighted: Option[Int] = None
+  var highlightedDetails: js.Object = js.Dynamic.literal(
+    s"$xVar" -> 0.001,
+    s"$yVar" -> 0.001,
+    s"$zVar" -> 0.001
+  )
+
 
   def getPoints: Points
   def getName: String
@@ -26,6 +32,8 @@ trait Plot {
   def xVar: String = "x"
   def yVar: String = "y"
   def zVar: String = "z"
+
+  def column(c: Int): Array[Double]
 
   /** Buffer Attribute for point colors as RGB values */
   @inline def getColors: js.Dynamic = getGeometry.getAttribute("customColor")
@@ -49,22 +57,26 @@ trait Plot {
 
     /**
       * Highlights the set of points at the provided indices.
-      * @param pIndices Point indices
+      * @param index Index of point to highlight
       */
-    def highlight(pIndices: Int*): Unit = {
+    def highlight(index: Int): Unit = {
+      import js.JSConverters._
+      highlightedDetails.asInstanceOf[js.Dynamic].updateDynamic(s"$xVar")(column(0)(index).toFloat)
+      highlightedDetails.asInstanceOf[js.Dynamic].updateDynamic(s"$yVar")(column(1)(index).toFloat)
+      highlightedDetails.asInstanceOf[js.Dynamic].updateDynamic(s"$zVar")(column(2)(index).toFloat)
 
       if(SelectionProperties.changesColor)
         updateColors(
           SelectionProperties.red,
           SelectionProperties.green,
           SelectionProperties.blue,
-          pIndices
+          Seq(index)
         )
 
       if(SelectionProperties.changesSize)
         updateSizes(
           Plot.PARTICLE_SIZE.toFloat * SelectionProperties.scale,
-          pIndices
+          Seq(index)
         )
     }
 

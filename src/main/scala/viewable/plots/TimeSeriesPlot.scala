@@ -1,4 +1,5 @@
 package viewable.plots
+import scala.scalajs.js
 
 /**
   * Created by Dorian Thiessen on 2018-01-13.
@@ -8,6 +9,8 @@ class TimeSeriesPlot(val tag: String, points: Points) extends Plot {
   override def getPoints: Points = points
   def getGeometry: BufferGeometry = points.geometry.asInstanceOf[BufferGeometry]
   override def getName: String = tag
+
+  override def column(c: Int): Array[Double] = ???
 }
 
 object TimeSeriesPlot {

@@ -13,8 +13,9 @@ import viewable.plots._
 import window.Window
 
 import scala.collection.mutable
+import scala.scalajs.js
 import scala.util.{Failure, Success}
-
+import scala.scalajs.js.JSConverters._
 
 /**
   * Serves as a wrapper for the Three.js Scene, PerspectiveCamera, and WebGLRenderer.
@@ -35,7 +36,6 @@ class Environment(val scene: Scene,
   // -- VR GUIs!
 
   val displays: mutable.MutableList[PlaneDisplay] = mutable.MutableList()
-  var datgui: Dat.GUIVR = _
 
   // ------ Plot stuff
 
@@ -69,6 +69,7 @@ class Environment(val scene: Scene,
     }
     //displays.foreach(d => d.update()) // May not want to update material.maps every frame!
 
+    //Regions.DatGui.update()
     renderer.render(scene, camera)
   }
 
@@ -159,6 +160,7 @@ object Environment {
     scene.add(camera)
     for(r <- Regions.getNonEmpties) scene.add(r.object3D)
     instance = env
+    //Dat.createGUI()
 
     // Load texture for plots
     val loadTexture = Res.loadPointTexture(1) // TODO: The texture should be an option
@@ -170,24 +172,7 @@ object Environment {
         err.printStackTrace()
     }
 
-    // In-VR Bitmap Display!
-    /*val monitor: PlaneDisplay = PlaneDisplay(0.25, 0.25)
-    monitor.object3D.position.set(1, 0.1, -1)
-    scene.add(monitor.object3D)
-    env.displays += monitor
-    monitor.setUpdateFunction(d => {
-      d.clear()
-      d.write("Hello World!", (x, x))
-      x += dx
-      if(x >= 1000 || x <= 40) dx *= -1
-    })
-
-    // Create in-vr-gui
-    val gui = makeDatGUI()
-    gui.position.set(2, 1, -1)
-    gui.rotateY(-3.14/2)
-    env.datgui = gui
-    scene.add(gui)*/
+    //env.scene.add(DatGui.instance.asInstanceOf[Object3D])
     env
   }
 
@@ -225,12 +210,6 @@ object Environment {
     }
   }
 
-  def makeDatGUI(): Dat.GUIVR = {
-    Log("Creating DATGUI!")
-    val gui = Dat.GUIVR.create("Hello! I don't do anything!")
-    gui
-  }
-
   /**
     * Creates the renderer.
     * @return THREE.WebGLRenderer instance
@@ -240,6 +219,7 @@ object Environment {
     renderer.setSize(Window.width, Window.height)
     renderer.devicePixelRatio = Window.devicePixelRatio
     renderer.vr.enabled = false
+    renderer.setClearColor(new Color(0xeebbbb))
     renderer
   }
 

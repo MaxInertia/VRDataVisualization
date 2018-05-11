@@ -5,6 +5,7 @@ import userinput.Controls
 import window.Window
 import facades.Stats
 import facades.IFThree.{WEBVR, WebGLRendererExt}
+import org.scalajs.threejs.Scene
 import viewable.Environment
 
 /**
@@ -54,5 +55,8 @@ object Main {
 
   @JSExport("renderer") // Temporary. renderer currently required in global scope.
   def getRenderer: THREE.Renderer = env.renderer
+
+  @JSExport("scene")
+  def getScene: Scene = Environment.instance.scene
 
 }

@@ -1,6 +1,8 @@
 package viewable.plots
 
-import viewable.Environment.Column // TODO: Unwanted dependency
+import viewable.Environment.Column
+
+import scala.scalajs.js // TODO: Unwanted dependency
 
 /**
   * A reconstruction of an attractor manifold generated from data on a single variable.
@@ -14,6 +16,8 @@ class ShadowManifold(val tag: String, var points: Points) extends Plot {
   override def getPoints: Points = points
   def getGeometry: BufferGeometry = points.geometry.asInstanceOf[BufferGeometry]
   def getName: String = tag
+
+  override def column(c: Int): Array[Double] = ???
 }
 
 
