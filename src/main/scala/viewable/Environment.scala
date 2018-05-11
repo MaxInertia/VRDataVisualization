@@ -55,21 +55,10 @@ class Environment(val scene: Scene,
     if(maybeRC.nonEmpty) {
       // TODO: Still find a better way to ignore points while waiting for the texture to be loaded
       if (Regions.numOccupied() >= 1) {
-        /*// Cause points to pulsate; requires adding u_time to Points.uniforms, and changing shaders in index.html
-        def pulsate(region: Int, rate: Double): Unit = {
-          val material = getActivePlot(region).getPoints.material.asInstanceOf[THREE.ShaderMaterial]
-          val utime = material.uniforms.asInstanceOf[Uniform].u_time.asInstanceOf[UTime]
-          utime.value = utime.value + rate.toFloat
-        }
-        pulsate(0, 0.1)
-        pulsate(1, 0.1)*/
-
         pointHighlighting(maybeRC.get)
       }
     }
-    //displays.foreach(d => d.update()) // May not want to update material.maps every frame!
 
-    //Regions.DatGui.update()
     renderer.render(scene, camera)
   }
 
