@@ -176,25 +176,9 @@ object Environment {
     val stats: Array[(Double, Double)] = columnSetWithStats.map{ case (_, _, sd, m) => (sd, m) }
     val columnSet: Array[Column] = columnSetWithStats.map{ case (n, d, _, _) => (n, d) }
     if(columnSet.nonEmpty) {
-      var x, y, z: Column = null
-      x = columnSet(0)
-      if(columnSet.length >=3) {
-        Log("Columns >= 3")
-        y = columnSet(1)
-        z = columnSet(2)
-      } else if(columnSet.length == 2) { // make a 2D plot?
-        Log("Columns == 2")
-        y = columnSet(1)
-        z = columnSet(0)
-      } else { // make a 1D plot?
-        Log("Columns < 2")
-        y = columnSet(0)
-        z = columnSet(0)
-      }
-      val scatterPlot: Plot = ScatterPlot(x, y, z, stats, 1, Colors.BLUE_HUE_SHIFT)
+      val scatterPlot: Plot = ScatterPlot(columnSet, stats, 1, Colors.BLUE_HUE_SHIFT)
 
       // The following three lines use Scene, Environment AND Regions...
-
       env.plots3D(plotNum) = Some(Array(scatterPlot)) // Currently we assume we're only generating one.
       val maybeNewRegion = Regions.add(env.plots3D(plotNum).get(0))
       if(maybeNewRegion.nonEmpty) env.scene.add(maybeNewRegion.get.object3D)

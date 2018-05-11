@@ -12,33 +12,30 @@ import scala.scalajs.js
   *
   * Created by Dorian Thiessen on 2018-04-05.
   */
-class ScatterPlot(points: Points, columns: (Column, Column, Column)) extends Plot {
+class ScatterPlot(points: Points, columns: Array[Column], viewing: Array[Int]) extends Plot {
   override val ops: SelectionOps = new SelectionOps{}
   var stats: Array[(Double, Double)] = Array()
+  val viewingColumns: Array[Int] = Array(0, 1, 2)
 
   override def restoredValue(modified: Double, col: Int): Double = {
     // TODO: Create 2D & 3D variants, then remove ` % stats.length` from here
     Stats.restore(modified, stats(col % stats.length)._1, stats(col % stats.length)._2)
   }
 
-  def xid: CoordinateAxisIDs = columns._1._1 // 1st column, 1st field
-  def yid: CoordinateAxisIDs = columns._2._1 // 2nd column, 1st field
-  def zid: CoordinateAxisIDs = columns._3._1 // 3rd column, 1st field
+  def xid: CoordinateAxisIDs = columns(viewing(0))._1 // 1st column, 1st field
+  def yid: CoordinateAxisIDs = columns(viewing(1))._1 // 2nd column, 1st field
+  def zid: CoordinateAxisIDs = columns(viewing(2))._1 // 3rd column, 1st field
 
-  override def xVar: String = columns._1._1
-  override def yVar: String = columns._2._1
-  override def zVar: String = columns._3._1
-  override def column(c: Int): Array[Double] = c match {
-    case 0 => columns._1._2
-    case 1 => columns._2._2
-    case 2 => columns._3._2
-  }
+  override def xVar: String = columns(viewing(0))._1
+  override def yVar: String = columns(viewing(1))._1
+  override def zVar: String = columns(viewing(2))._1
+  override def column(c: Int): Array[Double] = columns(viewing(c))._2
 
   def coordOfHighlighted(): (Double, Double, Double) = {
     if(highlighted.nonEmpty) {
-      val x = column(0)(highlighted.get)
-      val y = column(1)(highlighted.get)
-      val z = column(2)(highlighted.get)
+      val x = column(viewing(0))(highlighted.get)
+      val y = column(viewing(1))(highlighted.get)
+      val z = column(viewing(2))(highlighted.get)
       (x, y, z)
     } else (0, 0, 0)
   }
@@ -52,21 +49,32 @@ class ScatterPlot(points: Points, columns: (Column, Column, Column)) extends Plo
 object ScatterPlot {
   type CoordinateAxisIDs = String
 
-  def apply(xColumn: Column, yColumn: Column, zColumn: Column, stats: Array[(Double, Double)], texture: Int, hue: Double = 0.0): ScatterPlot = {
-    val scatterPlot = ScatterPlot(xColumn, yColumn, zColumn, texture, hue)
+  def apply(columns: Array[Column], stats: Array[(Double, Double)], texture: Int, hue: Double = 0.0): ScatterPlot = {
+    val scatterPlot = ScatterPlot(columns, texture, hue)
     scatterPlot.stats = stats
     scatterPlot
   }
 
-  def apply(xColumn: Column, yColumn: Column, zColumn: Column, texture: Int, hue: Double): ScatterPlot = {
+  def apply(columns: Array[Column], texture: Int, hue: Double): ScatterPlot = {
+
+    val viewing = Array(0, 0, 0)
+    if(columns.length > 1) { // make a 2D plot?
+      Log("Columns > 1")
+      viewing(1) = 1
+    }
+    if(columns.length > 2) {
+      Log("Columns > 2")
+      viewing(2) = 2
+    }
+
     val points = PointsBuilder()
-      .withXS(xColumn._2)
-      .withYS(yColumn._2)
-      .withZS(zColumn._2)
+      .withXS(columns(viewing(0))._2)
+      .withYS(columns(viewing(1))._2)
+      .withZS(columns(viewing(2))._2)
       .usingHue(Some(hue))
       .usingTexture(texture)
       .build3D()
-    val scatterPlot = new ScatterPlot(points, (xColumn, yColumn, zColumn))
+    val scatterPlot = new ScatterPlot(points, columns, viewing)
     scatterPlot.hue = hue
     scatterPlot
   }
