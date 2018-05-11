@@ -15,7 +15,6 @@ import scala.scalajs.js
 class ScatterPlot(points: Points, columns: Array[Column], viewing: Array[Int]) extends Plot {
   override val ops: SelectionOps = new SelectionOps{}
   var stats: Array[(Double, Double)] = Array()
-  val viewingColumns: Array[Int] = Array(0, 1, 2)
 
   def xid: CoordinateAxisIDs = columns(viewing(0))._1 // 1st column, 1st field
   def yid: CoordinateAxisIDs = columns(viewing(1))._1 // 2nd column, 1st field
@@ -26,8 +25,10 @@ class ScatterPlot(points: Points, columns: Array[Column], viewing: Array[Int]) e
   override def zVar: String = columns(viewing(2))._1
   override def column(c: Int): Array[Double] = columns(viewing(c))._2
 
-  def switchAxis(i: Int): Unit = {
-    viewing(i) = (viewing(i) + 1) % viewing.length
+  def switchAxis(axisID: Int): Unit = {
+    Log.show(s"Switching axis #$axisID from ${viewing(axisID)} to ${(viewing(axisID) + 1) % columns.length})")
+    viewing(axisID) = (viewing(axisID) + 1) % columns.length
+    updateAxis(axisID, column(viewing(axisID)))
   }
 
   override def restoredValue(modified: Double, col: Int): Double = {

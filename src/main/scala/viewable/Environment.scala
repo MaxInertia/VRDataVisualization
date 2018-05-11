@@ -13,7 +13,6 @@ import viewable.plots._
 import window.Window
 
 import scala.collection.mutable
-import scala.scalajs.js
 import scala.util.{Failure, Success}
 import scala.scalajs.js.JSConverters._
 
@@ -65,20 +64,45 @@ class Environment(val scene: Scene,
   // TODO: pointHighlighting is a user interaction, and the Environment should be ignorant of those
 
   def pointHighlighting(rayCaster: Raycaster): Unit = {
+    var ids: (Option[Int], Int) = (None, 0)
+    var plotNum: Int = 0
+    var isSet: Boolean = false
+
+    val regions = Regions.getNonEmpties
     // For every region (each of which contains a plot)
-    for(region <- Regions.getNonEmpties) {
+    for(index <- regions.indices) {
+      val region = regions(index)
+
       if(region.plot.nonEmpty) {
-        // Get the active plot in this )
+        // Get the active plot in this region
         val plot = region.plot.get
         // Retrieve intersections on an available ray caster
         val intersects: scalajs.js.Array[Intersection] = rayCaster.intersectObject(plot.getPoints)
         // If not intersections exist, don't initiate an interaction
         if (intersects.nonEmpty) {
           // Apply highlighting to the first point intersected
-          Interactions.on(plot, intersects)
+          ids = Interactions.on(plot, intersects)
+          isSet = true
+          plotNum = index
         }
       }
     }
+
+    /*if(isSet && regions.length > 1) {
+      for (index <- regions.indices) {
+        if(index != plotNum) {
+          val region = regions(index)
+
+          if (region.plot.nonEmpty) {
+            // Get the active plot in this region
+            val plot = region.plot.get
+            plot.ops.highlight(ids._2)
+            if (ids._1.nonEmpty) plot.ops.unHighlight(ids._1.get)
+          }
+        }
+      }
+    }*/
+
   }
 
   def selectAllHighlightedPoints(): Unit = { // TODO: Only select the current point highlighted

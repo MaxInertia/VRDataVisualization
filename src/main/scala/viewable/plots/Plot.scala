@@ -77,6 +77,23 @@ trait Plot {
 
   def column(c: Int): Array[Double]
 
+  def updateAxis(axisNumber: Int, values: Array[Double]): Unit = {
+    Log.show(s"Getting positions attribute!")
+    val positionsAttr = getPositions
+    Log.show(s"Getting positions array!")
+    val array = positionsAttr.array.asInstanceOf[Float32Array]
+
+    import js.JSConverters._
+    Log.show(s"Changing point coordinates along axis #$axisNumber with...")
+    Log.show(values.toJSArray)
+    for(pointIndex <- values.indices) array(pointIndex*3 + axisNumber) = values(pointIndex).toFloat
+
+    positionsAttr.needsUpdate = true
+  }
+
+  /** Buffer Attribute for point colors as RGB values */
+  @inline def getPositions: js.Dynamic = getGeometry.getAttribute("position")
+
   /** Buffer Attribute for point colors as RGB values */
   @inline def getColors: js.Dynamic = getGeometry.getAttribute("customColor")
 
