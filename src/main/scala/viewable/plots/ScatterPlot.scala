@@ -1,6 +1,7 @@
 package viewable.plots
 
 import math.Stats
+import util.Log
 import viewable.Environment.Column
 import viewable.plots.ScatterPlot.CoordinateAxisIDs
 
@@ -17,7 +18,8 @@ class ScatterPlot(points: Points, columns: (Column, Column, Column)) extends Plo
 
   override def restoredValue(i: Int, col: Int): Double = {
     val modified = column(col)(i)
-    Stats.restore(modified, stats(col)._1, stats(col)._2)
+    // TODO: Create 2D & 3D variants, then remove ` % stats.length` from here
+    Stats.restore(modified, stats(col % stats.length)._1, stats(col % stats.length)._2)
   }
 
   def xid: CoordinateAxisIDs = columns._1._1 // 1st column, 1st field

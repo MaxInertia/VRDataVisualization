@@ -190,12 +190,15 @@ object Environment {
       var x, y, z: Column = null
       x = columnSet(0)
       if(columnSet.length >=3) {
+        Log("Columns >= 3")
         y = columnSet(1)
         z = columnSet(2)
       } else if(columnSet.length == 2) { // make a 2D plot?
+        Log("Columns == 2")
         y = columnSet(1)
         z = columnSet(0)
       } else { // make a 1D plot?
+        Log("Columns < 2")
         y = columnSet(0)
         z = columnSet(0)
       }
