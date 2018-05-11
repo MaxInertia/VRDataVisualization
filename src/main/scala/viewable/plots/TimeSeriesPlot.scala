@@ -11,6 +11,8 @@ class TimeSeriesPlot(val tag: String, points: Points) extends Plot {
   override def getName: String = tag
 
   override def column(c: Int): Array[Double] = ???
+
+  override def restoredValue(i: Int, col: Int): Double = ???
 }
 
 object TimeSeriesPlot {

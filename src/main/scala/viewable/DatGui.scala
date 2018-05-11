@@ -1,10 +1,6 @@
 package viewable
 
 import facades.Dat
-import facades.Dat.GuiSlider
-import org.scalajs.threejs.Object3D
-import util.Log
-import viewable.Regions.getNonEmpties
 import viewable.plots.ScatterPlot
 
 import scala.scalajs.js
@@ -27,10 +23,9 @@ object DatGui {
   }
 
   def apply(): Dat.GUI = {
-    val gui = Dat.GUIVR.create("Settings")
+    val gui = Dat.GUIVR.create("Highlighted Point Details")
     gui.position.set(0.5, 1, -1.5)
     gui.rotateY(-3.14/5) // slightly less than 45deg
     gui
   }
-
 }

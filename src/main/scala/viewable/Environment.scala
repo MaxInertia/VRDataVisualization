@@ -124,16 +124,22 @@ object Environment {
   var instance: Environment = _
 
   type Column = (String, Array[Double])
+  // Is this a bad way to do it? The alternative is to retain all original
+  // AND updated points which won't be feasible for large datasets..
+  type ColumnWStats = (String, Array[Double], Double, Double)
 
   /**
     * Prepares raw data for being turned into points then plotted
     * @param localStorageID ID of data in browser storage // TODO: This should be generalized to DataSource
     * @return Preprocessed data, ready to be turned into points and plotted!
     */
-  def prepareData(localStorageID: String): Array[Column] = {
+  def prepareData(localStorageID: String): Array[ColumnWStats] = {
     val timeSeries = BrowserStorage.timeSeriesFromCSV(localStorageID)
     if (timeSeries.isEmpty) Array()
-    else timeSeries.get.map{ case (id, vs) => (id, Stats.standardize(vs)) }
+    else timeSeries.get.map{ case (id, vs) =>
+      val (stanValues, stanDev, mean) = Stats.standardize(vs)
+      (id, stanValues, stanDev, mean)
+    }
   }
 
   /**
@@ -177,7 +183,9 @@ object Environment {
   }
 
   def plot(env: Environment, plotNum: Int = 0): Unit = {
-    val columnSet: Array[Column] = prepareData(localStorageID = s"SM${plotNum + 1}_timeSeries")
+    val columnSetWithStats: Array[ColumnWStats] = prepareData(localStorageID = s"SM${plotNum + 1}_timeSeries")
+    val stats: Array[(Double, Double)] = columnSetWithStats.map{ case (_, _, sd, m) => (sd, m) }
+    val columnSet: Array[Column] = columnSetWithStats.map{ case (n, d, _, _) => (n, d) }
     if(columnSet.nonEmpty) {
       var x, y, z: Column = null
       x = columnSet(0)
@@ -191,7 +199,7 @@ object Environment {
         y = columnSet(0)
         z = columnSet(0)
       }
-      val scatterPlot: Plot = ScatterPlot(x, y, z, 1, Colors.BLUE_HUE_SHIFT)
+      val scatterPlot: Plot = ScatterPlot(x, y, z, stats, 1, Colors.BLUE_HUE_SHIFT)
 
       // The following three lines use Scene, Environment AND Regions...
 

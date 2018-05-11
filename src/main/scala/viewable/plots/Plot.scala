@@ -2,7 +2,6 @@ package viewable.plots
 
 import scala.scalajs.js
 import js.typedarray.Float32Array
-
 import util.Log
 
 /**
@@ -24,6 +23,7 @@ trait Plot {
     s"$zVar" -> 0.001
   )
 
+  def restoredValue(i: Int, col: Int): Double
 
   def getPoints: Points
   def getName: String
@@ -61,9 +61,14 @@ trait Plot {
       */
     def highlight(index: Int): Unit = {
       import js.JSConverters._
-      highlightedDetails.asInstanceOf[js.Dynamic].updateDynamic(s"$xVar")(column(0)(index).toFloat)
+      // If restored value desired (~ original)
+      highlightedDetails.asInstanceOf[js.Dynamic].updateDynamic(s"$xVar")(restoredValue(index, 0))
+      highlightedDetails.asInstanceOf[js.Dynamic].updateDynamic(s"$yVar")(restoredValue(index, 1))
+      highlightedDetails.asInstanceOf[js.Dynamic].updateDynamic(s"$zVar")(restoredValue(index, 2))
+      // If standardized output desired
+      /*highlightedDetails.asInstanceOf[js.Dynamic].updateDynamic(s"$xVar")(column(0)(index).toFloat)
       highlightedDetails.asInstanceOf[js.Dynamic].updateDynamic(s"$yVar")(column(1)(index).toFloat)
-      highlightedDetails.asInstanceOf[js.Dynamic].updateDynamic(s"$zVar")(column(2)(index).toFloat)
+      highlightedDetails.asInstanceOf[js.Dynamic].updateDynamic(s"$zVar")(column(2)(index).toFloat)*/
 
       if(SelectionProperties.changesColor)
         updateColors(

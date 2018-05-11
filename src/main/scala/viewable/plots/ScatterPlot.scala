@@ -1,5 +1,6 @@
 package viewable.plots
 
+import math.Stats
 import viewable.Environment.Column
 import viewable.plots.ScatterPlot.CoordinateAxisIDs
 
@@ -12,6 +13,12 @@ import scala.scalajs.js
   */
 class ScatterPlot(points: Points, columns: (Column, Column, Column)) extends Plot {
   override val ops: SelectionOps = new SelectionOps{}
+  var stats: Array[(Double, Double)] = Array()
+
+  override def restoredValue(i: Int, col: Int): Double = {
+    val modified = column(col)(i)
+    Stats.restore(modified, stats(col)._1, stats(col)._2)
+  }
 
   def xid: CoordinateAxisIDs = columns._1._1 // 1st column, 1st field
   def yid: CoordinateAxisIDs = columns._2._1 // 2nd column, 1st field
@@ -44,7 +51,13 @@ class ScatterPlot(points: Points, columns: (Column, Column, Column)) extends Plo
 object ScatterPlot {
   type CoordinateAxisIDs = String
 
-  def apply(xColumn: Column, yColumn: Column, zColumn: Column, texture: Int, hue: Double = 0.0): ScatterPlot = {
+  def apply(xColumn: Column, yColumn: Column, zColumn: Column, stats: Array[(Double, Double)], texture: Int, hue: Double = 0.0): ScatterPlot = {
+    val scatterPlot = ScatterPlot(xColumn, yColumn, zColumn, texture, hue)
+    scatterPlot.stats = stats
+    scatterPlot
+  }
+
+  def apply(xColumn: Column, yColumn: Column, zColumn: Column, texture: Int, hue: Double): ScatterPlot = {
     val points = PointsBuilder()
       .withXS(xColumn._2)
       .withYS(yColumn._2)
