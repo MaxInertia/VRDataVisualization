@@ -139,7 +139,7 @@ object Environment {
   type Column = (String, Array[Double])
   // Is this a bad way to do it? The alternative is to retain all original
   // AND updated points which won't be feasible for large datasets..
-  type ColumnWStats = (String, Array[Double], Double, Double)
+  type ColumnWStats = (String, Array[Double], Stats)
 
   /**
     * Prepares raw data for being turned into points then plotted
@@ -150,8 +150,8 @@ object Environment {
     val timeSeries = BrowserStorage.timeSeriesFromCSV(localStorageID)
     if (timeSeries.isEmpty) Array()
     else timeSeries.get.map{ case (id, vs) =>
-      val (stanValues, stanDev, mean) = Stats.standardize(vs)
-      (id, stanValues, stanDev, mean)
+      val (stanValues, stats) = Stats.standardize(vs)
+      (id, stanValues, stats)
     }
   }
 
@@ -197,8 +197,8 @@ object Environment {
 
   def plot(env: Environment, plotNum: Int = 0): Unit = {
     val columnSetWithStats: Array[ColumnWStats] = prepareData(localStorageID = s"SM${plotNum + 1}_timeSeries")
-    val stats: Array[(Double, Double)] = columnSetWithStats.map{ case (_, _, sd, m) => (sd, m) }
-    val columnSet: Array[Column] = columnSetWithStats.map{ case (n, d, _, _) => (n, d) }
+    val stats: Array[Stats] = columnSetWithStats.map{ case (_, _, s) => s }
+    val columnSet: Array[Column] = columnSetWithStats.map{ case (n, d, _) => (n, d) }
     if(columnSet.nonEmpty) {
       val scatterPlot: Plot = ScatterPlot(columnSet, stats, 1, Colors.BLUE_HUE_SHIFT)
 

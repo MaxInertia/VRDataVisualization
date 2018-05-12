@@ -71,23 +71,21 @@ trait Plot {
   def getName: String
 
   // Assuming it's 3D...
-  def xVar: String = "x"
-  def yVar: String = "y"
-  def zVar: String = "z"
+  def xVar: String
+  def yVar: String
+  def zVar: String
 
   def column(c: Int): Array[Double]
 
   def updateAxis(axisNumber: Int, values: Array[Double]): Unit = {
-    Log.show(s"Getting positions attribute!")
     val positionsAttr = getPositions
-    Log.show(s"Getting positions array!")
     val array = positionsAttr.array.asInstanceOf[Float32Array]
 
     import js.JSConverters._
-    Log.show(s"Changing point coordinates along axis #$axisNumber with...")
-    Log.show(values.toJSArray)
-    for(pointIndex <- values.indices) array(pointIndex*3 + axisNumber) = values(pointIndex).toFloat
+    Log(s"Changing point coordinates along axis #$axisNumber with...")
+    Log(values.toJSArray)
 
+    for(pointIndex <- values.indices) array(pointIndex*3 + axisNumber) = values(pointIndex).toFloat
     positionsAttr.needsUpdate = true
   }
 

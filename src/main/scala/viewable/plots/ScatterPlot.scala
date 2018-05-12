@@ -1,6 +1,6 @@
 package viewable.plots
 
-import math.Stats
+import math.{ScaleCenterProperties, Stats}
 import util.Log
 import viewable.Environment.Column
 import viewable.plots.ScatterPlot.CoordinateAxisIDs
@@ -12,9 +12,9 @@ import scala.scalajs.js
   *
   * Created by Dorian Thiessen on 2018-04-05.
   */
-class ScatterPlot(points: Points, columns: Array[Column], viewing: Array[Int]) extends Plot {
+class ScatterPlot(points: Points, columns: Array[Column], viewing: Array[Int], props: ScaleCenterProperties) extends Plot {
   override val ops: SelectionOps = new SelectionOps{}
-  var stats: Array[(Double, Double)] = Array()
+  var stats: Array[Stats] = Array()
 
   def xid: CoordinateAxisIDs = columns(viewing(0))._1 // 1st column, 1st field
   def yid: CoordinateAxisIDs = columns(viewing(1))._1 // 2nd column, 1st field
@@ -28,12 +28,21 @@ class ScatterPlot(points: Points, columns: Array[Column], viewing: Array[Int]) e
   def switchAxis(axisID: Int): Unit = {
     Log.show(s"Switching axis #$axisID from ${viewing(axisID)} to ${(viewing(axisID) + 1) % columns.length})")
     viewing(axisID) = (viewing(axisID) + 1) % columns.length
-    updateAxis(axisID, column(viewing(axisID)))
+
+    val newMax = stats(viewing(axisID)).normalizedMax
+    val newMin = stats(viewing(axisID)).normalizedMin
+    props.update(points, newMin, newMax, axisID)
+
+    updateAxis(axisID, columns(viewing(axisID))._2)
+    updateSelectedSummary()
+
+    //if(ops.hasHighlighted) updateHighlightedDetails(ops.getHighlighted)
+    //points.matrixWorldNeedsUpdate = true
   }
 
   override def restoredValue(modified: Double, col: Int): Double = {
     // TODO: Create 2D & 3D variants, then remove ` % stats.length` from here
-    Stats.restore(modified, stats(col % stats.length)._1, stats(col % stats.length)._2)
+    Stats.restore(modified, stats(col % stats.length).sd, stats(col % stats.length).mean)
   }
 
   def coordOfHighlighted(): (Double, Double, Double) = {
@@ -54,7 +63,7 @@ class ScatterPlot(points: Points, columns: Array[Column], viewing: Array[Int]) e
 object ScatterPlot {
   type CoordinateAxisIDs = String
 
-  def apply(columns: Array[Column], stats: Array[(Double, Double)], texture: Int, hue: Double = 0.0): ScatterPlot = {
+  def apply(columns: Array[Column], stats: Array[Stats], texture: Int, hue: Double = 0.0): ScatterPlot = {
     val scatterPlot = ScatterPlot(columns, texture, hue)
     scatterPlot.stats = stats
     scatterPlot
@@ -72,14 +81,16 @@ object ScatterPlot {
       viewing(2) = 2
     }
 
-    val points = PointsBuilder()
+    Log.show("Columns length on init: "+ columns.length)
+
+    val (points, props): (Points, ScaleCenterProperties) = PointsBuilder()
       .withXS(columns(viewing(0))._2)
       .withYS(columns(viewing(1))._2)
       .withZS(columns(viewing(2))._2)
       .usingHue(Some(hue))
       .usingTexture(texture)
       .build3D()
-    val scatterPlot = new ScatterPlot(points, columns, viewing)
+    val scatterPlot = new ScatterPlot(points, columns, viewing, props)
     scatterPlot.hue = hue
     scatterPlot
   }

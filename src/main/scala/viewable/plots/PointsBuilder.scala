@@ -1,5 +1,6 @@
 package viewable.plots
 
+import math.ScaleCenterProperties
 import org.scalajs.dom
 import org.scalajs.threejs._
 
@@ -34,7 +35,7 @@ class PointsBuilder[Props <: Component] private(xs: Array[Double], ys: Array[Dou
   def usingHue(hueIn: Option[Double]): PointsBuilder[Props] =
     new PointsBuilder[Props](xs, ys, zs, textureID, hueIn)
 
-  def build3D(): Points = {
+  def build3D(): (Points, ScaleCenterProperties) = {
     val vertices: Array[Coordinate] = Plot.zip3(xs, ys, zs)
     makePoints(vertices, hue, textureID)
   }
@@ -59,7 +60,7 @@ object PointsBuilder{
     null,
     null)
 
-  private def makePoints(coordinates: Array[Coordinate], hue: Option[Double], textureIndex: Int): Points = {
+  private def makePoints(coordinates: Array[Coordinate], hue: Option[Double], textureIndex: Int): (Points, ScaleCenterProperties) = {
     val vertices = makeVertices(coordinates)
     val (geometry, minimums, maximums) = makeGeometry(vertices, hue)
     val points = new Points(geometry, makeShaderMaterial(textureIndex))
@@ -81,12 +82,14 @@ object PointsBuilder{
     val centerY = (maximums._2 + minimums._2) / (2 * yScale)
     val centerZ = (maximums._3 + minimums._3) / (2 * zScale)
 
+    Log.show(s"xCenter: $centerX\nxScale: $xScale")
+
     // Align the points center with it's parents center.
     points.translateX(-centerX)
     points.translateY(-centerY)
     points.translateZ(-centerZ)
     points.matrixWorldNeedsUpdate = true
-    points
+    (points, ScaleCenterProperties(xScale, yScale, zScale, centerX, centerY, centerZ))
   }
 
   private def makeVertices(coordinates: Array[Coordinate]): Array[Vector3] =

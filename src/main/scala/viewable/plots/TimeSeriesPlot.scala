@@ -4,7 +4,7 @@ import scala.scalajs.js
 /**
   * Created by Dorian Thiessen on 2018-01-13.
   */
-class TimeSeriesPlot(val tag: String, points: Points) extends Plot {
+/*class TimeSeriesPlot(val tag: String, points: Points) extends Plot {
   override val ops: SelectionOps = new SelectionOps{}
   override def getPoints: Points = points
   def getGeometry: BufferGeometry = points.geometry.asInstanceOf[BufferGeometry]
@@ -30,3 +30,6 @@ object TimeSeriesPlot {
   def createSet(data: Array[(String, Array[Double])], hue: Double): Array[TimeSeriesPlot] =
     null  // TODO: Implement TimeSeries.create(...)
 }
+*/
+
+object TimeSeriesPlot

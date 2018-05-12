@@ -4,6 +4,8 @@ import viewable.Environment.Column
 
 import scala.scalajs.js // TODO: Unwanted dependency
 
+object ShadowManifold
+
 /**
   * A reconstruction of an attractor manifold generated from data on a single variable.
   * Each point can be thought of as the history of the variable over some interval of time,
@@ -11,7 +13,7 @@ import scala.scalajs.js // TODO: Unwanted dependency
   *
   * Created by Dorian Thiessen on 2018-01-13.
   */
-class ShadowManifold(val tag: String, var points: Points) extends Plot {
+/*class ShadowManifold(val tag: String, var points: Points) extends Plot {
   override val ops: SelectionOps = new SelectionOps{}
   override def getPoints: Points = points
   def getGeometry: BufferGeometry = points.geometry.asInstanceOf[BufferGeometry]
@@ -67,3 +69,4 @@ object ShadowManifold {
   def lagZip3(ts: Array[Double]): Array[Coordinate] = Plot.zip3(ts.drop(2), ts.tail, ts) // TODO: Generalize Tau
 
 }
+*/

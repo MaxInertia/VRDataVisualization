@@ -1,5 +1,6 @@
 package userinput
 
+import facades.Dat
 import facades.IFThree.{RaycasterParametersExt, SceneUtils2, VRController}
 import org.scalajs.dom.raw.Event
 import org.scalajs.threejs.{ArrowHelper, BoxGeometry, Color, CylinderGeometry, Matrix4, Mesh, MeshBasicMaterial, Object3D, SceneUtils, Vector3}
@@ -7,6 +8,8 @@ import viewable.plots.CoordinateAxes3D
 import userinput.Controls.RayCaster
 import util.Log
 import viewable.{Colors, Environment, Regions}
+
+import scala.scalajs.js
 
 /**
   * Touch events for the Oculus Controllers
@@ -261,13 +264,18 @@ object OculusControllerLeft extends OculusController {
 
     // Setup events unique for this controller
 
+    val inputDevice = Dat.GUIVR.addInputObject(vrc)
+    Environment.instance.scene.add(inputDevice)
+
     vrc.addEventListener(X_PressBegan, ((event: Event) => {
       Log("X Press Began")
       modifyCaptured(true)
+      inputDevice.asInstanceOf[js.Dynamic].pressed(true)
     }).asInstanceOf[Any => Unit])
 
     vrc.addEventListener(X_PressEnded, ((event: Event) => {
       Log("X Press Ended")
+      inputDevice.asInstanceOf[js.Dynamic].pressed(false)
     }).asInstanceOf[Any => Unit])
 
     vrc.addEventListener(Y_PressBegan, ((event: Event) => {
@@ -318,12 +326,17 @@ object OculusControllerRight extends OculusController {
 
     // Setup events unique for this controller
 
+    val inputDevice = Dat.GUIVR.addInputObject(vrc)
+    Environment.instance.scene.add(inputDevice)
+
     vrc.addEventListener(A_PressBegan, ((event: Event) => {
       Log("A Press Began")
       modifyCaptured(true)
+      inputDevice.asInstanceOf[js.Dynamic].pressed(true)
     }).asInstanceOf[Any => Unit])
     vrc.addEventListener(A_PressEnded, ((event: Event) => {
       Log("A Press Ended")
+      inputDevice.asInstanceOf[js.Dynamic].pressed(false)
     }).asInstanceOf[Any => Unit])
     vrc.addEventListener(B_PressBegan, ((event: Event) => {
       Log("B Press Began")

@@ -24,6 +24,8 @@ class DatGui {
     ss(0).name(plot.xVar)
     ss(1).name(plot.yVar)
     ss(2).name(plot.zVar)
+    for(h <- hs) h.matrixWorldNeedsUpdate = true
+    for(s <- ss) s.matrixWorldNeedsUpdate = true
   }
 }
 
@@ -35,12 +37,20 @@ object DatGui {
     gui.hs(1) = highlightFolder.add(plot.highlightedDetails, s"${plot.yVar}", 0, 0).listen()
     gui.hs(2) = highlightFolder.add(plot.highlightedDetails, s"${plot.zVar}", 0, 0).listen()
     gui.object3D.addFolder(highlightFolder)
+    highlightFolder.open()
 
     val selectFolder = Dat.GUIVR.create("Selected Points Mean")
     gui.ss(0) = selectFolder.add(plot.selectedSummary, s"${plot.xVar}", 0, 0).listen()
     gui.ss(1) = selectFolder.add(plot.selectedSummary, s"${plot.yVar}", 0, 0).listen()
     gui.ss(2) = selectFolder.add(plot.selectedSummary, s"${plot.zVar}", 0, 0).listen()
     gui.object3D.addFolder(selectFolder)
+    selectFolder.open()
+
+    selectFolder.addButton(()=>{
+      for(p <- plot.savedSelections) plot.ops.deselect(p)
+      plot.savedSelections = plot.savedSelections.empty
+      plot.updateSelectedSummary()
+    }, "clearSelected")
 
     var settingsFolder = Dat.GUIVR.create("Settings")
 
@@ -61,9 +71,7 @@ object DatGui {
     }, "Change Axis 3")
 
     gui.object3D.addFolder(settingsFolder)
-
     Log.show(gui.object3D)
-
     gui
   }
 

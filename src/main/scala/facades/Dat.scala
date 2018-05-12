@@ -30,12 +30,13 @@ object Dat {
     def add(something: js.Object, id: String, min: Double, max: Double): GuiSlider = js.native
     def addFolder(folder: GUI): GUI = js.native
     def addButton(fn: js.Function, id: String = "Button"): Unit = js.native
+    def addButton(id: String, fn: js.Function): Unit = js.native
     def open(): Unit = js.native
     def removeFolder(gui: GUI): Unit = js.native
   }
 
   @js.native
-  trait GuiSlider extends js.Object {
+  trait GuiSlider extends Object3D {
     def listen(): GuiSlider = js.native
     def name(name: String): GuiSlider = js.native
     def min(n: Double): GuiSlider = js.native
