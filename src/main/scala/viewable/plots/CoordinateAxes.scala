@@ -3,6 +3,7 @@ package viewable.plots
 import facades.IFThree.GridHelperExt
 import org.scalajs.threejs.LineBasicMaterial
 import org.scalajs.{threejs => THREE}
+import viewable.displays.PlaneDisplay
 
 import scala.scalajs.js
 import js.typedarray.Float32Array
@@ -11,13 +12,23 @@ import js.typedarray.Float32Array
   * Created by Dorian Thiessen on 2018-02-10.
   */
 abstract class CoordinateAxes(geometry: THREE.Geometry, material: THREE.LineBasicMaterial)
-  extends THREE.Line(geometry, material) {}
+  extends THREE.Line(geometry, material) {
+  var axesTitles: Array[PlaneDisplay] = Array()
+}
 
 class CoordinateAxes2D(geometry: THREE.Geometry, material: THREE.LineBasicMaterial)
   extends CoordinateAxes(geometry, material) {}
 
 class CoordinateAxes3D(geometry: THREE.Geometry, material: THREE.LineBasicMaterial)
-  extends CoordinateAxes(geometry, material) {}
+  extends CoordinateAxes(geometry, material) {
+
+  def setAxesTitles(xT: String, yT: String, zT: String): Unit = {
+    axesTitles(0).write(xT, (0, 0))
+    axesTitles(1).write(yT, (10, 10))
+    axesTitles(2).write(zT, (20, 20))
+  }
+
+}
 
 //TODO: CenteredAxes3D; origin matches origin of points in region.
 
@@ -30,6 +41,10 @@ object CoordinateAxes3D {
     var positions: Float32Array = null
     var colors: Float32Array = null
 
+    val xTitle = PlaneDisplay(0.4, 0.1)
+    val yTitle = PlaneDisplay(0.4, 0.1)
+    val zTitle = PlaneDisplay(0.4, 0.1)
+
     if(centeredOrigin) { // Origin of the axes is centered
       val (x, y, z) = (0, 0, 0)
       positions = new Float32Array(36)
@@ -40,10 +55,13 @@ object CoordinateAxes3D {
       }
 
       positions(3) += len
+      //xTitle.object3D.position.set(positions(3), 0, 0)
       positions(10) += len
       positions(17) += len
+      //yTitle.object3D.position.set(0, positions(17), 0)
       positions(21) -= len
       positions(28) -= len
+      //zTitle.object3D.position.set(0, 0, -positions(28))
       positions(35) -= len
       colors = new Float32Array(36)
       for (i <- 0 until 36) colors(i) = 0.5.toFloat
@@ -74,6 +92,13 @@ object CoordinateAxes3D {
     geometry.addAttribute("color", new THREE.BufferAttribute(colors, 3))
     geometry.computeBoundingSphere()
     val axes = new CoordinateAxes3D(geometry, material.asInstanceOf[LineBasicMaterial])
+
+    /*axes.add(xTitle.object3D)
+    axes.add(yTitle.object3D)
+    axes.add(zTitle.object3D)
+    axes.axesTitles = Array(xTitle, yTitle, zTitle)
+    axes.setAxesTitles("X", "Y", "Z")*/
+
     if(planeGrids) { // TODO: Account for the case when the origin is not centered
       val gridXZ = new GridHelperExt(1, 10, color, color)
       //val gridXZ = new GridHelperExt(1, 10, Colors.Blue, Colors.Blue)
