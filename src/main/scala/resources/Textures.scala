@@ -6,6 +6,9 @@ private[resources] object Textures {
 
   // If not texture is specified when creating points, the first is used.
   val defaultPointTextureID: Int = 0
+
+  var lastLoadedTexture: Int = -1
+
   // Point texture ID corresponds to index into this array.
   val pointTextureDirs: Array[String] = Array(
     "img/disc.png", // Low quality: 32x32
@@ -18,6 +21,7 @@ private[resources] object Textures {
   private var loadedTextures: Map[Int, Texture] = Map()
   val contains: Int => Boolean = loadedTextures.contains
   def add(i: Int, texture: Texture): Unit = {
+    lastLoadedTexture = i
     loadedTextures += (i -> texture)
   }
   def get(i: Int): Texture = loadedTextures(i)

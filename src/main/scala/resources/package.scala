@@ -22,6 +22,8 @@ package object resources {
 
     def getTexture(i: Int): Texture = Textures.get(i)
 
+    def getLastLoadedTextureID: Int = Textures.lastLoadedTexture
+
     def loadPointTexture(i: Int): Future[Texture] = {
       import scala.concurrent.ExecutionContext.Implicits.global
       // If we have already loaded this texture, don't load it again, just return it

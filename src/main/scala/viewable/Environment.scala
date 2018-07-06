@@ -38,7 +38,7 @@ class Environment(val scene: Scene,
 
   def plot(plotNum: Int = 0, data: Array[Data]): Unit = {
     if(data.isEmpty) return
-    val scatterPlot: Plot = ScatterPlot(data, 1, Colors.BLUE_HUE_SHIFT)
+    val scatterPlot: Plot = ScatterPlot(data, Res.getLastLoadedTextureID, Colors.BLUE_HUE_SHIFT)
     // The following three lines use Scene, Environment AND Regions...
     plots3D(plotNum) = Some(Array(scatterPlot)) // Currently we assume we're only generating one.
     val maybeNewRegion = Regions.add(plots3D(plotNum).get(0))
