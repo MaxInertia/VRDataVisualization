@@ -226,7 +226,7 @@ object Environment {
     val renderer = new WebGLRenderer().asInstanceOf[WebGLRendererExt]
     renderer.setSize(Window.width, Window.height)
     renderer.devicePixelRatio = Window.devicePixelRatio
-    renderer.vr.enabled = false
+    renderer.vr.enabled = true
     renderer.setClearColor(new Color(0xeebbbb))
     renderer
   }
@@ -255,20 +255,6 @@ object Environment {
 
     val delta = 0.001 // distance of grid from planes
 
-    def addRoof(height: Double) { // TODO: Seem unable to cast light on the roof?
-      val material = new MeshLambertMaterial()
-      material.color = new Color(0xffffff)
-      val roofGeometry = new PlaneGeometry(6, 6, 32)
-      val roof = new Mesh(roofGeometry, material)
-      roof.translateY(height)
-      roof.rotateX(3.1415 / 2)
-      // Add same grid on floor
-      val roofGrid: GridHelper = new GridHelperExt(6, 6, Colors.Black, Colors.Black)
-      roofGrid.position.setY(height - delta)
-      scene.add(roofGrid)
-      scene.add(roof)
-    }
-
     def addFloor(): Unit = {
       val floorMaterial = new MeshLambertMaterial()
       floorMaterial.color = new Color(0xffffff)
@@ -282,37 +268,11 @@ object Environment {
       floorGrid.material.linewidth = 2.0
       scene.add(floorGrid)
       scene.add(floor)
-
-      /*var boxMaterial = new MeshLambertMaterial()
-      var boxGeometry = new CubeGeometry(1, 0.35, 1)
-      def addCornerCubes(x: Double, y: Double, z: Double) {
-        var boxGeo = new CubeGeometry(1, y, 1)
-        var cube = new Mesh(boxGeo, boxMaterial)
-        cube.castShadow = true
-        cube.receiveShadow = true
-        cube.position.set(x, y/2, z)
-        scene.add(cube)
-      }
-      addCornerCubes(2.5, 0.35, 2.5)
-      addCornerCubes(-2.5, 0.35, 2.5)
-      addCornerCubes(-2.5, 0.35, -2.5)
-      addCornerCubes(2.5, 0.35, -2.5)
-
-      addCornerCubes(2.5, 0.25, 1.5)
-      addCornerCubes(-2.5, 0.25, 1.5)
-      addCornerCubes(-2.5, 0.25, -1.5)
-      addCornerCubes(2.5, 0.25, -1.5)
-
-      addCornerCubes(1.5, 0.25, 2.5)
-      addCornerCubes(-1.5, 0.25, 2.5)
-      addCornerCubes(-1.5, 0.25, -2.5)
-      addCornerCubes(1.5, 0.25, -2.5)*/
     }
 
     val floorLight = makeLight(3, 0)
     scene.add(floorLight)
     addFloor()
-    //addRoof(6)
     scene
   }
 

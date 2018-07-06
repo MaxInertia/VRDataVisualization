@@ -24,48 +24,10 @@
     <!-- Replaces project dependency above for pushing to gh-pages. TODO: Automate this -->
     <!--<script src="js/vrdatavisualization-opt.js"></script>-->
 </head>
-<body onload="VRDataVisualization.init()">
+<body onload="vrdv.init()">
     <div id="buttons">
         <button id="fullscreen">Fullscreen</button>
     </div>
-
-    <!-- Shaders for pulsating points -->
-    <!--<script type="x-shader/x-vertex" id="vertexshader2">
-
-        uniform float u_time;
-
-        attribute float size;
-        attribute vec3 customColor;
-
-        varying vec3 vColor;
-
-        void main() {
-            vColor.x = customColor.x *  abs(sin(u_time));
-            vColor.y = customColor.y *  abs(sin(u_time));
-            vColor.z = customColor.z *  abs(sin(u_time));
-            vec4 mvPosition = modelViewMatrix * vec4( position, 1.0 );
-            gl_PointSize = size * ( 300.0 / - mvPosition.z );
-            gl_Position = projectionMatrix * mvPosition;
-        }
-    </script>
-    <script type="x-shader/x-fragment" id="fragmentshader2">
-        #ifdef GL_ES
-            precision mediump float;
-        #endif
-
-        //uniform float u_time;
-        uniform vec3 color;
-        uniform sampler2D texture;
-
-        varying vec3 vColor;
-
-        void main() {
-            vec3 aFloat = vColor * color;
-            gl_FragColor = vec4( aFloat , 1.0 );
-            gl_FragColor = gl_FragColor * texture2D( texture, gl_PointCoord );
-            if ( gl_FragColor.a < ALPHATEST ) discard;
-        }
-    </script>-->
 
     <script type="x-shader/x-vertex" id="vertexshader">
         attribute float size;
@@ -99,20 +61,14 @@
         BUFFER_SCALE: 1.0
     };
 
-    function onVRDisplayPresentChange() {
+    window.addEventListener('vrdisplaypresentchange', function() {
         console.log('onVRDisplayPresentChange');
-        //onResize();
-    }
-
-    window.addEventListener('vrdisplaypresentchange', onVRDisplayPresentChange);
+    });
 
     // Button click handlers.
     document.querySelector('button#fullscreen').addEventListener('click', function() {
-        enterFullscreen(VRDataVisualization.renderer.domElement);
+        enterFullscreen(vrdv.renderer.domElement);
     });
-    /*document.querySelector('button#vr').addEventListener('click', function() {
-        vrDisplay.requestPresent([{source: VRDataVisualization.renderer.domElement}]);
-    });*/
 
     function enterFullscreen (el) {
         if (el.requestFullscreen) el.requestFullscreen();
@@ -130,10 +86,9 @@
                 console.log("Display object:");
                 console.log(vrDisplay);
                 if(vrDisplay.displayName !== 'Mouse and Keyboard VRDisplay (webvr-polyfill)') {
-                    VRDataVisualization.foundVRHeadset = true;
+                    // Kick off the render loop.
+                    vrDisplay.requestAnimationFrame(vrdv.animate);
                 }
-                // Kick off the render loop.
-                vrDisplay.requestAnimationFrame(animate);
             }
         });
     } else {

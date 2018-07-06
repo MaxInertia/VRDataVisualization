@@ -11,16 +11,14 @@ import viewable.Environment
 /**
   * Created by Dorian Thiessen on 2018-01-05.
   */
-@JSExportTopLevel("VRDataVisualization")
+@JSExportTopLevel("vrdv")
 object Main {
 
   var controls: Controls = _
   var env: Environment = _
   var stats: Stats = _
-  @JSExport("foundVRHeadset")
-  var foundVRHeadset: Boolean = false
 
-  @JSExport("init")
+  @JSExportTopLevel("vrdv.init")
   def init(): Unit = {
 
     // Setup the Environment (Scene, Camera, Renderer) and
@@ -32,11 +30,6 @@ object Main {
     // TODO: Make the button unfocusable to prevent it from being highlighted on dblclick
     dom.document.body.appendChild( WEBVR.createButton(env.renderer) )
 
-    if(foundVRHeadset) {
-      dom.console.log("Found headset")
-      env.renderer.asInstanceOf[WebGLRendererExt].vr.enabled = true
-    }
-
     Window.setupEventListeners(env.camera, env.renderer)
     controls = Controls.setup(env)
 
@@ -45,7 +38,7 @@ object Main {
     container.appendChild(stats.dom)
   }
 
-  @JSExportTopLevel("animate")
+  @JSExportTopLevel("vrdv.animate")
   def animate(timeStamp: Double): Unit = {
     dom.window.requestAnimationFrame(animate)
     if(controls != null) controls.update(timeStamp)
@@ -54,9 +47,9 @@ object Main {
   }
 
   @JSExport("renderer") // Temporary. renderer currently required in global scope.
-  def getRenderer: THREE.Renderer = env.renderer
+  def renderer: THREE.Renderer = env.renderer
 
   @JSExport("scene")
-  def getScene: Scene = Environment.instance.scene
+  def scene: Scene = Environment.instance.scene
 
 }

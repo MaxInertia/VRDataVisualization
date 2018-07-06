@@ -3,7 +3,7 @@ package userinput
 import facades.Dat
 import facades.IFThree.{RaycasterParametersExt, SceneUtils2, VRController}
 import org.scalajs.dom.raw.Event
-import org.scalajs.threejs.{ArrowHelper, BoxGeometry, Color, CylinderGeometry, Matrix4, Mesh, MeshBasicMaterial, Object3D, SceneUtils, Vector3}
+import org.scalajs.threejs.{ArrowHelper, Box3, BoxGeometry, Color, CylinderGeometry, Matrix4, Mesh, MeshBasicMaterial, Object3D, SceneUtils, Vector3}
 import viewable.plots.CoordinateAxes3D
 import userinput.Controls.RayCaster
 import util.Log
@@ -174,10 +174,24 @@ sealed abstract class OculusController extends OculusTouchEvents {
     vrc.addEventListener(Grip_PressBegan, ((event: Event) => {
       Log("Grip Press Began")
       val regions = Regions.getNonEmpties
+      val urc = updatedRayCaster.ray
+      val intersections = updatedRayCaster.intersectObjects(Environment.instance.scene.children)
+      Log.show(intersections)
       for (i <- regions.indices) {
         val r = regions(i).object3D
         val controllerPos = getCorrectedPosition
-        if (captured.isEmpty && r.position.distanceTo(controllerPos) < 0.5) {
+
+        val sdf =  urc.isIntersectionBox(new Box3(
+          new Vector3(
+            r.position.x - 0.5,
+            r.position.y - 0.5,
+            r.position.z - 0.5),
+          new Vector3(
+            r.position.x + 0.5,
+            r.position.y + 0.5,
+            r.position.z + 0.5)))
+
+        if (captured.isEmpty && (r.position.distanceTo(controllerPos) < 0.5 || sdf)) {
           if (r.parent == Environment.instance.scene) {
             // In this case, that region can be grabbed
             SceneUtils2.attach(r, Environment.instance.scene, vrc)
