@@ -24,9 +24,11 @@
     <!-- Replaces project dependency above for pushing to gh-pages. TODO: Automate this -->
     <!--<script src="js/vrdatavisualization-opt.js"></script>-->
 </head>
+
 <body onload="vrdv.init()">
     <div id="buttons">
-        <button id="fullscreen">Fullscreen</button>
+        <button id="fullscreen">Fullscreen</button><br>
+        <input type="file" id="csvDataFile" onchange="loadCSV()"/><br>
     </div>
 
     <script type="x-shader/x-vertex" id="vertexshader">
@@ -54,6 +56,28 @@
 
     <div id="scene-container"></div>
 
+    <script>
+
+        var filesLoaded = 0;
+
+        function loadCSV() {
+            var csv = document.getElementById("csvDataFile");
+            console.log("File: "+csv.files[0]);
+
+            var reader = new FileReader();
+            // Other reader event handlers: onabort, onerror, onloadstart, onloadend, onprogress
+            reader.onload = function(e) {
+                //console.log("reader.result: \n"+ reader.result);
+                vrdv.addData(reader.result);
+                filesLoaded = filesLoaded + 1;
+            };
+            reader.onprogress = function(e) {
+                console.log(e.loaded + " / " + e.total + " loaded.");
+            };
+            reader.readAsText(csv.files[0], 'UTF-8');
+        }
+    </script>
+
 </body>
 
 <script>
@@ -65,7 +89,6 @@
         console.log('onVRDisplayPresentChange');
     });
 
-    // Button click handlers.
     document.querySelector('button#fullscreen').addEventListener('click', function() {
         enterFullscreen(vrdv.renderer.domElement);
     });
@@ -76,25 +99,6 @@
         else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
         else if (el.msRequestFullscreen) el.msRequestFullscreen();
     }
-
-    vrDisplay = null;
-    if(navigator.getVRDisplays) {
-        console.log('WebVR 1.1 supported');
-        navigator.getVRDisplays().then(function(displays) {
-            if (displays.length > 0) {
-                vrDisplay = displays[0];
-                console.log("Display object:");
-                console.log(vrDisplay);
-                if(vrDisplay.displayName !== 'Mouse and Keyboard VRDisplay (webvr-polyfill)') {
-                    // Kick off the render loop.
-                    vrDisplay.requestAnimationFrame(vrdv.animate);
-                }
-            }
-        });
-    } else {
-
-    }
-
 </script>
 
 </html>

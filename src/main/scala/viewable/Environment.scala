@@ -40,13 +40,6 @@ class Environment(val scene: Scene,
 
   private val plots3D: Array[Option[Array[Plot]]] = Array(None, None)
 
-  /*def getPlot(regionID: Int, plotID: Int): Plot = plots3D(regionID % 2).get(plotID)
-
-  def nextPlot(regionID: Int) : Unit = {
-    //if(active.length <= regionID) loadPlot(regionID, 0)
-    //else loadPlot(regionID, (active(regionID) + 1) % plots3D(regionID % 2).get.length)
-  }*/
-
   // ----- Rendering!
 
   def render(): Unit = {
@@ -59,6 +52,15 @@ class Environment(val scene: Scene,
     }
 
     renderer.render(scene, camera)
+  }
+
+  def plot(plotNum: Int = 0, data: Array[Data]): Unit = {
+    if(data.isEmpty) return
+    val scatterPlot: Plot = ScatterPlot(data, 1, Colors.BLUE_HUE_SHIFT)
+    // The following three lines use Scene, Environment AND Regions...
+    plots3D(plotNum) = Some(Array(scatterPlot)) // Currently we assume we're only generating one.
+    val maybeNewRegion = Regions.add(plots3D(plotNum).get(0))
+    if(maybeNewRegion.nonEmpty) scene.add(maybeNewRegion.get.object3D)
   }
 
   // TODO: pointHighlighting is a user interaction, and the Environment should be ignorant of those
@@ -141,19 +143,7 @@ object Environment {
   // AND updated points which won't be feasible for large datasets..
   type ColumnWStats = (String, Array[Double], Stats)
 
-  /**
-    * Prepares raw data for being turned into points then plotted
-    * @param localStorageID ID of data in browser storage // TODO: This should be generalized to DataSource
-    * @return Preprocessed data, ready to be turned into points and plotted!
-    */
-  def prepareData(localStorageID: String): Array[ColumnWStats] = {
-    val timeSeries = BrowserStorage.timeSeriesFromCSV(localStorageID)
-    if (timeSeries.isEmpty) Array()
-    else timeSeries.get.map{ case (id, vs) =>
-      val (stanValues, stats) = Stats.standardize(vs)
-      (id, stanValues, stats)
-    }
-  }
+
 
   /**
     * Initiates setup for the Environment.
@@ -181,41 +171,8 @@ object Environment {
     instance = env
     //Dat.createGUI()
 
-    // Load texture for plots
-    val loadTexture = Res.loadPointTexture(1) // TODO: The texture should be an option
-    import scala.concurrent.ExecutionContext.Implicits.global
-    loadTexture andThen {
-      case Success(texture) => plot(env)
-      case Failure(err) =>
-        Log("Failed to load the texture!")
-        err.printStackTrace()
-    }
-
     //env.scene.add(DatGui.instance.asInstanceOf[Object3D])
     env
-  }
-
-  def plot(env: Environment, plotNum: Int = 0): Unit = {
-    val columnSetWithStats: Array[ColumnWStats] = prepareData(localStorageID = s"SM${plotNum + 1}_timeSeries")
-    val stats: Array[Stats] = columnSetWithStats.map{ case (_, _, s) => s }
-    val columnSet: Array[Column] = columnSetWithStats.map{ case (n, d, _) => (n, d) }
-    if(columnSet.nonEmpty) {
-      val scatterPlot: Plot = ScatterPlot(columnSet, stats, 1, Colors.BLUE_HUE_SHIFT)
-
-      // The following three lines use Scene, Environment AND Regions...
-      env.plots3D(plotNum) = Some(Array(scatterPlot)) // Currently we assume we're only generating one.
-      val maybeNewRegion = Regions.add(env.plots3D(plotNum).get(0))
-      if(maybeNewRegion.nonEmpty) env.scene.add(maybeNewRegion.get.object3D)
-
-      // Attempts to load more data
-      if(plotNum == 0) plot(env, plotNum+1)
-      // Recursive call above should work without the conditional since columnSet SHOULD be None
-      // in the recursive call. It works when terminating on plotNum = 1 (when only one dataset is provided)
-    } else if( plotNum == 0 && columnSet.isEmpty) {
-      Log("No data was found in the browsers LocalStorage! Unable to create plots.")
-    } else {
-      Log(s"Was able to create $plotNum plots!")
-    }
   }
 
   /**

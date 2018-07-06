@@ -9,6 +9,19 @@ import scala.math
   * Created by Dorian Thiessen on 2018-02-08.
   */
 object Stats {
+  def apply(measurements: Array[Double]): Stats = {
+    val mean = measurements.sum / measurements.length
+    val standev = standardDeviation(measurements)
+    var min = Double.MaxValue
+    var max = Double.MinValue
+    var values: Array[Double] = Array()
+    for(v <- measurements) {
+      if(v < min) min = v
+      if(v > max) max = v
+    }
+    Stats(standev, mean, min, max)
+  }
+
   def standardize(ts: Seq[Double]): (Array[Double], Stats) = {
     val mean = ts.sum / ts.length
     val standev = standardDeviation(ts)

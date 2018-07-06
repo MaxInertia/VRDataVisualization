@@ -1,6 +1,7 @@
 package viewable.plots
 
 import math.{ScaleCenterProperties, Stats}
+import resources.Data
 import util.Log
 import viewable.Environment.Column
 import viewable.plots.ScatterPlot.CoordinateAxisIDs
@@ -12,28 +13,24 @@ import scala.scalajs.js
   *
   * Created by Dorian Thiessen on 2018-04-05.
   */
-class ScatterPlot(points: Points, columns: Array[Column], viewing: Array[Int], props: ScaleCenterProperties) extends Plot {
+class ScatterPlot(points: Points, data: Array[Data], viewing: Array[Int], props: ScaleCenterProperties) extends Plot {
   override val ops: SelectionOps = new SelectionOps{}
-  var stats: Array[Stats] = Array()
+  def stats(i: Int): Stats = data(i).stats.get
 
-  def xid: CoordinateAxisIDs = columns(viewing(0))._1 // 1st column, 1st field
-  def yid: CoordinateAxisIDs = columns(viewing(1))._1 // 2nd column, 1st field
-  def zid: CoordinateAxisIDs = columns(viewing(2))._1 // 3rd column, 1st field
-
-  override def xVar: String = columns(viewing(0))._1
-  override def yVar: String = columns(viewing(1))._1
-  override def zVar: String = columns(viewing(2))._1
-  override def column(c: Int): Array[Double] = columns(viewing(c))._2
+  override def xVar: String = data(viewing(0)).id // 1st column ID
+  override def yVar: String = data(viewing(1)).id // 2nd column ID
+  override def zVar: String = data(viewing(2)).id // 3rd column ID
+  override def column(c: Int): Array[Double] = data(viewing(c)).measurements
 
   def switchAxis(axisID: Int): Unit = {
-    Log.show(s"Switching axis #$axisID from ${viewing(axisID)} to ${(viewing(axisID) + 1) % columns.length})")
-    viewing(axisID) = (viewing(axisID) + 1) % columns.length
+    Log.show(s"Switching axis #$axisID from ${viewing(axisID)} to ${(viewing(axisID) + 1) % data.length})")
+    viewing(axisID) = (viewing(axisID) + 1) % data.length
 
     val newMax = stats(viewing(axisID)).normalizedMax
     val newMin = stats(viewing(axisID)).normalizedMin
     props.update(points, newMin, newMax, axisID)
 
-    updateAxis(axisID, columns(viewing(axisID))._2)
+    updateAxis(axisID, column(viewing(axisID)))
     updateSelectedSummary()
 
     //if(ops.hasHighlighted) updateHighlightedDetails(ops.getHighlighted)
@@ -42,7 +39,7 @@ class ScatterPlot(points: Points, columns: Array[Column], viewing: Array[Int], p
 
   override def restoredValue(modified: Double, col: Int): Double = {
     // TODO: Create 2D & 3D variants, then remove ` % stats.length` from here
-    Stats.restore(modified, stats(col % stats.length).sd, stats(col % stats.length).mean)
+    Stats.restore(modified, stats(col % data.length).sd, stats(col % data.length).mean)
   }
 
   def coordOfHighlighted(): (Double, Double, Double) = {
@@ -63,34 +60,27 @@ class ScatterPlot(points: Points, columns: Array[Column], viewing: Array[Int], p
 object ScatterPlot {
   type CoordinateAxisIDs = String
 
-  def apply(columns: Array[Column], stats: Array[Stats], texture: Int, hue: Double = 0.0): ScatterPlot = {
-    val scatterPlot = ScatterPlot(columns, texture, hue)
-    scatterPlot.stats = stats
-    scatterPlot
-  }
-
-  def apply(columns: Array[Column], texture: Int, hue: Double): ScatterPlot = {
-
+  def apply(data: Array[Data], texture: Int, hue: Double): ScatterPlot = {
     val viewing = Array(0, 0, 0)
-    if(columns.length > 1) { // make a 2D plot?
+    if(data.length > 1) { // make a 2D plot?
       Log("Columns > 1")
       viewing(1) = 1
     }
-    if(columns.length > 2) {
+    if(data.length > 2) {
       Log("Columns > 2")
       viewing(2) = 2
     }
 
-    Log.show("Columns length on init: "+ columns.length)
+    Log.show("Columns length on init: "+ data.length)
 
     val (points, props): (Points, ScaleCenterProperties) = PointsBuilder()
-      .withXS(columns(viewing(0))._2)
-      .withYS(columns(viewing(1))._2)
-      .withZS(columns(viewing(2))._2)
+      .withXS(data(viewing(0)).measurements)
+      .withYS(data(viewing(1)).measurements)
+      .withZS(data(viewing(2)).measurements)
       .usingHue(Some(hue))
       .usingTexture(texture)
       .build3D()
-    val scatterPlot = new ScatterPlot(points, columns, viewing, props)
+    val scatterPlot = new ScatterPlot(points, data, viewing, props)
     scatterPlot.hue = hue
     scatterPlot
   }

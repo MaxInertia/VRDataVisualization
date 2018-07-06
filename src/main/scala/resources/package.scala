@@ -46,13 +46,4 @@ package object resources {
     }
   }
 
-  object BrowserStorage {
-    /** A tuple containing the ID and values of a column */
-    type CSVColumn[T] = (String, Array[T])
-
-    def timeSeriesFromCSV(localStorageID: String): Option[Array[CSVColumn[Double]]] = {
-      LocalStorage(localStorageID).map(CSVParser.parse)
-    }
-  }
-
 }
