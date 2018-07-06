@@ -7,7 +7,8 @@ import facades.IFThree.WEBVR
 import org.scalajs.threejs.Scene
 import resources.{BrowserStorage, FileAsText, Res}
 import util.Log
-import viewable.{Environment, Regions}
+import viewable.{Colors, Environment, Regions}
+
 import scala.util.{Failure, Success}
 
 /**
@@ -37,7 +38,7 @@ object Main {
     import scala.concurrent.ExecutionContext.Implicits.global
     loadTexture andThen {
       case Success(texture) =>
-        env.plot(0, dataset1)
+        env.plot(dataset, Colors.RED_HUE_SHIFT)
       case Failure(err) =>
         Log("Failed to load the texture!")
         err.printStackTrace()
@@ -71,7 +72,7 @@ object Main {
   def addData(data: String): Unit = {
     val plotNum = Regions.getNonEmpties.length
     if(plotNum == 4) Log.show("Maximum number of files has been reached! Reload page to try other files.")
-    else env.plot(plotNum, FileAsText(data).collect())
+    else env.plot(FileAsText(data).collect(), Colors.BLUE_HUE_SHIFT, plotNum)
   }
 
   @JSExport("renderer") // Temporary. renderer currently required in global scope.
