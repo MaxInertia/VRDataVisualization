@@ -1,25 +1,21 @@
 package viewable
 
-import facades.Dat
 import facades.IFThree._
 import math.Stats
 import org.scalajs.dom
 import org.scalajs.threejs.{Colors => _, _}
 import resources._
 import userinput.{Controls, Interactions}
-import util.Log
-import viewable.displays.PlaneDisplay
 import viewable.plots._
 import window.Window
-
-import scala.collection.mutable
-import scala.util.{Failure, Success}
 import scala.scalajs.js.JSConverters._
 
 /**
   * Serves as a wrapper for the Three.js Scene, PerspectiveCamera, and WebGLRenderer.
   * Provides methods for the insertion, removal, and updating of scene contents.
+  *
   * TODO: Insertion and removal via addition and removal of regions (Env should contain the list of regions)
+  *
   * Created by Dorian Thiessen on 2018-01-11.
   */
 class Environment(val scene: Scene,
@@ -32,13 +28,22 @@ class Environment(val scene: Scene,
   fakeOrigin.position.set(0, 1.6, 0)
   scene.add(fakeOrigin)
 
-  // -- VR GUIs!
+  // -- VR GUIs! (implementation pending)
 
-  val displays: mutable.MutableList[PlaneDisplay] = mutable.MutableList()
+  //val displays: mutable.MutableList[PlaneDisplay] = mutable.MutableList()
 
   // ------ Plot stuff
 
-  private val plots3D: Array[Option[Array[Plot]]] = Array(None, None)
+  private val plots3D: Array[Option[Array[Plot]]] = Array(None, None, None, None)
+
+  def plot(plotNum: Int = 0, data: Array[Data]): Unit = {
+    if(data.isEmpty) return
+    val scatterPlot: Plot = ScatterPlot(data, 1, Colors.BLUE_HUE_SHIFT)
+    // The following three lines use Scene, Environment AND Regions...
+    plots3D(plotNum) = Some(Array(scatterPlot)) // Currently we assume we're only generating one.
+    val maybeNewRegion = Regions.add(plots3D(plotNum).get(0))
+    if(maybeNewRegion.nonEmpty) scene.add(maybeNewRegion.get.object3D)
+  }
 
   // ----- Rendering!
 
@@ -52,15 +57,6 @@ class Environment(val scene: Scene,
     }
 
     renderer.render(scene, camera)
-  }
-
-  def plot(plotNum: Int = 0, data: Array[Data]): Unit = {
-    if(data.isEmpty) return
-    val scatterPlot: Plot = ScatterPlot(data, 1, Colors.BLUE_HUE_SHIFT)
-    // The following three lines use Scene, Environment AND Regions...
-    plots3D(plotNum) = Some(Array(scatterPlot)) // Currently we assume we're only generating one.
-    val maybeNewRegion = Regions.add(plots3D(plotNum).get(0))
-    if(maybeNewRegion.nonEmpty) scene.add(maybeNewRegion.get.object3D)
   }
 
   // TODO: pointHighlighting is a user interaction, and the Environment should be ignorant of those
@@ -143,8 +139,6 @@ object Environment {
   // AND updated points which won't be feasible for large datasets..
   type ColumnWStats = (String, Array[Double], Stats)
 
-
-
   /**
     * Initiates setup for the Environment.
     *
@@ -153,10 +147,6 @@ object Environment {
     * - the renderer,
     * - and the scene.
     *
-    * Setup involves:
-    * - initializing camera, scene, and renderer,
-    * - loading required resources (ex: The texture for points,
-    *                                   and data used for point positions.)
     * @param container The dom element in which the renderer will display the environment.
     * @return The environment instance.
     */
@@ -169,9 +159,6 @@ object Environment {
     scene.add(camera)
     for(r <- Regions.getNonEmpties) scene.add(r.object3D)
     instance = env
-    //Dat.createGUI()
-
-    //env.scene.add(DatGui.instance.asInstanceOf[Object3D])
     env
   }
 
@@ -233,7 +220,7 @@ object Environment {
     scene
   }
 
-  def makeLight(yPos: Double, xOrientation: Double): Light = {
+  private def makeLight(yPos: Double, xOrientation: Double): Light = {
     val spotlight = new SpotLight(0xffffff, 0.5)
     spotlight.distance = 10
     spotlight.castShadow = true

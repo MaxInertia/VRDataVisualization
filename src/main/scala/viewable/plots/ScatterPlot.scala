@@ -3,10 +3,6 @@ package viewable.plots
 import math.{ScaleCenterProperties, Stats}
 import resources.Data
 import util.Log
-import viewable.Environment.Column
-import viewable.plots.ScatterPlot.CoordinateAxisIDs
-
-import scala.scalajs.js
 
 /**
   * Container of a simple scatter-plot.

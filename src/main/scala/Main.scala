@@ -3,15 +3,11 @@ import org.scalajs.{threejs => THREE}
 import org.scalajs.dom
 import userinput.Controls
 import window.Window
-import facades.Stats
 import facades.IFThree.WEBVR
-import math.Stats
 import org.scalajs.threejs.Scene
 import resources.{BrowserStorage, FileAsText, Res}
 import util.Log
 import viewable.{Environment, Regions}
-import viewable.Regions.Region
-
 import scala.util.{Failure, Success}
 
 /**
@@ -70,10 +66,12 @@ object Main {
   }
 
   // Load data from VR window
+  // Allows loading up to four csv data files (including those added at the setup page)
   @JSExportTopLevel("vrdv.addData")
   def addData(data: String): Unit = {
     val plotNum = Regions.getNonEmpties.length
-    env.plot(plotNum, FileAsText(data).collect())
+    if(plotNum == 4) Log.show("Maximum number of files has been reached! Reload page to try other files.")
+    else env.plot(plotNum, FileAsText(data).collect())
   }
 
   @JSExport("renderer") // Temporary. renderer currently required in global scope.

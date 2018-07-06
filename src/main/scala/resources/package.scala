@@ -1,4 +1,3 @@
-import org.scalajs.dom.ext.LocalStorage
 import org.scalajs.{threejs => THREE}
 import scala.concurrent.{Future, Promise}
 import scala.scalajs.js

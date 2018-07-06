@@ -1,11 +1,8 @@
 package viewable
 
-
 import org.scalajs.threejs.{Object3D, Vector3}
 import util.Log
 import viewable.plots.{CoordinateAxes3D, Plot, ScatterPlot}
-
-import scala.scalajs.js
 
 object Regions {
   type MaybeRegion = Option[Region]
