@@ -9,28 +9,38 @@ import util.Log
   *
   * Created by Dorian Thiessen on 2018-04-05.
   */
-class ScatterPlot(points: Points, data: Array[Data], viewing: Array[Int], props: ScaleCenterProperties) extends Plot {
+class ScatterPlot(points: Points, data: Array[Data], viewing: Array[Int], var props: ScaleCenterProperties) extends Plot {
   override val ops: SelectionOps = new SelectionOps{}
   def stats(i: Int): Stats = data(i).stats.get
 
-  override def xVar: String = data(viewing(0)).id // 1st column ID
-  override def yVar: String = data(viewing(1)).id // 2nd column ID
-  override def zVar: String = data(viewing(2)).id // 3rd column ID
-  override def column(c: Int): Array[Double] = data(viewing(c)).measurements
+  override def xVar: String = data(viewing(XAxis)).id // 1st column ID
+  override def yVar: String = data(viewing(YAxis)).id // 2nd column ID
+  override def zVar: String = data(viewing(ZAxis)).id // 3rd column ID
+  override def column(axisID: Int): Array[Double] = data(viewing(axisID)).measurements
 
   def switchAxis(axisID: Int): Unit = {
     Log.show(s"Switching axis #$axisID from ${viewing(axisID)} to ${(viewing(axisID) + 1) % data.length})")
     viewing(axisID) = (viewing(axisID) + 1) % data.length
 
-    val newMax = stats(viewing(axisID)).normalizedMax
-    val newMin = stats(viewing(axisID)).normalizedMin
-    props.update(points, newMin, newMax, axisID)
+    updateAxis(axisID, column(axisID))
 
-    updateAxis(axisID, column(viewing(axisID)))
-    updateSelectedSummary()
+    props = PlotManipulator.confineToRegion(
+      points,
+      (stats(viewing(XAxis)).min, stats(viewing(YAxis)).min, stats(viewing(ZAxis)).min),
+      (stats(viewing(XAxis)).max, stats(viewing(YAxis)).max, stats(viewing(ZAxis)).max)
+    )
 
-    //if(ops.hasHighlighted) updateHighlightedDetails(ops.getHighlighted)
     //points.matrixWorldNeedsUpdate = true
+    getPositions.needsUpdate = true
+    val geo = getGeometry
+    geo.verticesNeedUpdate = true
+    geo.normalsNeedUpdate = true
+    geo.computeFaceNormals()
+    geo.computeVertexNormals()
+    geo.computeBoundingSphere()
+
+    updateSelectedSummary()
+    if(ops.hasHighlighted) updateHighlightedDetails(ops.getHighlighted)
   }
 
   override def restoredValue(modified: Double, col: Int): Double = {
@@ -40,9 +50,9 @@ class ScatterPlot(points: Points, data: Array[Data], viewing: Array[Int], props:
 
   def coordOfHighlighted(): (Double, Double, Double) = {
     if(highlighted.nonEmpty) {
-      val x = column(viewing(0))(highlighted.get)
-      val y = column(viewing(1))(highlighted.get)
-      val z = column(viewing(2))(highlighted.get)
+      val x = column(XAxis)(highlighted.get)
+      val y = column(YAxis)(highlighted.get)
+      val z = column(ZAxis)(highlighted.get)
       (x, y, z)
     } else (0, 0, 0)
   }
@@ -60,19 +70,19 @@ object ScatterPlot {
     val viewing = Array(0, 0, 0)
     if(data.length > 1) { // make a 2D plot?
       Log("Columns > 1")
-      viewing(1) = 1
+      viewing(YAxis) = 1
     }
     if(data.length > 2) {
       Log("Columns > 2")
-      viewing(2) = 2
+      viewing(ZAxis) = 2
     }
 
     Log.show("Columns length on init: "+ data.length)
 
     val (points, props): (Points, ScaleCenterProperties) = PointsBuilder()
-      .withXS(data(viewing(0)).measurements)
-      .withYS(data(viewing(1)).measurements)
-      .withZS(data(viewing(2)).measurements)
+      .withXS(data(viewing(XAxis)).measurements)
+      .withYS(data(viewing(YAxis)).measurements)
+      .withZS(data(viewing(ZAxis)).measurements)
       .usingHue(Some(hue))
       .usingTexture(texture)
       .build3D()

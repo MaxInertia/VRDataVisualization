@@ -33,15 +33,9 @@ trait Plot {
   )
 
   def updateHighlightedDetails(index: Int): Unit = {
-    import js.JSConverters._
-    // If restored value desired (~ original)
-    highlightedDetails.asInstanceOf[js.Dynamic].updateDynamic(s"$xVar")(restoredValue(column(0)(index), 0))
-    highlightedDetails.asInstanceOf[js.Dynamic].updateDynamic(s"$yVar")(restoredValue(column(1)(index), 1))
-    highlightedDetails.asInstanceOf[js.Dynamic].updateDynamic(s"$zVar")(restoredValue(column(2)(index), 2))
-    // If standardized output desired
-    /*highlightedDetails.asInstanceOf[js.Dynamic].updateDynamic(s"$xVar")(column(0)(index).toFloat)
-    highlightedDetails.asInstanceOf[js.Dynamic].updateDynamic(s"$yVar")(column(1)(index).toFloat)
-    highlightedDetails.asInstanceOf[js.Dynamic].updateDynamic(s"$zVar")(column(2)(index).toFloat)*/
+    highlightedDetails.asInstanceOf[js.Dynamic].updateDynamic(s"$xVar")(column(XAxis)(index).toFloat)
+    highlightedDetails.asInstanceOf[js.Dynamic].updateDynamic(s"$yVar")(column(YAxis)(index).toFloat)
+    highlightedDetails.asInstanceOf[js.Dynamic].updateDynamic(s"$zVar")(column(ZAxis)(index).toFloat)
   }
 
   def updateSelectedSummary(): Unit = {
@@ -49,10 +43,11 @@ trait Plot {
     var sumY: Double = 0
     var sumZ: Double = 0
     var c = 0
+
+    for(i <- savedSelections) sumX += column(XAxis)(i)
+    for(i <- savedSelections) sumY += column(YAxis)(i)
     for(i <- savedSelections) {
-      sumX += column(0)(i)
-      sumY += column(1)(i)
-      sumZ += column(2)(i)
+      sumZ += column(ZAxis)(i)
       c += 1
     }
 
@@ -60,9 +55,9 @@ trait Plot {
     val meanY = sumY/c
     val meanZ = sumZ/c
 
-    selectedSummary.asInstanceOf[js.Dynamic].updateDynamic(s"$xVar")(restoredValue(meanX, 0))
-    selectedSummary.asInstanceOf[js.Dynamic].updateDynamic(s"$yVar")(restoredValue(meanY, 1))
-    selectedSummary.asInstanceOf[js.Dynamic].updateDynamic(s"$zVar")(restoredValue(meanZ, 2))
+    selectedSummary.asInstanceOf[js.Dynamic].updateDynamic(s"$xVar")(meanX)
+    selectedSummary.asInstanceOf[js.Dynamic].updateDynamic(s"$yVar")(meanY)
+    selectedSummary.asInstanceOf[js.Dynamic].updateDynamic(s"$zVar")(meanZ)
   }
 
   def restoredValue(modified: Double, col: Int): Double
@@ -80,13 +75,7 @@ trait Plot {
   def updateAxis(axisNumber: Int, values: Array[Double]): Unit = {
     val positionsAttr = getPositions
     val array = positionsAttr.array.asInstanceOf[Float32Array]
-
-    import js.JSConverters._
-    Log(s"Changing point coordinates along axis #$axisNumber with...")
-    Log(values.toJSArray)
-
     for(pointIndex <- values.indices) array(pointIndex*3 + axisNumber) = values(pointIndex).toFloat
-    positionsAttr.needsUpdate = true
   }
 
   /** Buffer Attribute for point colors as RGB values */

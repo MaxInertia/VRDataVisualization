@@ -171,5 +171,12 @@ object IFThree {
 
   @js.native
   @JSGlobal("THREE.Group")
-  class Group extends Object3D
+  class Group extends Object3D {}
+
+  @js.native
+  @JSGlobal("THREE.Points")
+  class PointsR93(geometry: Geometry, material: PointsMaterial) extends org.scalajs.threejs.Points(geometry, material) {
+    def onBeforeRender(fn: js.Function6[Renderer, Scene, Camera, Geometry, Material, Group, Unit]): Unit = js.native
+    def onAfterRender(fn: js.Function6[Renderer, Scene, Camera, Geometry, Material, Group, Unit]): Unit = js.native
+  }
 }

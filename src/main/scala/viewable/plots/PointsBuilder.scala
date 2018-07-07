@@ -66,30 +66,8 @@ object PointsBuilder{
     val points = new Points(geometry, makeShaderMaterial(textureIndex))
     points.receiveShadow = false
     points.castShadow = false
-
-    // The amount to scale the points so they fit within a 1x1x1 cube.
-    val xScale = scala.math.abs(maximums._1 - minimums._1)
-    val yScale = scala.math.abs(maximums._2 - minimums._2)
-    val zScale = scala.math.abs(maximums._3 - minimums._3)
-
-    // Apply the scale.
-    points.scale.x /= xScale
-    points.scale.y /= yScale
-    points.scale.z /= zScale
-
-    // Find center of points.
-    val centerX = (maximums._1 + minimums._1) / (2 * xScale)
-    val centerY = (maximums._2 + minimums._2) / (2 * yScale)
-    val centerZ = (maximums._3 + minimums._3) / (2 * zScale)
-
-    Log.show(s"xCenter: $centerX\nxScale: $xScale")
-
-    // Align the points center with it's parents center.
-    points.translateX(-centerX)
-    points.translateY(-centerY)
-    points.translateZ(-centerZ)
-    points.matrixWorldNeedsUpdate = true
-    (points, ScaleCenterProperties(xScale, yScale, zScale, centerX, centerY, centerZ))
+    val scaleCenterProps = PlotManipulator.confineToRegion(points, minimums, maximums)
+    (points, scaleCenterProps)
   }
 
   private def makeVertices(coordinates: Array[Coordinate]): Array[Vector3] =
@@ -142,11 +120,9 @@ object PointsBuilder{
       positions(3*i) = vertex.x.toFloat
       if(vertex.x > maxX) maxX = vertex.x
       if(vertex.x < minX) minX = vertex.x
-
       positions(3*i + 1) = vertex.y.toFloat
       if(vertex.y > maxY) maxY = vertex.y
       if(vertex.y < minY) minY = vertex.y
-
       positions(3*i + 2) = vertex.z.toFloat
       if(vertex.z > maxZ) maxZ = vertex.z
       if(vertex.z < minZ) minZ = vertex.z
@@ -155,7 +131,6 @@ object PointsBuilder{
       colors(3 * i) = color.r.toFloat
       colors(3 * i + 1) = color.g.toFloat
       colors(3 * i + 2) = color.b.toFloat
-
       sizes(i) = PARTICLE_SIZE.toFloat
     }
 

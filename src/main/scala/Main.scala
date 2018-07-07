@@ -29,9 +29,7 @@ object Main {
     env = Environment.setup(container)
 
     // Load data provided at setup window
-    Log.show("Before loading dataset")
-    var dataset1 = BrowserStorage("SM1_timeSeries").collect()
-    Log.show("After loading dataset")
+    var dataset = BrowserStorage("SM1_timeSeries").collect()
 
     // Load texture for plots
     val loadTexture = Res.loadPointTexture(1) // TODO: The texture should be an option

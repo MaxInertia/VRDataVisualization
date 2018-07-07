@@ -55,7 +55,6 @@ class Environment(val scene: Scene,
         pointHighlighting(maybeRC.get)
       }
     }
-
     renderer.render(scene, camera)
   }
 
@@ -135,9 +134,6 @@ object Environment {
   var instance: Environment = _
 
   type Column = (String, Array[Double])
-  // Is this a bad way to do it? The alternative is to retain all original
-  // AND updated points which won't be feasible for large datasets..
-  type ColumnWStats = (String, Array[Double], Stats)
 
   /**
     * Initiates setup for the Environment.

@@ -10,6 +10,8 @@ trait DataSource {
   def collect(): Array[Data]
 }
 
+// TODO: Use PapaParser to parse file, don't read it in as text.
+
 // Used when csv files are added at the setup (non-vr) page
 case class BrowserStorage(localStorageID: String) extends DataSource {
   override def collect(): Array[Data] = {

@@ -1,5 +1,6 @@
 package viewable
 
+import facades.IFThree
 import org.scalajs.threejs
 
 /**
@@ -7,8 +8,13 @@ import org.scalajs.threejs
   */
 package object plots {
   type Color = threejs.Color
-  type Points = threejs.Points
+  type Points = IFThree.PointsR93
   type BufferGeometry = threejs.BufferGeometry
 
   type Coordinate = (Double, Double, Double)
+
+  // AxisIDs
+  val XAxis: Int = 0
+  val YAxis: Int = 1
+  val ZAxis: Int = 2
 }
