@@ -78,8 +78,6 @@ object Controls {
     // OR remove VRController.js and manually handle controller retrieval and state updates...
     dom.window.addEventListener("vr controller connected", (event: SomeEvent) => {
       val controller: VRController = event.detail.asInstanceOf[VRController]
-      val inputObject = Dat.GUIVR.addInputObject(controller)
-      env.scene.add(inputObject)
 
       if(controller.name == OculusControllerRight.name) {
         OculusControllerRight.setup(controller)

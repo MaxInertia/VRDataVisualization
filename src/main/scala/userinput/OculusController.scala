@@ -17,6 +17,8 @@ import scala.scalajs.js
 sealed trait OculusTouchEvents {
   val ThumbRest_TouchBegan: String = "thumbrest touch began"
   val ThumbRest_TouchEnded: String = "thumbrest touch ended"
+  val Primary_TouchBegan: String = "primary touch began"
+  val Primary_TouchEnded: String = "primary touch ended"
 }
 
 /**
@@ -26,11 +28,9 @@ sealed trait OculusTouchEvents {
 sealed abstract class OculusController extends OculusTouchEvents {
   val name: String
   // Event ID's
-  val Primary_TouchBegan: String = "primary touch began"
   val Primary_PressBegan: String = "primary press began"
   val Primary_ValueChanged: String = "primary value changed"
   val Primary_PressEnded: String = "primary press ended"
-  val Primary_TouchEnded: String = "primary touch ended"
   val Grip_PressBegan: String = "grip press began"
   val Grip_PressEnded: String = "grip press ended"
   val Axes_Changed: String = "thumbstick axes changed"
@@ -140,7 +140,7 @@ sealed abstract class OculusController extends OculusTouchEvents {
     *
     * @param vrc VRController instance
     */
-  protected def commonEvents(vrc: VRController): Unit = {
+  protected def commonEvents(vrc: VRController, inputDevice: Dat.InputDevice): Unit = {
 
     // Primary Press - for selecting points! (requires thumbrest touch to be active)
 
@@ -173,35 +173,40 @@ sealed abstract class OculusController extends OculusTouchEvents {
     //TODO: Make Region it's own class, pass that here for storing in captured. That way those operations can be defined in Region.
     vrc.addEventListener(Grip_PressBegan, ((event: Event) => {
       Log("Grip Press Began")
+
       val regions = Regions.getNonEmpties
       val urc = updatedRayCaster.ray
       val intersections = updatedRayCaster.intersectObjects(Environment.instance.scene.children)
       Log.show(intersections)
-      for (i <- regions.indices) {
-        val r = regions(i).object3D
-        val controllerPos = getCorrectedPosition
 
-        val sdf =  urc.isIntersectionBox(new Box3(
-          new Vector3(
-            r.position.x - 0.5,
-            r.position.y - 0.5,
-            r.position.z - 0.5),
-          new Vector3(
-            r.position.x + 0.5,
-            r.position.y + 0.5,
-            r.position.z + 0.5)))
+      if(captured.isEmpty) {
+        inputDevice.gripped(true)
+        for(i <- regions.indices) {
+          val r = regions(i).object3D
+          val controllerPos = getCorrectedPosition
 
-        if (captured.isEmpty && (r.position.distanceTo(controllerPos) < 0.5 || sdf)) {
-          if (r.parent == Environment.instance.scene) {
-            // In this case, that region can be grabbed
-            SceneUtils2.attach(r, Environment.instance.scene, vrc)
-            captured = Some(r)
-          } else {
-            // That region has already been grabbed...
-            // The value of the ratio of the updated distance between the controllers over
-            // the current distance will be applied to the region as a scale.
-            // This should appear to the user as stretching the plot.
-            capturedSeparation = Some(OculusControllers.separationDistance())
+          val sdf = urc.isIntersectionBox(new Box3(
+            new Vector3(
+              r.position.x - 0.5,
+              r.position.y - 0.5,
+              r.position.z - 0.5),
+            new Vector3(
+              r.position.x + 0.5,
+              r.position.y + 0.5,
+              r.position.z + 0.5)))
+
+          if(r.position.distanceTo(controllerPos) < 0.5 || sdf) {
+            if(r.parent == Environment.instance.scene) {
+              // In this case, that region can be grabbed
+              SceneUtils2.attach(r, Environment.instance.scene, vrc)
+              captured = Some(r)
+            } else {
+              // That region has already been grabbed...
+              // The value of the ratio of the updated distance between the controllers over
+              // the current distance will be applied to the region as a scale.
+              // This should appear to the user as stretching the plot.
+              capturedSeparation = Some(OculusControllers.separationDistance())
+            }
           }
         }
       }
@@ -215,7 +220,9 @@ sealed abstract class OculusController extends OculusTouchEvents {
         val dropped = captured.get
         SceneUtils2.detach(dropped, vrc, Environment.instance.scene)
         captured = None
-      } else if (capturedSeparation.nonEmpty) capturedSeparation = None
+      } else { //if (capturedSeparation.nonEmpty) capturedSeparation = None
+        inputDevice.gripped(false)
+      }
     }).asInstanceOf[Any => Unit])
 
     // Axes changed! - Currently no action
@@ -272,14 +279,16 @@ object OculusControllerLeft extends OculusController {
     Log(s"$name Connected!")
     init(vrc, meshColorBlue)
 
+    // Add this controller as an input device for Dat.GuiVR
+
+    val inputDevice = Dat.GUIVR.addInputObject(vrc).asInstanceOf[Dat.InputDevice]
+    Environment.instance.scene.add(inputDevice)
+
     // Setup events common to both controllers
 
-    commonEvents(vrc)
+    commonEvents(vrc, inputDevice)
 
     // Setup events unique for this controller
-
-    val inputDevice = Dat.GUIVR.addInputObject(vrc)
-    Environment.instance.scene.add(inputDevice)
 
     vrc.addEventListener(X_PressBegan, ((event: Event) => {
       Log("X Press Began")
@@ -334,14 +343,16 @@ object OculusControllerRight extends OculusController {
     Log(s"$name Connected!")
     init(vrc, meshColorRed)
 
+    // Add this controller as an input device for Dat.GuiVR
+
+    val inputDevice = Dat.GUIVR.addInputObject(vrc).asInstanceOf[Dat.InputDevice]
+    Environment.instance.scene.add(inputDevice)
+
     // Setup events common to both controllers
 
-    commonEvents(vrc)
+    commonEvents(vrc, inputDevice)
 
     // Setup events unique for this controller
-
-    val inputDevice = Dat.GUIVR.addInputObject(vrc)
-    Environment.instance.scene.add(inputDevice)
 
     vrc.addEventListener(A_PressBegan, ((event: Event) => {
       Log("A Press Began")

@@ -43,4 +43,10 @@ object Dat {
     def max(n: Double): GuiSlider = js.native
     def step(n: Double): GuiSlider = js.native
   }
+
+  @js.native
+  trait InputDevice extends Object3D {
+    def pressed(flag: Boolean): Unit = js.native
+    def gripped(flag: Boolean): Unit = js.native
+  }
 }
