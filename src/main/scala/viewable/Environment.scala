@@ -6,8 +6,10 @@ import org.scalajs.dom
 import org.scalajs.threejs.{Colors => _, _}
 import resources._
 import userinput.{Controls, Interactions}
+import viewable.input.{ActionPanel, Actions}
 import viewable.plots._
 import window.Window
+
 import scala.scalajs.js.JSConverters._
 
 /**
@@ -55,6 +57,7 @@ class Environment(val scene: Scene,
         pointHighlighting(maybeRC.get)
       }
     }
+    Actions.update(maybeRC)
     renderer.render(scene, camera)
   }
 
@@ -154,6 +157,7 @@ object Environment {
     container.appendChild(renderer.domElement)
     scene.add(camera)
     for(r <- Regions.getNonEmpties) scene.add(r.object3D)
+    for(ip <- Actions.inputPanels) scene.add(ip.object3D)
     instance = env
     env
   }

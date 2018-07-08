@@ -179,4 +179,11 @@ object IFThree {
     def onBeforeRender(fn: js.Function6[Renderer, Scene, Camera, Geometry, Material, Group, Unit]): Unit = js.native
     def onAfterRender(fn: js.Function6[Renderer, Scene, Camera, Geometry, Material, Group, Unit]): Unit = js.native
   }
+
+  @js.native
+  @JSGlobal("THREE.Object3D")
+  class Object3DR93 extends org.scalajs.threejs.Object3D {
+    def onBeforeRender(fn: js.Function3[Renderer, Scene, Camera, Unit]): Unit = js.native
+    def onAfterRender(fn: js.Function3[Renderer, Scene, Camera, Unit]): Unit = js.native
+  }
 }
