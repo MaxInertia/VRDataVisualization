@@ -1,11 +1,10 @@
-package userinput
+package controls
 
 import facades.Dat
 import facades.IFThree.{RaycasterParametersExt, SceneUtils2, VRController}
 import org.scalajs.dom.raw.Event
 import org.scalajs.threejs.{ArrowHelper, Box3, BoxGeometry, Color, CylinderGeometry, Matrix4, Mesh, MeshBasicMaterial, Object3D, SceneUtils, Vector3}
 import viewable.plots.CoordinateAxes3D
-import userinput.Controls.RayCaster
 import util.Log
 import viewable.{Colors, Environment, Regions}
 
@@ -43,7 +42,7 @@ sealed abstract class OculusController extends OculusTouchEvents {
   /*protected[userinput] */ var controllerEl: VRController = _
   protected var controllerMesh: Mesh = _
   protected var rayCasterEl: RayCaster = _
-  protected[userinput] var rayCasterArrow: ArrowHelper = _ // effectively the rayCaster mesh
+  protected[controls] var rayCasterArrow: ArrowHelper = _ // effectively the rayCaster mesh
 
   var captured: Option[Object3D] = None
   var capturedSeparation: Option[Double] = None
@@ -51,7 +50,7 @@ sealed abstract class OculusController extends OculusTouchEvents {
   var correctedPosition: Vector3 = new Vector3()
   var yOffset: Vector3 = new Vector3(0, 1.6, 0)
 
-  protected[userinput] var selecting: Boolean = false
+  protected[controls] var selecting: Boolean = false
 
   def isConnected: Boolean = controllerEl != null
 
@@ -313,6 +312,7 @@ object OculusControllerLeft extends OculusController {
   }
 
   def update(): Unit = {
+    controllerEl.update()
     // Apply scaling to the plot being stretched
     if(capturedSeparation.nonEmpty && OculusControllerRight.captured.nonEmpty) {
       val scale = OculusControllers.separationDistance() / capturedSeparation.get
@@ -373,6 +373,7 @@ object OculusControllerRight extends OculusController {
   }
 
   def update(): Unit = {
+    controllerEl.update()
     // Apply scaling to the plot being stretched
     if(capturedSeparation.nonEmpty && OculusControllerLeft.captured.nonEmpty) {
       val scale = OculusControllers.separationDistance() / capturedSeparation.get

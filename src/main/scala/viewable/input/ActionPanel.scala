@@ -2,7 +2,7 @@ package viewable.input
 
 import facades.IFThree.Object3DR93
 import org.scalajs.threejs._
-import userinput.OculusControllers
+import controls.OculusControllers
 import util.Log
 
 import scala.scalajs.js

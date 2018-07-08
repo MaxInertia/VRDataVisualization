@@ -1,4 +1,4 @@
-package userinput
+package controls
 
 import facades.IFThree.IntersectionExt
 import org.scalajs.threejs.Intersection

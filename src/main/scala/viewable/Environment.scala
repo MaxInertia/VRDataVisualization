@@ -5,7 +5,7 @@ import math.Stats
 import org.scalajs.dom
 import org.scalajs.threejs.{Colors => _, _}
 import resources._
-import userinput.{Controls, Interactions}
+import controls.Interactions
 import viewable.input.{ActionPanel, Actions}
 import viewable.plots._
 import window.Window
@@ -50,7 +50,7 @@ class Environment(val scene: Scene,
   // ----- Rendering!
 
   def render(): Unit = {
-    val maybeRC: Option[Raycaster] = Controls.getSelectionRayCaster(camera)
+    val maybeRC: Option[Raycaster] = controls.getSelectionRayCaster(camera)
     if(maybeRC.nonEmpty) {
       // TODO: Still find a better way to ignore points while waiting for the texture to be loaded
       if (Regions.numOccupied() >= 1) {

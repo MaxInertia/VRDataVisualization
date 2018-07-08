@@ -1,7 +1,6 @@
 import scala.scalajs.js.annotation.{JSExport, JSExportTopLevel}
 import org.scalajs.{threejs => THREE}
 import org.scalajs.dom
-import userinput.Controls
 import window.Window
 import facades.IFThree.WEBVR
 import org.scalajs.threejs.Scene
@@ -16,8 +15,6 @@ import scala.util.{Failure, Success}
   */
 @JSExportTopLevel("vrdv")
 object Main {
-
-  var controls: Controls = _
   var env: Environment = _
   var stats: facades.Stats = _
 
@@ -42,9 +39,9 @@ object Main {
         err.printStackTrace()
     }
 
-    // the Controls (Mouse, Oculus Controllers and Headset)
+    // Setup Oculus Controls
     Window.setupEventListeners(env.camera, env.renderer)
-    controls = Controls.setup(env)
+    controls.setup(env)
 
     // Add FPS stats to the Window
     stats = new facades.Stats()
@@ -59,7 +56,7 @@ object Main {
   @JSExportTopLevel("vrdv.animate")
   def animate(timeStamp: Double): Unit = {
     dom.window.requestAnimationFrame(animate)
-    if(controls != null) controls.update(timeStamp)
+    controls.update(timeStamp)
     if(env != null) env.render()
     if(stats != null) stats.update()
   }

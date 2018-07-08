@@ -1,8 +1,7 @@
 package viewable.input
 
-import org.scalajs.threejs.{MeshBasicMaterial, Vector2, Vector3}
-import userinput.Controls.RayCaster
-import util.Log
+import org.scalajs.threejs.{Vector2, Vector3}
+import controls.RayCaster
 import viewable.Colors
 
 /**
