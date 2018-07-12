@@ -1,8 +1,11 @@
 package viewable.input
 
-import org.scalajs.threejs.{Vector2, Vector3}
+import org.scalajs.threejs.{Object3D, Vector2, Vector3}
 import controls.RayCaster
+import facades.IFThree.Object3DR93
 import viewable.Colors
+
+import scala.collection.immutable.NumericRange
 
 /**
   * Created by Dorian Thiessen on 2018-07-07.
@@ -31,4 +34,9 @@ object Actions {
     }
   }
 
+  var menuLeft: Object3D = new Object3D
+
+  def getPanels(panelSize: Vector2, z: Double, xs: NumericRange[Double], ys: NumericRange[Double]): Array[ActionPanel] =
+    (for {x <- xs; y <- ys}
+      yield ActionPanel(panelSize, new Vector3(x, y, z), Colors.Indigo)).toArray
 }

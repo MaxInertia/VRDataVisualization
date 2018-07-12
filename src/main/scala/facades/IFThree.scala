@@ -100,13 +100,14 @@ object IFThree {
   class WebGLRendererExt extends WebGLRenderer {
     var vr: WebVRManager = js.native
     var shadowMap: ShadowMap = js.native
-    def animate(callback: () => _): Unit = js.native
+    def setAnimationLoop(callback: js.Function1[Double, Unit]): Unit = js.native
   }
   @js.native
   @JSGlobal("THREE.WebVRManager")
   class WebVRManager extends js.Any {
     def this(renderer: Renderer) = this()
     var enabled: Boolean = js.native
+    def setAnimationLoop(callback: js.Function1[Double, Unit]): Unit = js.native
   }
   @js.native
   @JSGlobal("WEBVR")
@@ -186,4 +187,22 @@ object IFThree {
     def onBeforeRender(fn: js.Function3[Renderer, Scene, Camera, Unit]): Unit = js.native
     def onAfterRender(fn: js.Function3[Renderer, Scene, Camera, Unit]): Unit = js.native
   }
+
+  @js.native
+  trait DomElementExt extends js.Object {
+    var requestFullscreen: Boolean = js.native
+    var mozRequestFullScreen: Boolean = js.native
+    var webkitRequestFullscreen: Boolean = js.native
+    var msRequestFullscreen: Boolean = js.native
+  }
+
+  @js.native
+  trait DomElementExt2 extends js.Object {
+    def requestFullscreen(): Unit = js.native
+    def mozRequestFullScreen(): Unit = js.native
+    def webkitRequestFullscreen(): Unit = js.native
+    def msRequestFullscreen(): Unit = js.native
+  }
+
+
 }

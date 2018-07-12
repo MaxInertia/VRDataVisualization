@@ -4,6 +4,7 @@ import scalajs.threejs._
 import window.Window
 import facades.Dat
 import facades.IFThree._
+import org.scalajs.dom.raw.Event
 import util.Log
 import viewable.Environment
 
@@ -12,10 +13,14 @@ import viewable.Environment
   * Created by Dorian Thiessen on 2018-01-13.
   */
 package object controls {
+
+  /** An event to be performed given that some user input occurred */
+  type InputEvent = Event => Unit
+
   // Oculus Controllers; [0: Left, 1: Right]
   var controllers: Array[VRController] = Array(null, null)
 
-  def update(timeStamp: Double): Unit = {
+  def update(): Unit = {
     VRControllerManager.update()
     if(OculusControllerLeft.isConnected) OculusControllerLeft.update()
     if(OculusControllerRight.isConnected) OculusControllerRight.update()
@@ -29,7 +34,6 @@ package object controls {
 
   def setup(env: Environment): Unit = {
     Log("Controls Setup...")
-
     dom.window.addEventListener("vr controller connected", (event: SomeEvent) => {
       val controller: VRController = event.detail.asInstanceOf[VRController]
 
@@ -43,7 +47,10 @@ package object controls {
         controls.controllers(0) = controller
         env.fakeOrigin.add(controller)
 
-      } else Log("[Controls]\t Unknown controller passed on event: \"vr controller connected\"")
+      } else {
+        Log.show("[Controls]\t Unknown controller passed on event: \"vr controller connected\"")
+        Log.show(controller)
+      }
     })
   }
 }

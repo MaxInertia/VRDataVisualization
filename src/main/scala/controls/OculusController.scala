@@ -3,9 +3,10 @@ package controls
 import facades.Dat
 import facades.IFThree.{RaycasterParametersExt, SceneUtils2, VRController}
 import org.scalajs.dom.raw.Event
-import org.scalajs.threejs.{ArrowHelper, Box3, BoxGeometry, Color, CylinderGeometry, Matrix4, Mesh, MeshBasicMaterial, Object3D, SceneUtils, Vector3}
+import org.scalajs.threejs.{ArrowHelper, Box3, BoxGeometry, Color, CylinderGeometry, Matrix4, Mesh, MeshBasicMaterial, Object3D, SceneUtils, Vector2, Vector3}
 import viewable.plots.CoordinateAxes3D
 import util.Log
+import viewable.input.Actions
 import viewable.{Colors, Environment, Regions}
 
 import scala.scalajs.js
@@ -169,7 +170,6 @@ sealed abstract class OculusController extends OculusTouchEvents {
     // Attempting to grab object!
 
     //TODO: Operations on captured visualizations!?
-    //TODO: Make Region it's own class, pass that here for storing in captured. That way those operations can be defined in Region.
     vrc.addEventListener(Grip_PressBegan, ((event: Event) => {
       Log("Grip Press Began")
 
@@ -250,7 +250,6 @@ sealed abstract class OculusController extends OculusTouchEvents {
       if (r.object3D == cid) {
         val maybeAxes = r.maybeGetAxes()
         if (maybeAxes.nonEmpty) r.object3D.remove(maybeAxes.get)
-
         val newAxes = CoordinateAxes3D.create(1, color = Colors.White, centeredOrigin = true, planeGrids = option)
         r.addAxes(newAxes)
       }
@@ -289,9 +288,18 @@ object OculusControllerLeft extends OculusController {
 
     // Setup events unique for this controller
 
+    var menuLeft: Object3D = new Object3D
+    var menuOpen: Boolean = false
+    var panels = Actions.getPanels(new Vector2(0.03, 0.03), 0.05, 0.05 to 0.15 by 0.05, 0.05 to 0.15 by 0.05)
+    for(p <- panels) menuLeft.add(p.object3D)
     vrc.addEventListener(X_PressBegan, ((event: Event) => {
       Log("X Press Began")
       modifyCaptured(true)
+      if(!menuOpen) {
+        vrc.add(menuLeft)
+        menuLeft.lookAt(Environment.instance.camera.position.projectOnVector(vrc.position))
+      } else vrc.remove(menuLeft)
+      menuOpen = !menuOpen
       inputDevice.asInstanceOf[js.Dynamic].pressed(true)
     }).asInstanceOf[Any => Unit])
 

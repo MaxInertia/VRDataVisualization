@@ -2,13 +2,16 @@ import scala.scalajs.js.annotation.{JSExport, JSExportTopLevel}
 import org.scalajs.{threejs => THREE}
 import org.scalajs.dom
 import window.Window
-import facades.IFThree.WEBVR
+import facades.IFThree.{DomElementExt, DomElementExt2, WEBVR, WebGLRendererExt}
+import org.scalajs.dom.raw.{Event, HTMLCanvasElement}
 import org.scalajs.threejs.Scene
 import resources.{BrowserStorage, FileAsText, Res}
 import util.Log
 import viewable.{Colors, Environment, Regions}
 
 import scala.util.{Failure, Success}
+import scala.scalajs.js
+import js.JSConverters._
 
 /**
   * Created by Dorian Thiessen on 2018-01-05.
@@ -24,6 +27,10 @@ object Main {
     // Setup the Environment (Scene, Camera, Renderer)
     val container = dom.document.getElementById("scene-container")
     env = Environment.setup(container)
+
+    dom.document.getElementById("fullscreenButton").addEventListener("onclick", (() => {
+      Rendering.enterFullscreen(env.renderer.domElement.asInstanceOf[DomElementExt2])
+    }).asInstanceOf[js.Function1[js.Any, _]])
 
     // Load data provided at setup window
     var dataset = BrowserStorage("SM1_timeSeries").collect()
@@ -50,15 +57,16 @@ object Main {
     // Append "ENTER VR" Button to DOM
     // TODO: Make the button unfocusable to prevent it from being highlighted on dblclick
     dom.document.body.appendChild( WEBVR.createButton(env.renderer) )
-    dom.window.requestAnimationFrame(animate)
+    Rendering.start(env, stats)
   }
 
-  @JSExportTopLevel("vrdv.animate")
-  def animate(timeStamp: Double): Unit = {
-    dom.window.requestAnimationFrame(animate)
-    controls.update(timeStamp)
-    if(env != null) env.render()
-    if(stats != null) stats.update()
+  @JSExportTopLevel("vrdv.render")
+  def render(time: Double): Unit = {
+
+  }
+
+  def render2(time: Double): Unit = {
+
   }
 
   // Load data from VR window

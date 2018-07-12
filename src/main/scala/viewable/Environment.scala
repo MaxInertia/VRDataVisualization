@@ -3,7 +3,7 @@ package viewable
 import facades.IFThree._
 import math.Stats
 import org.scalajs.dom
-import org.scalajs.threejs.{Colors => _, _}
+import org.scalajs.threejs._
 import resources._
 import controls.Interactions
 import viewable.input.{ActionPanel, Actions}
@@ -157,7 +157,7 @@ object Environment {
     container.appendChild(renderer.domElement)
     scene.add(camera)
     for(r <- Regions.getNonEmpties) scene.add(r.object3D)
-    for(ip <- Actions.inputPanels) scene.add(ip.object3D)
+    //for(ip <- Actions.inputPanels) scene.add(ip.object3D)
     instance = env
     env
   }
