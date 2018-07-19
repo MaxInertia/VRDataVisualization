@@ -1,7 +1,7 @@
 package controls
 
 import facades.Dat
-import facades.IFThree.{RaycasterParametersExt, SceneUtils2, VRController}
+import facades.IFThree.{AxesChangedEvent, RaycasterParametersExt, SceneUtils2, VRController}
 import org.scalajs.dom.raw.Event
 import org.scalajs.threejs.{ArrowHelper, Box3, BoxGeometry, Color, CylinderGeometry, Matrix4, Mesh, MeshBasicMaterial, Object3D, SceneUtils, Vector2, Vector3}
 import viewable.plots.CoordinateAxes3D
@@ -42,8 +42,7 @@ sealed abstract class OculusController extends OculusTouchEvents {
 
   /*protected[userinput] */ var controllerEl: VRController = _
   protected var controllerMesh: Mesh = _
-  protected var rayCasterEl: RayCaster = _
-  protected[controls] var rayCasterArrow: ArrowHelper = _ // effectively the rayCaster mesh
+  protected val laser: Laser = new Laser()
 
   var captured: Option[Object3D] = None
   var capturedSeparation: Option[Double] = None
@@ -55,16 +54,16 @@ sealed abstract class OculusController extends OculusTouchEvents {
 
   def isConnected: Boolean = controllerEl != null
 
-  def isSelecting: Boolean = isConnected && rayCasterArrow.visible && selecting
+  def isSelecting: Boolean = isConnected && laser.arrow.visible && selecting
 
   def setup(vrc: VRController): Unit
 
-  def isPointing: Boolean = rayCasterArrow != null && rayCasterArrow.visible
+  def isPointing: Boolean = laser.arrow != null && laser.arrow.visible
 
-  def updatedRayCaster: RayCaster = {
+  def updatedLaser: Laser = {
     // Adjust raycaster origin to account for fakeOrigin (The controllers parent)
-    rayCasterEl.set(getCorrectedPosition, controllerDirection())
-    rayCasterEl
+    laser.rayCaster.set(getCorrectedPosition, controllerDirection())
+    laser
   }
 
   /**
@@ -87,21 +86,8 @@ sealed abstract class OculusController extends OculusTouchEvents {
   protected def init(vrc: VRController, hexColor: Int): Unit = {
     controllerEl = vrc
     controllerMesh = createControllerMesh(hexColor)
-
-    rayCasterEl = new RayCaster()
-    rayCasterEl.set(
-      vrc.position,
-      controllerDirection())
-    rayCasterEl.params.asInstanceOf[RaycasterParametersExt].Points.threshold = 0.015
-
-    rayCasterArrow = new ArrowHelper(
-      new Vector3(0, 0, -1),
-      new Vector3(0, 0, 0),
-      100, hexColor)
-    rayCasterArrow.visible = false
-    rayCasterArrow.cone.visible = false
-
-    vrc.add(rayCasterArrow)
+    laser.construct(vrc.position, controllerDirection(), hexColor)
+    vrc.add(laser.arrow)
     vrc.add(controllerMesh)
   }
 
@@ -146,7 +132,7 @@ sealed abstract class OculusController extends OculusTouchEvents {
 
     vrc.addEventListener(Primary_PressBegan, ((event: Event) => {
       Log("Primary Press Began")
-      if (captured.isEmpty && capturedSeparation.isEmpty && rayCasterArrow.visible) selecting = true
+      if (captured.isEmpty && capturedSeparation.isEmpty && laser.arrow.visible) selecting = true
     }).asInstanceOf[Any => Unit])
 
     vrc.addEventListener(Primary_PressEnded, ((event: Event) => {
@@ -158,12 +144,12 @@ sealed abstract class OculusController extends OculusTouchEvents {
 
     vrc.addEventListener(ThumbRest_TouchBegan, ((event: Event) => {
       Log("Thumbrest Touch Began")
-      if (captured.isEmpty && capturedSeparation.isEmpty) rayCasterArrow.visible = true
+      if (captured.isEmpty && capturedSeparation.isEmpty) laser.arrow.visible = true
     }).asInstanceOf[Any => Unit])
 
     vrc.addEventListener(ThumbRest_TouchEnded, ((event: Event) => {
       Log("Thumbrest Touch Ended")
-      rayCasterArrow.visible = false
+      laser.arrow.visible = false
       selecting = false // Cannot be selecting without the rayCaster visible
     }).asInstanceOf[Any => Unit])
 
@@ -174,12 +160,12 @@ sealed abstract class OculusController extends OculusTouchEvents {
       Log("Grip Press Began")
 
       val regions = Regions.getNonEmpties
-      val urc = updatedRayCaster.ray
-      val intersections = updatedRayCaster.intersectObjects(Environment.instance.scene.children)
+      val urc = updatedLaser.rayCaster.ray
+      val intersections = updatedLaser.rayCaster.intersectObjects(Environment.instance.scene.children)
       Log.show(intersections)
 
       if(captured.isEmpty) {
-        inputDevice.gripped(true)
+        //inputDevice.gripped(true)
         for(i <- regions.indices) {
           val r = regions(i).object3D
           val controllerPos = getCorrectedPosition
@@ -220,21 +206,43 @@ sealed abstract class OculusController extends OculusTouchEvents {
         SceneUtils2.detach(dropped, vrc, Environment.instance.scene)
         captured = None
       } else { //if (capturedSeparation.nonEmpty) capturedSeparation = None
-        inputDevice.gripped(false)
+        //inputDevice.gripped(false)
       }
     }).asInstanceOf[Any => Unit])
 
     // Axes changed! - Currently no action
 
-    vrc.addEventListener(Axes_Changed, ((event: Event) => {
+    vrc.addEventListener(Axes_Changed, ((event: AxesChangedEvent) => {
       Log("Axes Changed")
+      if(captured.nonEmpty) {
+        val heldObject = captured.get
+        val axes = vrc.getAxes()
+        if(scala.math.abs(axes(0)) > scala.math.abs(axes(1)))
+          rotateAroundWorldAxis(
+            heldObject,
+            new Vector3(0, 1, 0),
+            2*axes(0)*scala.math.Pi/180)
+        else rotateAroundWorldAxis(
+          heldObject,
+          new Vector3(1, 0, 0),
+          2*axes(1)*scala.math.Pi/180)
+        // Rotate an object around an arbitrary axis in world space
+        // src: https://stackoverflow.com/questions/11119753/how-to-rotate-a-object-on-axis-world-three-js
+        def rotateAroundWorldAxis(object3D: Object3D, axis: Vector3, radians: Double) {
+          var rotWorldMatrix = new Matrix4()
+          rotWorldMatrix.makeRotationAxis(axis.normalize(), radians)
+          object3D.matrix  = rotWorldMatrix.multiply(object3D.matrix)
+          object3D.rotation.setFromRotationMatrix(object3D.matrix)
+        }
+      }
     }).asInstanceOf[Any => Unit])
 
     // Controller Disconnected!
 
     vrc.addEventListener(Disconnected, ((event: Event) => {
-      vrc.parent.remove(vrc)
-      //TODO: Remove meshes & raycasters associated with this controller
+      laser.destruct()
+      controllerEl.remove(controllerMesh)
+      controllerEl.parent.remove(controllerEl)
       controllerEl = null
       Log(s"$name Disconnected!")
     }).asInstanceOf[Any => Unit])
@@ -394,9 +402,9 @@ object OculusControllerRight extends OculusController {
 }
 
 object OculusControllers {
-  def getActiveRayCaster: Option[RayCaster] = {
-    if(OculusControllerRight.isPointing) Some(OculusControllerRight.updatedRayCaster)
-    else if(OculusControllerLeft.isPointing) Some(OculusControllerLeft.updatedRayCaster)
+  def getActiveRayCaster: Option[Laser] = {
+    if(OculusControllerRight.isPointing) Some(OculusControllerRight.updatedLaser)
+    else if(OculusControllerLeft.isPointing) Some(OculusControllerLeft.updatedLaser)
     else None
   }
 

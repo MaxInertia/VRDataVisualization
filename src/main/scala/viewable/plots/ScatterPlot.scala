@@ -41,6 +41,7 @@ class ScatterPlot(points: Points, data: Array[Data], viewing: Array[Int], var pr
 
     updateSelectedSummary()
     if(ops.hasHighlighted) updateHighlightedDetails(ops.getHighlighted)
+
   }
 
   override def restoredValue(modified: Double, col: Int): Double = {

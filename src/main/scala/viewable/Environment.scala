@@ -5,12 +5,14 @@ import math.Stats
 import org.scalajs.dom
 import org.scalajs.threejs._
 import resources._
-import controls.Interactions
+import controls.{Interactions, Laser}
+import util.Log
 import viewable.input.{ActionPanel, Actions}
 import viewable.plots._
 import window.Window
 
 import scala.scalajs.js.JSConverters._
+import scala.scalajs.js.typedarray.Float32Array
 
 /**
   * Serves as a wrapper for the Three.js Scene, PerspectiveCamera, and WebGLRenderer.
@@ -50,20 +52,20 @@ class Environment(val scene: Scene,
   // ----- Rendering!
 
   def render(): Unit = {
-    val maybeRC: Option[Raycaster] = controls.getSelectionRayCaster(camera)
+    val maybeRC: Option[Laser] = controls.getSelectionRayCaster(camera)
     if(maybeRC.nonEmpty) {
-      // TODO: Still find a better way to ignore points while waiting for the texture to be loaded
       if (Regions.numOccupied() >= 1) {
         pointHighlighting(maybeRC.get)
       }
     }
     Actions.update(maybeRC)
+    Regions.update()
     renderer.render(scene, camera)
   }
 
-  // TODO: pointHighlighting is a user interaction, and the Environment should be ignorant of those
+  // TODO: pointHighlighting is a user interaction, and the Environment should be ignorant of those?
 
-  def pointHighlighting(rayCaster: Raycaster): Unit = {
+  def pointHighlighting(laser: Laser): Unit = {
     var ids: (Option[Int], Int) = (None, 0)
     var plotNum: Int = 0
     var isSet: Boolean = false
@@ -77,9 +79,11 @@ class Environment(val scene: Scene,
         // Get the active plot in this region
         val plot = region.plot.get
         // Retrieve intersections on an available ray caster
-        val intersects: scalajs.js.Array[Intersection] = rayCaster.intersectObject(plot.getPoints)
-        // If not intersections exist, don't initiate an interaction
+        val intersects: scalajs.js.Array[Intersection] = laser.rayCaster.intersectObject(plot.getPoints)
+        // If intersections exist apply interaction behaviour
         if (intersects.nonEmpty) {
+          // Shrink laser so endpoint is on the intersected point
+          laser.updateLengthScale(intersects(0).distance)
           // Apply highlighting to the first point intersected
           ids = Interactions.on(plot, intersects)
           isSet = true
@@ -88,7 +92,10 @@ class Environment(val scene: Scene,
       }
     }
 
-    /*if(isSet && regions.length > 1) {
+    // Restore laser to full length
+    if(!isSet) laser.updateLengthScale(5)
+
+    if(isSet && regions.length > 1) {
       for (index <- regions.indices) {
         if(index != plotNum) {
           val region = regions(index)
@@ -101,7 +108,7 @@ class Environment(val scene: Scene,
           }
         }
       }
-    }*/
+    }
 
   }
 

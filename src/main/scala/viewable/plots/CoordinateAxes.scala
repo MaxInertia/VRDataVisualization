@@ -1,9 +1,11 @@
 package viewable.plots
 
 import facades.IFThree.GridHelperExt
-import org.scalajs.threejs.LineBasicMaterial
+import org.scalajs.threejs.{LineBasicMaterial, Mesh}
 import org.scalajs.{threejs => THREE}
+import viewable.{Environment, Text}
 import viewable.displays.PlaneDisplay
+import viewable.plots.ScatterPlot.CoordinateAxisIDs
 
 import scala.scalajs.js
 import js.typedarray.Float32Array
@@ -13,7 +15,9 @@ import js.typedarray.Float32Array
   */
 abstract class CoordinateAxes(geometry: THREE.Geometry, material: THREE.LineBasicMaterial)
   extends THREE.Line(geometry, material) {
-  var axesTitles: Array[PlaneDisplay] = Array()
+  var axesTitles: Array[Mesh] = Array()
+  protected val axesTitleScale: Double = 0.05
+
 }
 
 class CoordinateAxes2D(geometry: THREE.Geometry, material: THREE.LineBasicMaterial)
@@ -23,9 +27,52 @@ class CoordinateAxes3D(geometry: THREE.Geometry, material: THREE.LineBasicMateri
   extends CoordinateAxes(geometry, material) {
 
   def setAxesTitles(xT: String, yT: String, zT: String): Unit = {
-    axesTitles(0).write(xT, (0, 0))
+    /*axesTitles(0).write(xT, (0, 0))
     axesTitles(1).write(yT, (10, 10))
-    axesTitles(2).write(zT, (20, 20))
+    axesTitles(2).write(zT, (20, 20))*/
+    val scale = axesTitleScale
+
+    val x = Text.createTextMesh(xT)
+    x.scale.set(scale, scale, scale)
+    x.position.set(0.6, 0, 0)
+    this.add(x)
+    //x.lookAt(Environment.instance.camera.position)
+
+    val y = Text.createTextMesh(yT)
+    y.scale.set(scale, scale, scale)
+    y.position.set(0, 0.6, 0)
+    this.add(y)
+    //y.lookAt(Environment.instance.camera.position)
+
+    val z = Text.createTextMesh(zT)
+    z.scale.set(scale, scale, scale)
+    z.position.set(0, 0, 0.6)
+    this.add(z)
+    //z.lookAt(Environment.instance.camera.position)
+
+    axesTitles = Array(x, y, z)
+  }
+
+  def setAxisTitle(title: String, axisID: Int): Unit = {
+    val mesh = Text.createTextMesh(title)
+    mesh.scale.set(axesTitleScale, axesTitleScale, axesTitleScale)
+    axisID match {
+      case XAxis =>
+        mesh.position.set(0.6, 0, 0)
+        this.remove(axesTitles(XAxis))
+        axesTitles(XAxis) = mesh
+        this.add(mesh)
+      case YAxis =>
+        mesh.position.set(0, 0.6, 0)
+        this.remove(axesTitles(YAxis))
+        axesTitles(YAxis) = mesh
+        this.add(mesh)
+      case ZAxis =>
+        mesh.position.set(0, 0, 0.6)
+        this.remove(axesTitles(ZAxis))
+        axesTitles(ZAxis) = mesh
+        this.add(mesh)
+    }
   }
 
 }

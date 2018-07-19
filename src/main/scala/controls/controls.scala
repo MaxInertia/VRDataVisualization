@@ -30,7 +30,7 @@ package object controls {
   private val rayCaster: RayCaster = new RayCaster() // Used for the mouse
   rayCaster.params.asInstanceOf[RaycasterParametersExt].Points.threshold = 0.015
 
-  def getSelectionRayCaster(camera: => PerspectiveCamera): Option[RayCaster] = OculusControllers.getActiveRayCaster
+  def getSelectionRayCaster(camera: => PerspectiveCamera): Option[Laser] = OculusControllers.getActiveRayCaster
 
   def setup(env: Environment): Unit = {
     Log("Controls Setup...")

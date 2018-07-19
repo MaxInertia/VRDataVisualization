@@ -3,8 +3,7 @@ package viewable
 import facades.Dat
 import facades.Dat.GuiSlider
 import util.Log
-import viewable.plots.ScatterPlot
-import viewable.plots.{XAxis, YAxis, ZAxis}
+import viewable.plots._
 
 /**
   * Created by Dorian Thiessen on 2018-05-10.
@@ -27,7 +26,7 @@ class DatGui {
 }
 
 object DatGui {
-  def apply(plot: ScatterPlot): DatGui = {
+  def apply(plot: ScatterPlot, axes: CoordinateAxes3D): DatGui = {
     val gui = new DatGui()
     val highlightFolder = Dat.GUIVR.create("Highlighted Point Details")
     gui.hs(XAxis) = highlightFolder.add(plot.highlightedDetails, s"${plot.xVar}", 0, 0).listen()
@@ -52,18 +51,21 @@ object DatGui {
     var settingsFolder = Dat.GUIVR.create("Settings")
 
     settingsFolder.addButton(()=> {
-      plot.switchAxis(0)
+      plot.switchAxis(XAxis)
+      axes.setAxisTitle(plot.xVar, XAxis)
       gui.updateFolderLabels(plot)
     }, "Change Axis 1")
 
     settingsFolder.addButton(()=> {
-        plot.switchAxis(1)
-        gui.updateFolderLabels(plot)
+      plot.switchAxis(YAxis)
+      axes.setAxisTitle(plot.yVar, YAxis)
+      gui.updateFolderLabels(plot)
     }, "Change Axis 2")
 
     settingsFolder.addButton(()=> {
-        plot.switchAxis(2)
-        gui.updateFolderLabels(plot)
+      plot.switchAxis(ZAxis)
+      axes.setAxisTitle(plot.zVar, ZAxis)
+      gui.updateFolderLabels(plot)
     }, "Change Axis 3")
 
     gui.object3D.addFolder(settingsFolder)

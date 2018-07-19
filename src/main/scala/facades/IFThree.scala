@@ -44,6 +44,7 @@ object IFThree {
   trait VRController extends Object3D {
     var primary: Double = js.native
     def update(): Unit = js.native
+    def getAxes(): js.Array[Double] = js.native
   }
   @js.native
   @JSGlobal("THREE.VRController")
@@ -204,5 +205,34 @@ object IFThree {
     def msRequestFullscreen(): Unit = js.native
   }
 
+  @js.native
+  @JSGlobal("THREE.FontLoader")
+  class FontLoader extends js.Object {
+    def load(fontFile: String, fn: js.Function1[js.Dynamic, Unit]): Unit = js.native
+    def load(fontFile: String,
+             onLoadFn: js.Function1[js.Dynamic, Unit],
+             progressFn: js.Function1[js.Dynamic, Unit],
+             errorFn: js.Function1[js.Dynamic, Unit]): Unit = js.native
+  }
+
+  @js.native
+  @JSGlobal("THREE.Font")
+  class Font extends org.scalajs.threejs.Object3D {
+    def generateShapes(message: String, size: Int): Shape = js.native
+  }
+
+  @js.native
+  trait Shape extends js.Object {}
+
+  @js.native
+  @JSGlobal("THREE.ShapeGeometry")
+  class ShapeGeometryExt() extends ShapeGeometry {
+    def this(shape: Shape) = this()
+  }
+
+  @js.native
+  trait AxesChangedEvent extends js.Object {
+    val axes: Array[Double] = js.native
+  }
 
 }

@@ -2,12 +2,12 @@ import scala.scalajs.js.annotation.{JSExport, JSExportTopLevel}
 import org.scalajs.{threejs => THREE}
 import org.scalajs.dom
 import window.Window
-import facades.IFThree.{DomElementExt, DomElementExt2, WEBVR, WebGLRendererExt}
+import facades.IFThree._
 import org.scalajs.dom.raw.{Event, HTMLCanvasElement}
-import org.scalajs.threejs.Scene
+import org.scalajs.threejs._
 import resources.{BrowserStorage, FileAsText, Res}
 import util.Log
-import viewable.{Colors, Environment, Regions}
+import viewable.{Colors, Environment, Regions, Text}
 
 import scala.util.{Failure, Success}
 import scala.scalajs.js
@@ -23,7 +23,6 @@ object Main {
 
   @JSExportTopLevel("vrdv.init")
   def init(): Unit = {
-
     // Setup the Environment (Scene, Camera, Renderer)
     val container = dom.document.getElementById("scene-container")
     env = Environment.setup(container)
@@ -34,6 +33,23 @@ object Main {
 
     // Load data provided at setup window
     var dataset = BrowserStorage("SM1_timeSeries").collect()
+
+    val loader = new FontLoader()
+    Log.show("FontLoader created.")
+    loader.load( "fonts/helvetiker_regular.typeface.json", (font: js.Dynamic) => {
+      Log.show("Font loaded")
+      Text.font = font.asInstanceOf[Font]
+      /*val text = Text.createTextMesh("Welcome user!")
+      text.position.set(-0.5, 1, -1)
+      env.scene.add(text)
+      Log.show("Font added to scene")*/
+    }, (prog: js.Dynamic) => {
+        Log.show("Progress...")
+        Log.show(prog)
+    }, (err: js.Dynamic) => {
+        Log.show("Hit error when attempting to load font")
+        Log.show(err)
+    })
 
     // Load texture for plots
     val loadTexture = Res.loadPointTexture(1) // TODO: The texture should be an option
@@ -55,18 +71,8 @@ object Main {
     container.appendChild(stats.dom)
 
     // Append "ENTER VR" Button to DOM
-    // TODO: Make the button unfocusable to prevent it from being highlighted on dblclick
     dom.document.body.appendChild( WEBVR.createButton(env.renderer) )
     Rendering.start(env, stats)
-  }
-
-  @JSExportTopLevel("vrdv.render")
-  def render(time: Double): Unit = {
-
-  }
-
-  def render2(time: Double): Unit = {
-
   }
 
   // Load data from VR window
@@ -79,9 +85,8 @@ object Main {
   }
 
   @JSExport("renderer") // Temporary. renderer currently required in global scope.
-  def renderer: THREE.Renderer = env.renderer
+  def renderer: Renderer = env.renderer
 
   @JSExport("scene")
   def scene: Scene = Environment.instance.scene
-
 }

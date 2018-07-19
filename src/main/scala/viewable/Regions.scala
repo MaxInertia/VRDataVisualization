@@ -13,6 +13,14 @@ object Regions {
   def numOccupied(): Int = getNonEmpties.length
   def isFull: Boolean = numOccupied() == 4
 
+  def update(): Unit = {
+    /*val regions = getNonEmpties
+    for(r <- regions if r.maybeGetAxes().nonEmpty) {
+      val axes = r.maybeGetAxes().get
+      //for(axis <- axes.axesTitles) axis.lookAt(/*axis.worldToLocal(*/Environment.instance.camera.position/*)*/)
+      //axis.quaternion.copy(Environment.instance.camera.quaternion.multiply(r.object3D.quaternion))
+    }*/  }
+
   /**
     * Adds a plot to a region in the scene if there is room, otherwise does nothing.
     * @param plot Some instance of a class that implements trait Plot.
@@ -25,7 +33,7 @@ object Regions {
       regions(i).get.addPlot(plot)
       reposition()
 
-      val gui = DatGui(plot.asInstanceOf[ScatterPlot])
+      val gui = DatGui(plot.asInstanceOf[ScatterPlot], regions(i).get.maybeGetAxes().get)
       regions(i).get.gui = Some(gui)
       Environment.instance.scene.add(gui.object3D)
       //DatGui.update(i)
@@ -87,7 +95,7 @@ object Regions {
       if(plot.nonEmpty) remove(plot.get.getPoints)
       add(p.getPoints)
       plot = Some(p)
-      updateAxes()
+      updateAxes(p.xVar, p.yVar, p.zVar)
     }
 
     def addAxes(axes: CoordinateAxes3D): Unit = {
@@ -95,10 +103,14 @@ object Regions {
       add(axes)
     }
 
-    def updateAxes(): Unit = {
+    def updateAxes(xVar: String, yVar: String, zVar: String): Unit = {
       if(plot.nonEmpty) {
         val p = plot.get//.asInstanceOf[ScatterPlot]
         Log(s"${p.xVar}, ${p.yVar}, ${p.zVar}")
+        if(maybeAxes.nonEmpty) {
+          val axes = maybeAxes.get
+          axes.setAxesTitles(p.xVar, p.yVar, p.zVar)
+        }
       }
     }
 
@@ -109,10 +121,8 @@ object Regions {
 
     // Private methods
 
-    private def defaultAxes(): CoordinateAxes3D = {
-      val axes = CoordinateAxes3D.create(1, color = Colors.White, centeredOrigin = true, planeGrids = false)
-      axes
-    }
+    private def defaultAxes(): CoordinateAxes3D =
+      CoordinateAxes3D.create(1, color = Colors.White, centeredOrigin = true, planeGrids = false)
   }
 
 }
