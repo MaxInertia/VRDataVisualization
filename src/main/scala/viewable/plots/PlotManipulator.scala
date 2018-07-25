@@ -31,38 +31,4 @@ object PlotManipulator {
     ScaleCenterProperties(xScale, yScale, zScale, centerX, centerY, centerZ)
   }
 
-  /*def revertShiftScale(points: Points, plotProps: ScaleCenterProperties, dimension: Int): Unit =
-    dimension match {
-      case XAxis =>
-        points.translateX(plotProps.xCenter)
-        points.scale.set(1.0, points.scale.y, points.scale.z)
-      case YAxis =>
-        points.translateY(plotProps.yCenter)
-        points.scale.set(points.scale.x, 1.0, points.scale.z)
-      case ZAxis =>
-        points.translateZ(plotProps.zCenter)
-        points.scale.set(points.scale.x, points.scale.y, 1.0)
-    }
-
-  def applyShiftScale(points: Points, plotProps: ScaleCenterProperties, dataStats: Stats, dimension: Int): Unit =
-    dimension match {
-      case XAxis =>
-        plotProps.xScale = scala.math.abs(dataStats.max - dataStats.min)
-        if(plotProps.xScale == 0) plotProps.xScale = 1.0
-        plotProps.xCenter = (dataStats.max + dataStats.min) / (2.0 * plotProps.xScale)
-        points.translateX(-plotProps.xCenter)
-        points.scale.setX(1.0 / plotProps.xScale)
-      case YAxis =>
-        plotProps.yScale = scala.math.abs(dataStats.max - dataStats.min)
-        if(plotProps.yScale == 0) plotProps.yScale = 1.0
-        plotProps.yCenter = (dataStats.max + dataStats.min) / (2.0 * plotProps.yScale)
-        points.translateY(-plotProps.yCenter)
-        points.scale.setY(1.0 / plotProps.yScale)
-      case ZAxis =>
-        plotProps.zScale = scala.math.abs(dataStats.max - dataStats.min)
-        if(plotProps.zScale == 0) plotProps.zScale = 1.0
-        plotProps.zCenter = (dataStats.max + dataStats.min) / (2.0 * plotProps.zScale)
-        points.translateZ(-plotProps.zCenter)
-        points.scale.setZ(1.0 / plotProps.zScale)
-    }*/
 }

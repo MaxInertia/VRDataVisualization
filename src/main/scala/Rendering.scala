@@ -1,4 +1,4 @@
-import facades.IFThree.{DomElementExt, DomElementExt2, WebGLRendererExt}
+import facades.IFThree.{DomElementExt2, WebGLRendererExt}
 import facades.Stats
 import org.scalajs.dom
 import viewable.Environment

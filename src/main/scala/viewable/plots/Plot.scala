@@ -1,7 +1,5 @@
 package viewable.plots
 
-import math.Stats
-
 import scala.scalajs.js
 import js.typedarray.Float32Array
 import util.Log
@@ -19,14 +17,14 @@ trait Plot {
   var hue: Double = 0 // Default to be overwritten if points are to have color
 
   var savedSelections: Set[Int] = Set[Int]()
-  var selectedSummary: js.Object = js.Dynamic.literal(
+  val selectedSummary: js.Object = js.Dynamic.literal(
     "xVar" -> 0.001,
     "yVar" -> 0.001,
     "zVar" -> 0.001
   )
 
   var highlighted: Option[Int] = None
-  var highlightedDetails: js.Object = js.Dynamic.literal(
+  val highlightedDetails: js.Object = js.Dynamic.literal(
     "xVar" -> 0.001,
     "yVar" -> 0.001,
     "zVar" -> 0.001
@@ -43,6 +41,25 @@ trait Plot {
     case YAxis => highlightedDetails.asInstanceOf[js.Dynamic].updateDynamic("yVar")(column(axis)(index).toFloat)
     case ZAxis => highlightedDetails.asInstanceOf[js.Dynamic].updateDynamic("zVar")(column(axis)(index).toFloat)
   }
+
+  def requestGeometryUpdate(): Unit = {
+    val geo = getGeometry
+    geo.verticesNeedUpdate = true
+    geo.normalsNeedUpdate = true
+    geo.computeFaceNormals()
+    geo.computeVertexNormals()
+    //geo.computeBoundingBox()
+    geo.computeBoundingSphere()
+  }
+
+  /*def coordinatesOfHighlighted(): Option[(Double, Double, Double)] = {
+    if(highlighted.nonEmpty) {
+      val x = column(XAxis)(highlighted.get)
+      val y = column(YAxis)(highlighted.get)
+      val z = column(ZAxis)(highlighted.get)
+      Some(x, y, z)
+    } else None
+  }*/
 
   def updateSelectedSummary(): Unit = {
     var sumX: Double = 0
@@ -82,7 +99,7 @@ trait Plot {
     }
   }
 
-  def restoredValue(modified: Double, col: Int): Double
+  //def restoredValue(modified: Double, col: Int): Double
 
   def getPoints: Points
   def getName: String
@@ -94,12 +111,14 @@ trait Plot {
 
   def column(c: Int): Array[Double]
 
-  def updateAxis(axisNumber: Int, values: Array[Double]): Unit = {
+  def updateAxis(axisNumber: Int, values: Array[Double], updatePointDetails: Boolean = true): Unit = {
     val positionsAttr = getPositions
     val array = positionsAttr.array.asInstanceOf[Float32Array]
     for(pointIndex <- values.indices) array(pointIndex*3 + axisNumber) = values(pointIndex).toFloat
-    if(highlighted.nonEmpty) updateHighlightedDetailsForAxis(highlighted.get, axisNumber)
-    updateSelectedSummaryForAxis(axisNumber)
+    if(updatePointDetails) {
+      if (highlighted.nonEmpty) updateHighlightedDetailsForAxis(highlighted.get, axisNumber)
+      updateSelectedSummaryForAxis(axisNumber)
+    }
   }
 
   /** Buffer Attribute for point colors as RGB values */

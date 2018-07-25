@@ -32,6 +32,7 @@ object Dat {
     def addButton(fn: js.Function, id: String = "Button"): Unit = js.native
     def addButton(id: String, fn: js.Function): Unit = js.native
     def open(): Unit = js.native
+    def close(): Unit = js.native
     def removeFolder(gui: GUI): Unit = js.native
   }
 

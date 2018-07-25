@@ -19,7 +19,7 @@ object ShadowManifold_Tests extends TestSuite {
 
     'converting_TS_Values_To_SM_Points { // Tests for method 'lagzip3'
 
-      'not_lazy {
+      /*'not_lazy {
         val run: Int => Unit = c(notLazy)
         'Ten - run(10)
         'One_Hundred - run(100)
@@ -35,7 +35,7 @@ object ShadowManifold_Tests extends TestSuite {
         'One_Thousand - run(1000)
         'Ten_Thousand - run(10000)
         'One_Hundred_Thousand - run(100000)
-      }
+      }*/
 
       /**
         * @param nums Array of numbers used to create the shadow manifold coordinates
@@ -60,7 +60,7 @@ object ShadowManifold_Tests extends TestSuite {
 
       def c(fn: Int => Unit)(n: Int): Unit = fn(n)
 
-      def notLazy(n: Int): Unit = {
+      /*def notLazy(n: Int): Unit = {
         val nums = (1d until n.toDouble by 1d).toArray
         val coords = ShadowManifold.lagZip3(nums)
         verifyCoordinates(nums, coords)
@@ -68,9 +68,9 @@ object ShadowManifold_Tests extends TestSuite {
 
       def useLazy(n: Int): Unit = {
         lazy val nums = (1d until n.toDouble by 1d).toArray
-        val coords = ShadowManifold.lagZip3(nums)
+        val coords = lagZip3(nums)
         verifyCoordinates(nums, coords)
-      }
+      }*/
 
     } // end of 'lagzip3' tests
 

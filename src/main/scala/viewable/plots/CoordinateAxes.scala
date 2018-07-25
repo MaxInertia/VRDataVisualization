@@ -16,7 +16,7 @@ import js.typedarray.Float32Array
 abstract class CoordinateAxes(geometry: THREE.Geometry, material: THREE.LineBasicMaterial)
   extends THREE.Line(geometry, material) {
   var axesTitles: Array[Mesh] = Array()
-  protected val axesTitleScale: Double = 0.05
+  protected val axesTitleScale: Double = 0.04
 
 }
 
@@ -26,7 +26,7 @@ class CoordinateAxes2D(geometry: THREE.Geometry, material: THREE.LineBasicMateri
 class CoordinateAxes3D(geometry: THREE.Geometry, material: THREE.LineBasicMaterial)
   extends CoordinateAxes(geometry, material) {
 
-  def setAxesTitles(xT: String, yT: String, zT: String): Unit = {
+  def createAxesTitles(xT: String, yT: String, zT: String): Unit = {
     /*axesTitles(0).write(xT, (0, 0))
     axesTitles(1).write(yT, (10, 10))
     axesTitles(2).write(zT, (20, 20))*/
@@ -73,6 +73,12 @@ class CoordinateAxes3D(geometry: THREE.Geometry, material: THREE.LineBasicMateri
         axesTitles(ZAxis) = mesh
         this.add(mesh)
     }
+  }
+
+  def setAxesTitles(xLabel: String, yLabel: String, zLabel: String): Unit = {
+    setAxisTitle(xLabel, XAxis)
+    setAxisTitle(yLabel, YAxis)
+    setAxisTitle(zLabel, ZAxis)
   }
 
 }

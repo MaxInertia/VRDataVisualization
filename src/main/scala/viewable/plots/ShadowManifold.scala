@@ -1,72 +1,48 @@
 package viewable.plots
 
-import viewable.Environment.Column
+import util.Log
 
-import scala.scalajs.js // TODO: Unwanted dependency
-
-object ShadowManifold
+import scala.scalajs.js
+import scala.scalajs.js.typedarray.Float32Array
 
 /**
   * A reconstruction of an attractor manifold generated from data on a single variable.
-  * Each point can be thought of as the history of the variable over some interval of time,
-  * whereas the time series values represent measurements at discrete moments in time.
+  * Each point can be thought of as the history of the variable over some interval of time.
   *
   * Created by Dorian Thiessen on 2018-01-13.
   */
-/*class ShadowManifold(val tag: String, var points: Points) extends Plot {
-  override val ops: SelectionOps = new SelectionOps{}
-  override def getPoints: Points = points
-  def getGeometry: BufferGeometry = points.geometry.asInstanceOf[BufferGeometry]
-  def getName: String = tag
-
-  override def column(c: Int): Array[Double] = ???
-
-  override def restoredValue(modified: Double, col: Int): Double = ???
-}
-
-
-/**
-  * The companion object for the ShadowManifold class.
-  * Encapsulates SM initialization helper methods.
- */
 object ShadowManifold {
+  val settings: js.Object = js.Dynamic.literal(
+    "TauOnes" -> 1,
+    "TauTens" -> 0
+  )
 
-  /**
-    * Creates a single Shadow Manifold.
-    * @param id The identifier of the variable in 'csv_Values'
-    * @param hue Some number, influences the color of the points generated
-    * @return A Shadow Manifold of the input time series values
-    */
-  def apply(id: String, points: Points, hue: Double): ShadowManifold = {
-    val sm = new ShadowManifold(id, points)
-    sm.hue = hue
-    sm
-  }
+  def getTau: Int =
+    settings.asInstanceOf[js.Dynamic].selectDynamic("TauOnes").asInstanceOf[Int] +
+    settings.asInstanceOf[js.Dynamic].selectDynamic("TauTens").asInstanceOf[Int]
 
-  def apply(id: String, points: Points): ShadowManifold = {
-    val sm = new ShadowManifold(id, points)
-    sm
-  }
+  def transform(plot: ScatterPlot): (String, String, String) = {
+    val tau: Int = getTau
+    val embeddingVar = plot.xVar
+    val embeddingValues = plot.column(XAxis) // Use variable on the X-Axis for creating shadow manifold
 
-  def many(columns: Array[Column], hue: Double, texture: Int): Array[Plot] = {
-    var plots: Array[ShadowManifold] = Array()
-    var i = 0
-    for ((id, data) <- columns) {
-      val points = PointsBuilder()
-        .withXS(data.drop(2))
-        .withYS(data.tail)
-        .withZS(data)
-        .usingHue(Some(hue))
-        .usingTexture(texture)
-        .build3D()
-      plots = plots :+ ShadowManifold(id, points, hue)
-      i += 1
+    val positionsAttr = plot.getPositions
+    val positionsArr = positionsAttr.array.asInstanceOf[Float32Array]
+
+    val firstIndex = 2 * tau // (E - 1) * Tau
+    for(pointIndex <- firstIndex until embeddingValues.length) {
+      for(dimension <- 0 to 2) positionsArr((pointIndex - firstIndex)*3 + dimension) = embeddingValues(pointIndex - tau*dimension).toFloat
     }
 
-    plots.asInstanceOf[Array[Plot]]
+    Log.show(s"Shadow Manifold made with variable[${plot.xVar}] with Tau $tau has ${embeddingValues.length - firstIndex} points.")
+
+    plot.fixScale(XAxis, XAxis, XAxis) // Use x-axis values for scaling in all dimensions
+    val geo = plot.getGeometry
+    geo.asInstanceOf[js.Dynamic].setDrawRange(0, embeddingValues.length - firstIndex)
+    positionsAttr.needsUpdate = true
+    plot.requestGeometryUpdate()
+
+    // Return the names to apply to each Axis!
+    (s"$embeddingVar", s"$embeddingVar - ${tau}Tau", s"$embeddingVar - ${2*tau}Tau")
   }
-
-  def lagZip3(ts: Array[Double]): Array[Coordinate] = Plot.zip3(ts.drop(2), ts.tail, ts) // TODO: Generalize Tau
-
 }
-*/

@@ -17,41 +17,43 @@ class ScatterPlot(points: Points, data: Array[Data], viewing: Array[Int], var pr
   override def yVar: String = data(viewing(YAxis)).id // 2nd column ID
   override def zVar: String = data(viewing(ZAxis)).id // 3rd column ID
   override def column(axisID: Int): Array[Double] = data(viewing(axisID)).measurements
+  def columnCount: Int = data.length
 
-  def switchAxis(axisID: Int): Unit = {
-    Log.show(s"Switching axis #$axisID from ${viewing(axisID)} to ${(viewing(axisID) + 1) % data.length})")
-    viewing(axisID) = (viewing(axisID) + 1) % data.length
-
-    updateAxis(axisID, column(axisID))
-
-    props = PlotManipulator.confineToRegion(
-      points,
-      (stats(viewing(XAxis)).min, stats(viewing(YAxis)).min, stats(viewing(ZAxis)).min),
-      (stats(viewing(XAxis)).max, stats(viewing(YAxis)).max, stats(viewing(ZAxis)).max)
-    )
+  def switchAxis(axisID: AxisID, shift: Int = 1): Unit = {
+    rawAxisShift(axisID, shift)
+    fixScale()
 
     getPositions.needsUpdate = true
-    val geo = getGeometry
-    geo.verticesNeedUpdate = true
-    geo.normalsNeedUpdate = true
-    geo.computeFaceNormals()
-    geo.computeVertexNormals()
-    geo.computeBoundingSphere()
+    requestGeometryUpdate()
   }
 
-  override def restoredValue(modified: Double, col: Int): Double = {
+  def shiftEachAxis(xShift: Int, yShift: Int, zShift: Int): Unit = {
+    rawAxisShift(XAxis, xShift, updatePointDetails = false)
+    rawAxisShift(YAxis, yShift, updatePointDetails = false)
+    rawAxisShift(ZAxis, zShift)
+    fixScale()
+
+    getPositions.needsUpdate = true
+    requestGeometryUpdate()
+  }
+
+  private def rawAxisShift(axisID: AxisID, shift: Int, updatePointDetails: Boolean = true): Unit = {
+    Log.show(s"Switching axis #$axisID from ${viewing(axisID)} to ${(viewing(axisID) + shift) % data.length})")
+    viewing(axisID) = (viewing(axisID) + shift) % data.length
+    updateAxis(axisID, column(axisID), updatePointDetails)
+  }
+
+  private[plots] def fixScale(x: AxisID = XAxis, y: AxisID = YAxis, z: AxisID = ZAxis): Unit = {
+    props = PlotManipulator.confineToRegion(points,
+      (stats(viewing(x)).min, stats(viewing(y)).min, stats(viewing(z)).min),
+      (stats(viewing(x)).max, stats(viewing(y)).max, stats(viewing(z)).max)
+    )
+  }
+
+  /*override def restoredValue(modified: Double, col: Int): Double = {
     // TODO: Create 2D & 3D variants, then remove ` % stats.length` from here
     Stats.restore(modified, stats(col % data.length).sd, stats(col % data.length).mean)
-  }
-
-  def coordOfHighlighted(): (Double, Double, Double) = {
-    if(highlighted.nonEmpty) {
-      val x = column(XAxis)(highlighted.get)
-      val y = column(YAxis)(highlighted.get)
-      val z = column(ZAxis)(highlighted.get)
-      (x, y, z)
-    } else (0, 0, 0)
-  }
+  }*/
 
   override def getName: String = "Scatterplot!" // Why do these need a name?
   override def getPoints: Points = points

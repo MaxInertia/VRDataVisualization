@@ -14,7 +14,8 @@ package object plots {
   type Coordinate = (Double, Double, Double)
 
   // AxisIDs
-  val XAxis: Int = 0
-  val YAxis: Int = 1
-  val ZAxis: Int = 2
+  type AxisID = Int
+  val XAxis: AxisID = 0
+  val YAxis: AxisID = 1
+  val ZAxis: AxisID = 2
 }

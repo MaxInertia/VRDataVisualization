@@ -86,32 +86,26 @@ object Regions {
     var plot: Option[Plot] = None // TODO: Make this private (required changes to rendering section in Environment)
     var gui: Option[DatGui] = None
 
-    private var maybeAxes: Option[CoordinateAxes3D] = Some(defaultAxes())
+    private var maybeAxes: Option[CoordinateAxes3D] = None
     def maybeGetAxes(): Option[CoordinateAxes3D] = maybeAxes
-    add(maybeAxes.get)
 
     def addPlot(p: Plot): Unit = {
-      // Remove previous plot if it exists
+      // Remove previous plot if it exists and add the new one
       if(plot.nonEmpty) remove(plot.get.getPoints)
-      add(p.getPoints)
       plot = Some(p)
-      updateAxes(p.xVar, p.yVar, p.zVar)
+      object3D.add(p.getPoints)
+      // Create or update coordinate axes
+      addOrUpdateAxes(labels = Some(p.xVar, p.yVar, p.zVar))
     }
 
-    def addAxes(axes: CoordinateAxes3D): Unit = {
-      maybeAxes = Some(axes)
-      add(axes)
-    }
-
-    def updateAxes(xVar: String, yVar: String, zVar: String): Unit = {
-      if(plot.nonEmpty) {
-        val p = plot.get//.asInstanceOf[ScatterPlot]
-        Log(s"${p.xVar}, ${p.yVar}, ${p.zVar}")
-        if(maybeAxes.nonEmpty) {
-          val axes = maybeAxes.get
-          axes.setAxesTitles(p.xVar, p.yVar, p.zVar)
-        }
-      }
+    def addOrUpdateAxes(axes: Option[CoordinateAxes3D] = maybeAxes, labels: Option[(String, String, String)] = None): Unit = {
+      val a = if(axes.nonEmpty) axes.get else defaultAxes()
+      if(labels.nonEmpty) {
+        val (xVar, yVar, zVar) = labels.get
+        a.createAxesTitles(xVar, yVar, zVar)
+      } else a.createAxesTitles("X", "Y", "Z")
+      maybeAxes = Some(a)
+      add(a)
     }
 
     // Convenience methods for Object3D
