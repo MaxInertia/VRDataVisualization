@@ -30,7 +30,6 @@ class ScatterPlot(points: Points, data: Array[Data], viewing: Array[Int], var pr
       (stats(viewing(XAxis)).max, stats(viewing(YAxis)).max, stats(viewing(ZAxis)).max)
     )
 
-    //points.matrixWorldNeedsUpdate = true
     getPositions.needsUpdate = true
     val geo = getGeometry
     geo.verticesNeedUpdate = true
@@ -38,10 +37,6 @@ class ScatterPlot(points: Points, data: Array[Data], viewing: Array[Int], var pr
     geo.computeFaceNormals()
     geo.computeVertexNormals()
     geo.computeBoundingSphere()
-
-    updateSelectedSummary()
-    if(ops.hasHighlighted) updateHighlightedDetails(ops.getHighlighted)
-
   }
 
   override def restoredValue(modified: Double, col: Int): Double = {
