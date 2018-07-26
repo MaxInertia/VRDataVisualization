@@ -121,6 +121,8 @@ object DatGui {
 
     smFolder.add(ShadowManifold.settings, "TauOnes", 0, 10).step(1).name("Tau Ones")
     smFolder.add(ShadowManifold.settings, "TauTens", 0, 90).step(10).name("Tau Tens")
+    smFolder.add(ShadowManifold.settings, "TauHundreds", 0, 900).step(100).name("Tau Hundreds")
+
     Button(0, smFolder).setLabels("Embed!", "Embed xVar")
     gui.object3D.addFolder(smFolder)
     smFolder.open()

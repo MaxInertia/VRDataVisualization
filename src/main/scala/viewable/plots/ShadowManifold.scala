@@ -14,12 +14,14 @@ import scala.scalajs.js.typedarray.Float32Array
 object ShadowManifold {
   val settings: js.Object = js.Dynamic.literal(
     "TauOnes" -> 1,
-    "TauTens" -> 0
+    "TauTens" -> 0,
+    "TauHundreds" -> 0,
   )
 
   def getTau: Int =
     settings.asInstanceOf[js.Dynamic].selectDynamic("TauOnes").asInstanceOf[Int] +
-    settings.asInstanceOf[js.Dynamic].selectDynamic("TauTens").asInstanceOf[Int]
+    settings.asInstanceOf[js.Dynamic].selectDynamic("TauTens").asInstanceOf[Int] +
+    settings.asInstanceOf[js.Dynamic].selectDynamic("TauHundreds").asInstanceOf[Int]
 
   def transform(plot: ScatterPlot): (String, String, String) = {
     val tau: Int = getTau
