@@ -425,26 +425,3 @@ object OculusControllerLeft {
   }
 
 }
-
-object OculusControllers {
-
-  def getActiveRayCaster: Option[Laser] = {
-    if(OculusControllerRight.isConnected && OculusControllerRight.get.isPointing)
-      Some(OculusControllerRight.get.updatedLaser)
-
-    else if(OculusControllerLeft.isConnected && OculusControllerLeft.get.isPointing)
-      Some(OculusControllerLeft.get.updatedLaser)
-
-    else None
-  }
-
-  /*def separationDistance(): Double =
-    OculusControllerRight.getCorrectedPosition.distanceTo(
-      OculusControllerLeft.getCorrectedPosition
-    )*/
-
-  def stopSelecting(): Unit = {
-    if(OculusControllerRight.isConnected) OculusControllerRight.get.selecting = false
-    if(OculusControllerLeft.isConnected) OculusControllerLeft.get.selecting = false
-  }
-}
