@@ -27,9 +27,6 @@ class CoordinateAxes3D(geometry: THREE.Geometry, material: THREE.LineBasicMateri
   extends CoordinateAxes(geometry, material) {
 
   def createAxesTitles(xT: String, yT: String, zT: String): Unit = {
-    /*axesTitles(0).write(xT, (0, 0))
-    axesTitles(1).write(yT, (10, 10))
-    axesTitles(2).write(zT, (20, 20))*/
     val scale = axesTitleScale
 
     val x = Text.createTextMesh(xT)

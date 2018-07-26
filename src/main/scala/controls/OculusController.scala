@@ -26,7 +26,6 @@ sealed trait OculusTouchEvents {
   * Created by Dorian Thiessen on 2018-02-12.
   */
 sealed abstract class OculusController extends OculusTouchEvents {
-  val name: String
   // Event ID's
   val Primary_PressBegan: String = "primary press began"
   val Primary_ValueChanged: String = "primary value changed"
@@ -56,8 +55,6 @@ sealed abstract class OculusController extends OculusTouchEvents {
 
   def isSelecting: Boolean = isConnected && laser.arrow.visible && selecting
 
-  def setup(vrc: VRController): Unit
-
   def isPointing: Boolean = laser.arrow != null && laser.arrow.visible
 
   def updatedLaser: Laser = {
@@ -84,6 +81,7 @@ sealed abstract class OculusController extends OculusTouchEvents {
   }
 
   protected def init(vrc: VRController, hexColor: Int): Unit = {
+    Log.show("some controller is being setup...")
     controllerEl = vrc
     controllerMesh = createControllerMesh(hexColor)
     laser.construct(vrc.position, controllerDirection(), hexColor)
@@ -185,13 +183,13 @@ sealed abstract class OculusController extends OculusTouchEvents {
               // In this case, that region can be grabbed
               SceneUtils2.attach(r, Environment.instance.scene, vrc)
               captured = Some(r)
-            } else {
+            }/* else {
               // That region has already been grabbed...
               // The value of the ratio of the updated distance between the controllers over
               // the current distance will be applied to the region as a scale.
               // This should appear to the user as stretching the plot.
               capturedSeparation = Some(OculusControllers.separationDistance())
-            }
+            }*/
           }
         }
       }
@@ -212,20 +210,18 @@ sealed abstract class OculusController extends OculusTouchEvents {
 
     // Axes changed! - Currently no action
 
+    Log.show("Adding event listener: Axes_Changes")
+
     vrc.addEventListener(Axes_Changed, ((event: AxesChangedEvent) => {
-      Log("Axes Changed")
+      Log.show("Axes Changed!")
       if(captured.nonEmpty) {
+        Log.show("Holding something...")
         val heldObject = captured.get
         val axes = vrc.getAxes()
         if(scala.math.abs(axes(0)) > scala.math.abs(axes(1)))
-          rotateAroundWorldAxis(
-            heldObject,
-            new Vector3(0, 1, 0),
-            2*axes(0)*scala.math.Pi/180)
-        else rotateAroundWorldAxis(
-          heldObject,
-          new Vector3(1, 0, 0),
-          2*axes(1)*scala.math.Pi/180)
+          rotateAroundWorldAxis(heldObject, new Vector3(0, 1, 0), 2*axes(0)*scala.math.Pi/180)
+        else
+          rotateAroundWorldAxis(heldObject, new Vector3(1, 0, 0), 2*axes(1)*scala.math.Pi/180)
         // Rotate an object around an arbitrary axis in world space
         // src: https://stackoverflow.com/questions/11119753/how-to-rotate-a-object-on-axis-world-three-js
         def rotateAroundWorldAxis(object3D: Object3D, axis: Vector3, radians: Double) {
@@ -236,19 +232,9 @@ sealed abstract class OculusController extends OculusTouchEvents {
         }
       }
     }).asInstanceOf[Any => Unit])
-
-    // Controller Disconnected!
-
-    vrc.addEventListener(Disconnected, ((event: Event) => {
-      laser.destruct()
-      controllerEl.remove(controllerMesh)
-      controllerEl.parent.remove(controllerEl)
-      controllerEl = null
-      Log(s"$name Disconnected!")
-    }).asInstanceOf[Any => Unit])
   }
 
-  protected def modifyCaptured(option: Boolean): Unit = {
+  /*protected def modifyCaptured(option: Boolean): Unit = {
     if (captured.isEmpty) return
 
     val cid = captured.get
@@ -259,10 +245,10 @@ sealed abstract class OculusController extends OculusTouchEvents {
         val maybeAxes = r.maybeGetAxes()
         if (maybeAxes.nonEmpty) r.object3D.remove(maybeAxes.get)
         val newAxes = CoordinateAxes3D.create(1, color = Colors.White, centeredOrigin = true, planeGrids = option)
-        r.addAxes(newAxes)
+        r.addOrUpdateAxes(Some(newAxes))
       }
     }
-  }
+  }*/
 
 }
 
@@ -273,16 +259,12 @@ sealed abstract class OculusController extends OculusTouchEvents {
   * Can be thought of as a mapping from a subset of the available
   * inputs to interactions (see plots.Interactions).
   */
-object OculusControllerLeft extends OculusController {
-  override val name: String = "Oculus Touch (Left)"
-  // Event ID's specific to the Left controller
-  val X_PressBegan: String = "X press began"
-  val X_PressEnded: String = "X press ended"
-  val Y_PressBegan: String = "Y press began"
-  val Y_PressEnded: String = "Y press ended"
+class OculusControllerLeft(vrc: VRController) extends OculusController {
+  import OculusControllerLeft._
+  setup()
 
-  def setup(vrc: VRController): Unit = {
-    Log(s"$name Connected!")
+  def setup(): Unit = {
+    Log.show(s"$name Connected!")
     init(vrc, meshColorBlue)
 
     // Add this controller as an input device for Dat.GuiVR
@@ -302,7 +284,7 @@ object OculusControllerLeft extends OculusController {
     for(p <- panels) menuLeft.add(p.object3D)
     vrc.addEventListener(X_PressBegan, ((event: Event) => {
       Log("X Press Began")
-      modifyCaptured(true)
+      //modifyCaptured(true)
       if(!menuOpen) {
         vrc.add(menuLeft)
         menuLeft.lookAt(Environment.instance.camera.position.projectOnVector(vrc.position))
@@ -318,8 +300,7 @@ object OculusControllerLeft extends OculusController {
 
     vrc.addEventListener(Y_PressBegan, ((event: Event) => {
       Log("Y Press Began")
-
-      modifyCaptured(false)
+      //modifyCaptured(false)
     }).asInstanceOf[Any => Unit])
 
     vrc.addEventListener(Y_PressEnded, ((event: Event) => {
@@ -329,13 +310,6 @@ object OculusControllerLeft extends OculusController {
 
   def update(): Unit = {
     controllerEl.update()
-    // Apply scaling to the plot being stretched
-    if(capturedSeparation.nonEmpty && OculusControllerRight.captured.nonEmpty) {
-      val scale = OculusControllers.separationDistance() / capturedSeparation.get
-      val region = OculusControllerRight.captured.get
-      region.scale.set(scale, scale, scale)
-      //region.matrixWorldNeedsUpdate = true
-    }
   }
 
 }
@@ -347,22 +321,18 @@ object OculusControllerLeft extends OculusController {
   * Can be thought of as a mapping from a subset of the available
   * inputs to interactions (see plots.Interactions).
   */
-object OculusControllerRight extends OculusController {
-  override val name: String = "Oculus Touch (Right)"
-  // Event ID's specific to the Right controller
-  val A_PressBegan: String = "A press began"
-  val A_PressEnded: String = "A press ended"
-  val B_PressBegan: String = "B press began"
-  val B_PressEnded: String = "B press ended"
+class OculusControllerRight(vrc: VRController) extends OculusController {
+  import OculusControllerRight._
+  setup()
 
-  def setup(vrc: VRController): Unit = {
-    Log(s"$name Connected!")
+  def setup(): Unit = {
+    Log.show(s"$name Connected!")
     init(vrc, meshColorRed)
 
     // Add this controller as an input device for Dat.GuiVR
 
     val inputDevice = Dat.GUIVR.addInputObject(vrc).asInstanceOf[Dat.InputDevice]
-    Environment.instance.scene.add(inputDevice)
+    Environment.instance.scene.add(inputDevice) //
 
     // Setup events common to both controllers
 
@@ -372,7 +342,7 @@ object OculusControllerRight extends OculusController {
 
     vrc.addEventListener(A_PressBegan, ((event: Event) => {
       Log("A Press Began")
-      modifyCaptured(true)
+      //modifyCaptured(true)
       inputDevice.asInstanceOf[js.Dynamic].pressed(true)
     }).asInstanceOf[Any => Unit])
     vrc.addEventListener(A_PressEnded, ((event: Event) => {
@@ -381,40 +351,100 @@ object OculusControllerRight extends OculusController {
     }).asInstanceOf[Any => Unit])
     vrc.addEventListener(B_PressBegan, ((event: Event) => {
       Log("B Press Began")
-      modifyCaptured(false)
+      //modifyCaptured(false)
     }).asInstanceOf[Any => Unit])
     vrc.addEventListener(B_PressEnded, ((event: Event) => {
       Log("B Press Ended")
     }).asInstanceOf[Any => Unit])
   }
 
-  def update(): Unit = {
-    controllerEl.update()
-    // Apply scaling to the plot being stretched
-    if(capturedSeparation.nonEmpty && OculusControllerLeft.captured.nonEmpty) {
-      val scale = OculusControllers.separationDistance() / capturedSeparation.get
-      val region = OculusControllerLeft.captured.get
-      region.scale.set(scale, scale, scale)
-      //region.matrixWorldNeedsUpdate = true
-    }
+  def update(): Unit = controllerEl.update()
+
+}
+
+object OculusControllerRight {
+  val name: String = "Oculus Touch (Right)"
+
+  // Event ID's specific to the Right controller
+  val A_PressBegan: String = "A press began"
+  val A_PressEnded: String = "A press ended"
+  val B_PressBegan: String = "B press began"
+  val B_PressEnded: String = "B press ended"
+
+  protected[OculusControllerRight] var instance: Option[OculusControllerRight] = None
+  def isConnected: Boolean = instance.nonEmpty
+
+  def setup(vrc: VRController): Unit = {
+    if(instance.nonEmpty) Log.show(s"$name connected but the instance is nonempty")
+    val controller: OculusControllerRight = new OculusControllerRight(vrc)
+    instance = Some(controller)
+
+    Log.show("Adding event listener: Disconnected")
+    vrc.addEventListener(controller.Disconnected, ((event: Event) => {
+      Log.show(s"$name Disconnecting...")
+      controller.laser.destruct()
+      vrc.remove(controller.controllerMesh)
+      vrc.parent.remove(vrc)
+      instance = None
+      Log.show(s"$name Disconnected!")
+    }).asInstanceOf[Any => Unit])
+  }
+
+  // get assumes you checked that it's connected!
+  def get: OculusControllerRight = instance.get
+}
+
+object OculusControllerLeft {
+  val name: String = "Oculus Touch (Left)"
+  // Event ID's specific to the Left controller
+  val X_PressBegan: String = "X press began"
+  val X_PressEnded: String = "X press ended"
+  val Y_PressBegan: String = "Y press began"
+  val Y_PressEnded: String = "Y press ended"
+
+  protected[OculusControllerLeft] var instance: Option[OculusControllerLeft] = None
+  def isConnected: Boolean = instance.nonEmpty
+
+  // get assumes you checked that it's connected!
+  def get: OculusControllerLeft = instance.get
+
+  def setup(vrc: VRController): Unit = {
+    if(instance.nonEmpty) Log.show(s"$name connected but the instance is nonempty")
+    val controller: OculusControllerLeft = new OculusControllerLeft(vrc)
+    instance = Some(controller)
+
+    Log.show("Adding event listener: Disconnected")
+    vrc.addEventListener(controller.Disconnected, ((event: Event) => {
+      Log.show(s"$name Disconnecting...")
+      controller.laser.destruct()
+      vrc.remove(controller.controllerMesh)
+      vrc.parent.remove(vrc)
+      instance = None
+      Log.show(s"$name Disconnected!")
+    }).asInstanceOf[Any => Unit])
   }
 
 }
 
 object OculusControllers {
+
   def getActiveRayCaster: Option[Laser] = {
-    if(OculusControllerRight.isPointing) Some(OculusControllerRight.updatedLaser)
-    else if(OculusControllerLeft.isPointing) Some(OculusControllerLeft.updatedLaser)
+    if(OculusControllerRight.isConnected && OculusControllerRight.get.isPointing)
+      Some(OculusControllerRight.get.updatedLaser)
+
+    else if(OculusControllerLeft.isConnected && OculusControllerLeft.get.isPointing)
+      Some(OculusControllerLeft.get.updatedLaser)
+
     else None
   }
 
-  def separationDistance(): Double =
+  /*def separationDistance(): Double =
     OculusControllerRight.getCorrectedPosition.distanceTo(
       OculusControllerLeft.getCorrectedPosition
-    )
+    )*/
 
   def stopSelecting(): Unit = {
-    OculusControllerLeft.selecting = false
-    OculusControllerRight.selecting = false
+    if(OculusControllerRight.isConnected) OculusControllerRight.get.selecting = false
+    if(OculusControllerLeft.isConnected) OculusControllerLeft.get.selecting = false
   }
 }

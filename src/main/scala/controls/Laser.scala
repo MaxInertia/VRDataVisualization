@@ -15,7 +15,7 @@ class Laser {
   def construct(position: Vector3, direction: Vector3, hexColor: Int): Unit = {
     rayCaster = new RayCaster()
     rayCaster.set(position, direction)
-    rayCaster.params.asInstanceOf[RaycasterParametersExt].Points.threshold = 0.001//0.015
+    rayCaster.params.asInstanceOf[RaycasterParametersExt].Points.threshold = 0.015
 
     var material = new LineBasicMaterial()
     material.color.setHex(hexColor)

@@ -42,7 +42,9 @@ object Interactions {
       entity.ops.highlight(index)
 
       // TODO: Remove undesireable coupling with Controller instances (Replaceable with idea in TODO below)
-      if(OculusControllerRight.isSelecting || OculusControllerLeft.isSelecting) {
+      val rightSelecting = OculusControllerRight.isConnected && OculusControllerRight.get.isSelecting
+      val leftSelecting = OculusControllerLeft.isConnected && OculusControllerLeft.get.isSelecting
+      if(rightSelecting || leftSelecting) {
         entity.ops.selectHighlighted()
         //OculusControllers.stopSelecting() // Uncomment this to disable rapid-fire point selections
       }

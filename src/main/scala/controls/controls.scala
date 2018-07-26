@@ -1,8 +1,6 @@
 import org.scalajs
 import scalajs.dom
 import scalajs.threejs._
-import window.Window
-import facades.Dat
 import facades.IFThree._
 import org.scalajs.dom.raw.Event
 import util.Log
@@ -22,8 +20,8 @@ package object controls {
 
   def update(): Unit = {
     VRControllerManager.update()
-    if(OculusControllerLeft.isConnected) OculusControllerLeft.update()
-    if(OculusControllerRight.isConnected) OculusControllerRight.update()
+    if(OculusControllerRight.isConnected) OculusControllerRight.get.update()
+    if(OculusControllerLeft.isConnected) OculusControllerLeft.get.update()
   }
 
   type RayCaster = Raycaster
