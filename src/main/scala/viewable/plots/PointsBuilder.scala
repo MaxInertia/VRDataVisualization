@@ -127,7 +127,7 @@ object PointsBuilder{
       if(vertex.z > maxZ) maxZ = vertex.z
       if(vertex.z < minZ) minZ = vertex.z
 
-      if(hueShift.nonEmpty) color.setHSL(hueShift.get + 0.1 * (i / l), 1.0, 0.5)
+      if(hueShift.nonEmpty) color.setHSL(hueShift.get + Plot.HUE_GRADIENT_FACTOR * (i / l), 1.0, 0.5)
       colors(3 * i) = color.r.toFloat
       colors(3 * i + 1) = color.g.toFloat
       colors(3 * i + 2) = color.b.toFloat

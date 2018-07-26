@@ -267,7 +267,7 @@ trait Plot {
     private def resetColor(pIndex: Int): Unit = {
       // Recompute this points original color
       val color: Color = new Color()
-      val newHue: Double = hue + 0.1 * ( pIndex * 1.0 / numPoints )
+      val newHue: Double = hue + Plot.HUE_GRADIENT_FACTOR * ( pIndex * 1.0 / numPoints )
       color.setHSL( newHue, 1.0, 0.5 )
       // Assign color to point
       val colorsAttr = getColors
@@ -330,6 +330,7 @@ trait Plot {
   */
 object Plot {
   val PARTICLE_SIZE: Double = 0.1
+  val HUE_GRADIENT_FACTOR: Double = 0.2
 
   def zip3[A, B, C](fA: =>Array[A], fB: =>Array[B], fC: =>Array[C]): Array[(A, B, C)] =
     (fA zip fB zip fC) map { case ((a, b), c) => (a, b, c)}
