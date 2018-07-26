@@ -18,8 +18,6 @@ class DatGui {
   // 0: HPD Folder, 1: SPS Folder
   var folders: Array[Dat.GUI] = Array()
 
-  var mode: Int = DatGui.Mode_ScatterPlot
-
   def addFolder(folder: Dat.GUI): Unit = {
     object3D.addFolder(folder)
     folders = folders :+ folder
@@ -46,87 +44,64 @@ class DatGui {
 
 object DatGui {
 
-  val Mode_ScatterPlot:Int = 1
-  val Mode_ShadowManifold: Int = 2
-
   def apply(plot: ScatterPlot, axes: CoordinateAxes3D): DatGui = {
     val gui = new DatGui()
-
-    def updateMode(mode: Int, axesUpdated: Option[AxisID] = None): Unit = if(gui.mode != mode) {
-      mode match {
-        case Mode_ScatterPlot => // Restore...
-          plot.getGeometry.asInstanceOf[js.Dynamic].setDrawRange(0, plot.column(0).length) // draw range,
-          if(axesUpdated.nonEmpty) {
-            val axisToSkip = axesUpdated.get
-            if(axisToSkip != XAxis) {
-              plot.switchAxis(XAxis)
-              axes.setAxisTitle(plot.xVar, XAxis)
-              gui.updateFolderLabels(x = plot.xVar)
-            }
-            if(axisToSkip != YAxis) {
-              plot.switchAxis(YAxis, shift = 2)
-              axes.setAxisTitle(plot.yVar, YAxis)
-              gui.updateFolderLabels(y = plot.yVar)
-            }
-            if(axisToSkip != ZAxis) {
-              plot.switchAxis(ZAxis, shift = 3)
-              axes.setAxisTitle(plot.zVar, ZAxis)
-              gui.updateFolderLabels(z = plot.zVar)
-            }
-          }
-        case Mode_ShadowManifold =>
-          // nothing fun yet
-        case i =>
-        // ...what?
-      }
-      gui.mode = mode
-    }
 
     createHighlightedPointDataFolder(gui, plot)
     createSelectedPointsDataFolder(gui, plot)
 
     var settingsFolder = Dat.GUIVR.create("Settings")
-    settingsFolder.addButton(() => {
-      updateMode(Mode_ScatterPlot, Some(XAxis))
-      plot.switchAxis(XAxis)
-      axes.setAxisTitle(plot.xVar, XAxis)
-      gui.updateFolderLabels(x = plot.xVar)
-    })
-    settingsFolder.addButton(() => {
-      updateMode(Mode_ScatterPlot, Some(YAxis))
-      plot.switchAxis(YAxis)
-      axes.setAxisTitle(plot.yVar, YAxis)
-      gui.updateFolderLabels(y = plot.yVar)
-    })
-    settingsFolder.addButton(() => {
-      updateMode(Mode_ScatterPlot, Some(ZAxis))
-      plot.switchAxis(ZAxis)
-      axes.setAxisTitle(plot.zVar, ZAxis)
-      gui.updateFolderLabels(z = plot.zVar)
-    })
-
+    settingsFolder.addButton(() => axisSwitcher(plot, axes, gui, XAxis))
+    settingsFolder.addButton(() => axisSwitcher(plot, axes, gui, YAxis))
+    settingsFolder.addButton(() => axisSwitcher(plot, axes, gui, ZAxis))
     Button(0, settingsFolder).setLabels("   X", "Change X Axis")
     Button(1, settingsFolder).setLabels("   Y", "Change Y Axis")
     Button(2, settingsFolder).setLabels("   Z", "Change Z Axis")
     gui.object3D.addFolder(settingsFolder)
     settingsFolder.open()
 
-    val smFolder = Dat.GUIVR.create("Shadow Manifold")
-    smFolder.addButton(() => {
-      updateMode(Mode_ShadowManifold)
+    val embeddingFolder = Dat.GUIVR.create("Shadow Manifold")
+    embeddingFolder.addButton(() => {
+      plot.plotType = ShadowManifold_Type
       val (xVar, yVar, zVar) = ShadowManifold.transform(plot)
       axes.setAxesTitles(xVar, yVar, zVar)
       gui.updateFolderLabels(x = xVar, y = yVar, z = zVar)
     })
+    embeddingFolder.add(plot.rawTau, "TauOnes", 0, 10).step(1).name("Tau Ones")
+    embeddingFolder.add(plot.rawTau, "TauTens", 0, 90).step(10).name("Tau Tens")
+    embeddingFolder.add(plot.rawTau, "TauHundreds", 0, 900).step(100).name("Tau Hundreds")
+    Button(0, embeddingFolder).setLabels("Embed!", "Embed xVar")
+    gui.object3D.addFolder(embeddingFolder)
+    embeddingFolder.open()
 
-    smFolder.add(ShadowManifold.settings, "TauOnes", 0, 10).step(1).name("Tau Ones")
-    smFolder.add(ShadowManifold.settings, "TauTens", 0, 90).step(10).name("Tau Tens")
-    smFolder.add(ShadowManifold.settings, "TauHundreds", 0, 900).step(100).name("Tau Hundreds")
-
-    Button(0, smFolder).setLabels("Embed!", "Embed xVar")
-    gui.object3D.addFolder(smFolder)
-    smFolder.open()
     gui
+  }
+
+  // Applies an axis change. Changes (1) plot point positions, (2) axes titles, and (3) gui labels
+  private def axisSwitcher(plot: ScatterPlot, axes: CoordinateAxes3D, gui: DatGui, axisID: AxisID): Unit = {
+    if(plot.plotType == ShadowManifold_Type) { // Currently viewing a shadow manifold, so we have to adjust each axis
+      plot.plotType = ScatterPlot_Type
+      plot.shiftEachAxis(1, 1, 1)
+      axes.setAxesTitles(plot.xVar, plot.yVar, plot.zVar)
+      gui.updateFolderLabels(x = plot.xVar, y = plot.yVar, z = plot.zVar)
+    } else {
+
+      plot.switchAxis(axisID)
+      plot.getGeometry.asInstanceOf[js.Dynamic].setDrawRange(0, plot.numPoints)
+      plot.requestGeometryUpdate()
+
+      axisID match { // Currently viewing a scatter-plot, so we can settle with modifying a single axis
+        case XAxis =>
+          axes.setAxisTitle(plot.xVar, axisID)
+          gui.updateFolderLabels(x = plot.xVar)
+        case YAxis =>
+          axes.setAxisTitle(plot.yVar, axisID)
+          gui.updateFolderLabels(y = plot.yVar)
+        case ZAxis =>
+          axes.setAxisTitle(plot.zVar, axisID)
+          gui.updateFolderLabels(z = plot.zVar)
+      }
+    }
   }
 
   def apply(): Dat.GUI = {
@@ -164,7 +139,7 @@ object DatGui {
     // Add folder to gui object (and therefore the scene)
     gui.addFolder(selectFolder)
     // Open the folder
-    selectFolder.open()
+    //selectFolder.open()
   }
 
   object Button {

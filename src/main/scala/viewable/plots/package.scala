@@ -18,4 +18,8 @@ package object plots {
   val XAxis: AxisID = 0
   val YAxis: AxisID = 1
   val ZAxis: AxisID = 2
+
+  type PlotType = Int
+  val ScatterPlot_Type: PlotType = 0
+  val ShadowManifold_Type: PlotType = 1
 }

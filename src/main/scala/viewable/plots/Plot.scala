@@ -16,26 +16,46 @@ trait Plot {
 
   var hue: Double = 0 // Default to be overwritten if points are to have color
 
+  var plotType: PlotType = ScatterPlot_Type
+
   var savedSelections: Set[Int] = Set[Int]()
   val selectedSummary: js.Object = js.Dynamic.literal(
     "xVar" -> 0.001,
     "yVar" -> 0.001,
-    "zVar" -> 0.001
-  )
+    "zVar" -> 0.001)
 
   var highlighted: Option[Int] = None
   val highlightedDetails: js.Object = js.Dynamic.literal(
     "xVar" -> 0.001,
     "yVar" -> 0.001,
-    "zVar" -> 0.001
-  )
+    "zVar" -> 0.001)
 
-  def updateHighlightedDetails(index: Int): Unit = {
-    highlightedDetails.asInstanceOf[js.Dynamic].updateDynamic("xVar")(column(XAxis)(index).toFloat)
-    highlightedDetails.asInstanceOf[js.Dynamic].updateDynamic("yVar")(column(YAxis)(index).toFloat)
-    highlightedDetails.asInstanceOf[js.Dynamic].updateDynamic("zVar")(column(ZAxis)(index).toFloat)
+  val rawTau: js.Object = js.Dynamic.literal(
+    "TauOnes" -> 1,
+    "TauTens" -> 0,
+    "TauHundreds" -> 0)
+
+  def getTau: Int =
+    rawTau.asInstanceOf[js.Dynamic].selectDynamic("TauOnes").asInstanceOf[Int] +
+    rawTau.asInstanceOf[js.Dynamic].selectDynamic("TauTens").asInstanceOf[Int] +
+    rawTau.asInstanceOf[js.Dynamic].selectDynamic("TauHundreds").asInstanceOf[Int]
+
+  //
+
+  def updateHighlightedDetails(index: Int): Unit = plotType match {
+    case ScatterPlot_Type =>
+      highlightedDetails.asInstanceOf[js.Dynamic].updateDynamic("xVar")(column(XAxis)(index).toFloat)
+      highlightedDetails.asInstanceOf[js.Dynamic].updateDynamic("yVar")(column(YAxis)(index).toFloat)
+      highlightedDetails.asInstanceOf[js.Dynamic].updateDynamic("zVar")(column(ZAxis)(index).toFloat)
+    case ShadowManifold_Type =>
+      val tau = getTau
+      val colX = column(XAxis)
+      highlightedDetails.asInstanceOf[js.Dynamic].updateDynamic("xVar")(colX(index + 2*tau).toFloat)
+      highlightedDetails.asInstanceOf[js.Dynamic].updateDynamic("yVar")(colX(index + tau).toFloat)
+      highlightedDetails.asInstanceOf[js.Dynamic].updateDynamic("zVar")(colX(index).toFloat)
   }
 
+  // Does not need to check plotType because this is only used in ScatterPlot mode
   def updateHighlightedDetailsForAxis(index: Int, axis: Int): Unit = axis match {
     case XAxis => highlightedDetails.asInstanceOf[js.Dynamic].updateDynamic("xVar")(column(axis)(index).toFloat)
     case YAxis => highlightedDetails.asInstanceOf[js.Dynamic].updateDynamic("yVar")(column(axis)(index).toFloat)
@@ -67,11 +87,24 @@ trait Plot {
     var sumZ: Double = 0
     var c = 0
 
-    for(i <- savedSelections) sumX += column(XAxis)(i)
-    for(i <- savedSelections) sumY += column(YAxis)(i)
-    for(i <- savedSelections) {
-      sumZ += column(ZAxis)(i)
-      c += 1
+    plotType match {
+      case ScatterPlot_Type =>
+        for(i <- savedSelections) sumX += column(XAxis)(i)
+        for(i <- savedSelections) sumY += column(YAxis)(i)
+        for(i <- savedSelections) {
+          sumZ += column(ZAxis)(i)
+          c += 1
+        }
+
+      case ShadowManifold_Type =>
+        val xCol = column(XAxis)
+        val tau = getTau
+        for(i <- savedSelections) sumX += xCol(i + 2*tau)
+        for(i <- savedSelections) sumY += xCol(i + tau)
+        for(i <- savedSelections) {
+          sumZ += xCol(i)
+          c += 1
+        }
     }
 
     val meanX = sumX/c
@@ -83,6 +116,7 @@ trait Plot {
     selectedSummary.asInstanceOf[js.Dynamic].updateDynamic("zVar")(meanZ)
   }
 
+  // Does not need to check plotType because this is only used in ScatterPlot mode
   def updateSelectedSummaryForAxis(axis: Int): Unit = {
     var sum: Double = 0
     var c = 0
@@ -98,8 +132,6 @@ trait Plot {
       case ZAxis => selectedSummary.asInstanceOf[js.Dynamic].updateDynamic("zVar")(mean)
     }
   }
-
-  //def restoredValue(modified: Double, col: Int): Double
 
   def getPoints: Points
   def getName: String
