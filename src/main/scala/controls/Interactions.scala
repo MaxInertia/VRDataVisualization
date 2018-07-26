@@ -46,7 +46,7 @@ object Interactions {
       val leftSelecting = OculusControllerLeft.isConnected && OculusControllerLeft.get.isSelecting
       if(rightSelecting || leftSelecting) {
         entity.ops.selectHighlighted()
-        //OculusControllers.stopSelecting() // Uncomment this to disable rapid-fire point selections
+        //controls.stopSelecting() // Uncomment this to disable rapid-fire point selections
       }
 
       (oldIndexMaybe, index)

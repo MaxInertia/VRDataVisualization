@@ -364,7 +364,6 @@ class OculusControllerRight(vrc: VRController) extends OculusController {
 
 object OculusControllerRight {
   val name: String = "Oculus Touch (Right)"
-
   // Event ID's specific to the Right controller
   val A_PressBegan: String = "A press began"
   val A_PressEnded: String = "A press ended"
