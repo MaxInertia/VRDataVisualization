@@ -1,37 +1,36 @@
-package viewable.plots
+package viewable.displays
 
 import controls.{Laser, ModelController}
+import facades.IFThree.Group
 import org.scalajs.threejs.Intersection
-import util.Log
-import viewable.displays.{ListDisplay, RowSettings}
+import viewable.plots.{AxisID, XAxis}
 
 /**
   * Created by Dorian Thiessen on 2018-07-26.
   */
 object ColumnPicker {
+  private val instance: Group = new Group()
   var columnDisplay: Option[ListDisplay] = None
   var axesDisplays: Option[ListDisplay] = None
   var axisToSwap: AxisID = XAxis
 
-  def init(columnNames: Array[String]): (ListDisplay, ListDisplay) = {
+  def init(columnNames: Array[String]): Group = {
+
     val clist = new ListDisplay(columnNames)
-    clist.group3D.position.setX(-1.0)
-    clist.group3D.position.setZ(-0.2)
-    clist.group3D.rotateY(3.14 / 2)
     columnDisplay = Some(clist)
     clist.disableRow(0)
     clist.disableRow(1)
     clist.disableRow(2)
 
-    val settings = new RowSettings(width = 0.08, height = 0.08, margin = 0.02)
-    val alist = new ListDisplay(Array("X", "Y", "Z"), settings, vertical = false)
-    alist.group3D.position.setX(-1.0)
-    alist.group3D.position.setZ(+0.2)
-    alist.group3D.position.setY((clist.elements.length + 1) * (clist.RowHeight + clist.RowMargin))
-    alist.group3D.rotateY(3.14 / 2)
+    val alist = new ListDisplay(Array("X", "Y", "Z"), new RowSettings(width = 0.08), canvasWidthConstant = 12)
+    alist.group3D.position.setX(-(clist.RowMargin*3 + clist.RowWidth/2))
     axesDisplays = Some(alist)
 
-    (clist, alist)
+    instance.add(clist.group3D)
+    instance.add(alist.group3D)
+    instance.rotateY(3.14 / 2)
+    instance.position.setX(-1.0)
+    instance //(clist, alist)
   }
 
   def interactionCheck(laser: Laser): Boolean = {

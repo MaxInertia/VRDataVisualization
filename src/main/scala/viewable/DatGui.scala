@@ -64,9 +64,7 @@ object DatGui {
     val embeddingFolder = Dat.GUIVR.create("Shadow Manifold")
     embeddingFolder.addButton(() => {
       plot.plotType = ShadowManifold_Type
-      val (xVar, yVar, zVar) = ShadowManifold.transform(plot)()
-      axes.setAxesTitles(xVar, yVar, zVar)
-      gui.updateFolderLabels(x = xVar, y = yVar, z = zVar)
+      ModelController.requestAxisChange(XAxis, columnIndex = Some(plot.viewing(XAxis)))
     })
     embeddingFolder.add(plot.rawTau, "TauOnes", 0, 10).step(1).name("Tau Ones")
     embeddingFolder.add(plot.rawTau, "TauTens", 0, 90).step(10).name("Tau Tens")

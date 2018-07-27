@@ -1,11 +1,6 @@
 package viewable.displays
-import controls.ModelController
 import facades.IFThree.Group
 import org.scalajs.threejs._
-import viewable.plots.{ColumnPicker, ScatterPlot}
-import viewable.{Environment, Regions}
-
-import scala.reflect.internal.util.TableDef.Column
 import scala.scalajs.js
 
 /**
@@ -16,6 +11,8 @@ class RowSettings(var width: Double = 0.04, var height: Double = 0.08, var margi
 class ListDisplay(val contents: Array[String],
                   rowSettings: RowSettings = new RowSettings(),
                   vertical: Boolean = true,
+                  canvasWidthConstant: Int = 0,
+                  canvasHeightConstant: Int = 0,
                   textSize: Int = 48) {
 
   val maxTextLength: Int = contents.map(_.length).max
@@ -58,7 +55,11 @@ class ListDisplay(val contents: Array[String],
   }
 
   class ListRow private[ListDisplay](val content: String, width: Double, height: Double) extends Display {
-    private val canvas: CanvasEl = createCanvas(maxTextLength * 24, textSize + 2)
+    private val canvas: CanvasEl = createCanvas(
+      width = (maxTextLength * 24) + canvasWidthConstant,
+      height = (textSize + 2) + canvasHeightConstant
+    )
+
     override protected def get2DGraphics: Graphics2D = canvas.getContext("2d").asInstanceOf[Graphics2D]
     val contentWidth: Double = get2DGraphics.measureText(content).width
 

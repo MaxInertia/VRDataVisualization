@@ -5,6 +5,7 @@ import org.scalajs.dom
 import org.scalajs.threejs._
 import resources._
 import controls.{Interactions, Laser}
+import viewable.displays.ColumnPicker
 import viewable.plots._
 import window.Window
 
@@ -41,9 +42,8 @@ class Environment(val scene: Scene,
     if(data.isEmpty) return
     val scatterPlot: ScatterPlot = ScatterPlot(data, Res.getLastLoadedTextureID, pointColor)
 
-    val (columnList, axesList) = ColumnPicker.init(scatterPlot.getColumnNames)
-    scene.add(columnList.group3D)
-    scene.add(axesList.group3D)
+    val columnPicker = ColumnPicker.init(scatterPlot.getColumnNames)
+    scene.add(columnPicker)
 
     // The following three lines use Scene, Environment AND Regions...
     plots3D(plotNum) = Some(Array(scatterPlot)) // Currently we assume we're only generating one.
@@ -203,12 +203,12 @@ object Environment {
     def addFloor(): Unit = {
       val floorMaterial = new MeshLambertMaterial()
       floorMaterial.color = new Color(0xffffff)
-      val floorGeometry = new PlaneGeometry( 6, 6, 32 )
+      val floorGeometry = new PlaneGeometry( 2, 2, 32 )
       val floor = new Mesh(floorGeometry, floorMaterial)
       floor.receiveShadow = false
       floor.rotateX(-3.1415/2)
       // Add 6x6m grid broken into 36 sections
-      val floorGrid: GridHelper = new GridHelperExt(6, 6, Colors.Black, Colors.Black)
+      val floorGrid: GridHelper = new GridHelperExt(2, 4, Colors.Black, Colors.Black)
       floorGrid.position.setY(0.001)
       floorGrid.material.linewidth = 2.0
       scene.add(floorGrid)

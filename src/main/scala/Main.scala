@@ -37,14 +37,10 @@ object Main {
     val loader = new FontLoader()
     Log.show("FontLoader created.")
     loader.load( "fonts/helvetiker_regular.typeface.json", (font: js.Dynamic) => {
-      Log.show("Font loaded")
+      Log("Font loaded")
       Text.font = font.asInstanceOf[Font]
-      /*val text = Text.createTextMesh("Welcome user!")
-      text.position.set(-0.5, 1, -1)
-      env.scene.add(text)
-      Log.show("Font added to scene")*/
     }, (prog: js.Dynamic) => {
-        Log.show("Progress...")
+        Log("Progress...")
         Log.show(prog)
     }, (err: js.Dynamic) => {
         Log.show("Hit error when attempting to load font")
@@ -56,9 +52,10 @@ object Main {
     import scala.concurrent.ExecutionContext.Implicits.global
     loadTexture andThen {
       case Success(texture) =>
-        env.plot(dataset, Colors.RED_HUE_SHIFT)
+        Log("Loaded the point texture!")
+      //env.plot(dataset, Colors.RED_HUE_SHIFT)
       case Failure(err) =>
-        Log("Failed to load the texture!")
+        Log.show("Failed to load the texture!")
         err.printStackTrace()
     }
 

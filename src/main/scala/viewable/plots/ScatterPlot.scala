@@ -3,8 +3,8 @@ package viewable.plots
 import math.{ScaleCenterProperties, Stats}
 import resources.Data
 import util.Log
-import viewable.Environment
-import viewable.displays.ListDisplay
+
+import scala.scalajs.js
 
 /**
   * Container of a simple scatter-plot.
@@ -13,8 +13,12 @@ import viewable.displays.ListDisplay
   */
 class ScatterPlot(points: Points, data: Array[Data], val viewing: Array[Int], var props: ScaleCenterProperties) extends Plot {
   override val ops: SelectionOps = new SelectionOps {}
+  var visiblePoints: Int = numPoints
 
-  def stats(i: Int): Stats = data(i).stats.get
+  Log.show(s"Scatterplot created with ")
+  for(i <- data.indices) Log.show(s"stats($i).max:${stats(i).max}, min:${stats(i).min}")
+
+  def stats(i: Int): Stats = data(i).getStats
 
   override def xVar: String = data(viewing(XAxis)).id // 1st column ID
   override def yVar: String = data(viewing(YAxis)).id // 2nd column ID
@@ -29,8 +33,8 @@ class ScatterPlot(points: Points, data: Array[Data], val viewing: Array[Int], va
   def switchAxis(axisID: AxisID, shift: Int = 1, shiftIsColumnIndex: Boolean = false): Unit = {
     rawAxisShift(axisID, shift,
       updatePointDetails = true,
-      shiftIsColumn = shiftIsColumnIndex
-    ); fixScale()
+      shiftIsColumn = shiftIsColumnIndex)
+    fixScale()
 
     getPositions.needsUpdate = true
     requestGeometryUpdate()
@@ -46,24 +50,29 @@ class ScatterPlot(points: Points, data: Array[Data], val viewing: Array[Int], va
     requestGeometryUpdate()
   }
 
+  def setVisiblePointRange(first: Int, last: Int): Unit = {
+    visiblePoints = last - first
+    getGeometry.asInstanceOf[js.Dynamic].setDrawRange(first, last)
+  }
+
   private def rawAxisShift(axisID: AxisID, shift: Int, updatePointDetails: Boolean, shiftIsColumn: Boolean = false): Unit = {
     if (shiftIsColumn) {
-      Log.show(s"Attempted switching axis #$axisID to column #$shift (columns = $columnCount)")
       assert(shift >= 0 && shift < data.length, s"[rawAxisShift] - Attempted switching axis #$axisID to invalid column #$shift")
-      Log.show(s"Switching axis #$axisID from ${viewing(axisID)} to $shift)")
+      Log(s"Switching axis #$axisID from ${viewing(axisID)} to $shift)")
       viewing(axisID) = shift
+
     } else {
-      Log.show(s"Switching axis #$axisID from ${viewing(axisID)} to ${(viewing(axisID) + shift) % data.length})")
+      Log(s"Switching axis #$axisID from ${viewing(axisID)} to ${(viewing(axisID) + shift) % data.length})")
       viewing(axisID) = (viewing(axisID) + shift) % data.length
     }
+
     updateAxis(axisID, column(axisID), updatePointDetails)
   }
 
-  private[plots] def fixScale(x: AxisID = XAxis, y: AxisID = YAxis, z: AxisID = ZAxis): Unit = {
+  /*private[plots] */def fixScale(x: AxisID = XAxis, y: AxisID = YAxis, z: AxisID = ZAxis): Unit = {
     props = PlotManipulator.confineToRegion(points,
       (stats(viewing(x)).min, stats(viewing(y)).min, stats(viewing(z)).min),
-      (stats(viewing(x)).max, stats(viewing(y)).max, stats(viewing(z)).max)
-    )
+      (stats(viewing(x)).max, stats(viewing(y)).max, stats(viewing(z)).max))
   }
 
   override def getPoints: Points = points
