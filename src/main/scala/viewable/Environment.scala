@@ -1,13 +1,10 @@
 package viewable
 
 import facades.IFThree._
-import math.Stats
 import org.scalajs.dom
 import org.scalajs.threejs._
 import resources._
 import controls.{Interactions, Laser}
-import util.Log
-import viewable.input.{ActionPanel, Actions}
 import viewable.plots._
 import window.Window
 
@@ -42,7 +39,12 @@ class Environment(val scene: Scene,
 
   def plot(data: Array[Data], pointColor: Double = Colors.BLUE_HUE_SHIFT, plotNum: Int = 0): Unit = {
     if(data.isEmpty) return
-    val scatterPlot: Plot = ScatterPlot(data, Res.getLastLoadedTextureID, pointColor)
+    val scatterPlot: ScatterPlot = ScatterPlot(data, Res.getLastLoadedTextureID, pointColor)
+
+    val (columnList, axesList) = ColumnPicker.init(scatterPlot.getColumnNames)
+    scene.add(columnList.group3D)
+    scene.add(axesList.group3D)
+
     // The following three lines use Scene, Environment AND Regions...
     plots3D(plotNum) = Some(Array(scatterPlot)) // Currently we assume we're only generating one.
     val maybeNewRegion = Regions.add(plots3D(plotNum).get(0))
@@ -55,20 +57,22 @@ class Environment(val scene: Scene,
     val maybeRC: Option[Laser] = controls.getSelectionRayCaster(camera)
     if(maybeRC.nonEmpty) {
       if (Regions.numOccupied() >= 1) {
-        pointHighlighting(maybeRC.get)
+        hoverAction(maybeRC.get)
       }
     }
-    Actions.update(maybeRC)
+    //Actions.update(maybeRC)
     Regions.update()
     renderer.render(scene, camera)
   }
 
   // TODO: pointHighlighting is a user interaction, and the Environment should be ignorant of those?
 
-  def pointHighlighting(laser: Laser): Unit = {
+  def hoverAction(laser: Laser): Unit = {
     var ids: (Option[Int], Int) = (None, 0)
     var plotNum: Int = 0
     var isSet: Boolean = false
+
+    // # Point Highlighting
 
     val regions = Regions.getNonEmpties
     // For every region (each of which contains a plot)
@@ -88,27 +92,17 @@ class Environment(val scene: Scene,
           ids = Interactions.on(plot, intersects)
           isSet = true
           plotNum = index
+          return
         }
       }
     }
+
+    // # Column list hovering
+
+    isSet = ColumnPicker.interactionCheck(laser)
 
     // Restore laser to full length
     if(!isSet) laser.updateLengthScale(5)
-
-    if(isSet && regions.length > 1) {
-      for (index <- regions.indices) {
-        if(index != plotNum) {
-          val region = regions(index)
-
-          if (region.plot.nonEmpty) {
-            // Get the active plot in this region
-            val plot = region.plot.get
-            plot.ops.highlight(ids._2)
-            if (ids._1.nonEmpty) plot.ops.unHighlight(ids._1.get)
-          }
-        }
-      }
-    }
 
   }
 

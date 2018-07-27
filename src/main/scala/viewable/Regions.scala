@@ -1,7 +1,9 @@
 package viewable
 
+import controls.ModelController
 import org.scalajs.threejs.{Object3D, Vector3}
 import util.Log
+import viewable.displays.{ListDisplay, PlaneDisplay}
 import viewable.plots.{CoordinateAxes3D, Plot, ScatterPlot}
 
 object Regions {
@@ -36,13 +38,16 @@ object Regions {
       val gui = DatGui(plot.asInstanceOf[ScatterPlot], regions(i).get.maybeGetAxes().get)
       regions(i).get.gui = Some(gui)
       Environment.instance.scene.add(gui.object3D)
-      //DatGui.update(i)
+
+      ModelController.setPlot(plot.asInstanceOf[ScatterPlot])
+      ModelController.setGUI(gui)
+      ModelController.setAxes(regions(i).get.maybeGetAxes().get)
+
       return regions(i)
 
     } else if(regions(i).nonEmpty && regions(i).get.plot.isEmpty) {
       Log("[Regions] - Adding plot to empty region")
       regions(i).get.addPlot(plot)
-      //DatGui.update(i)
       return regions(i)
     }
 

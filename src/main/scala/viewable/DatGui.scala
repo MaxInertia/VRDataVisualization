@@ -1,5 +1,6 @@
 package viewable
 
+import controls.ModelController
 import facades.Dat
 import facades.Dat.{GuiButton, GuiSlider}
 import viewable.plots._
@@ -51,9 +52,9 @@ object DatGui {
     createSelectedPointsDataFolder(gui, plot)
 
     var settingsFolder = Dat.GUIVR.create("Settings")
-    settingsFolder.addButton(() => axisSwitcher(plot, axes, gui, XAxis))
-    settingsFolder.addButton(() => axisSwitcher(plot, axes, gui, YAxis))
-    settingsFolder.addButton(() => axisSwitcher(plot, axes, gui, ZAxis))
+    settingsFolder.addButton(() => ModelController.requestAxisChange(XAxis, plot, axes, gui))
+    settingsFolder.addButton(() => ModelController.requestAxisChange(YAxis, plot, axes, gui))
+    settingsFolder.addButton(() => ModelController.requestAxisChange(ZAxis, plot, axes, gui))
     Button(0, settingsFolder).setLabels("   X", "Change X Axis")
     Button(1, settingsFolder).setLabels("   Y", "Change Y Axis")
     Button(2, settingsFolder).setLabels("   Z", "Change Z Axis")
@@ -63,7 +64,7 @@ object DatGui {
     val embeddingFolder = Dat.GUIVR.create("Shadow Manifold")
     embeddingFolder.addButton(() => {
       plot.plotType = ShadowManifold_Type
-      val (xVar, yVar, zVar) = ShadowManifold.transform(plot)
+      val (xVar, yVar, zVar) = ShadowManifold.transform(plot)()
       axes.setAxesTitles(xVar, yVar, zVar)
       gui.updateFolderLabels(x = xVar, y = yVar, z = zVar)
     })
@@ -75,33 +76,6 @@ object DatGui {
     embeddingFolder.open()
 
     gui
-  }
-
-  // Applies an axis change. Changes (1) plot point positions, (2) axes titles, and (3) gui labels
-  private def axisSwitcher(plot: ScatterPlot, axes: CoordinateAxes3D, gui: DatGui, axisID: AxisID): Unit = {
-    if(plot.plotType == ShadowManifold_Type) { // Currently viewing a shadow manifold, so we have to adjust each axis
-      plot.plotType = ScatterPlot_Type
-      plot.shiftEachAxis(1, 1, 1)
-      axes.setAxesTitles(plot.xVar, plot.yVar, plot.zVar)
-      gui.updateFolderLabels(x = plot.xVar, y = plot.yVar, z = plot.zVar)
-    } else {
-
-      plot.switchAxis(axisID)
-      plot.getGeometry.asInstanceOf[js.Dynamic].setDrawRange(0, plot.numPoints)
-      plot.requestGeometryUpdate()
-
-      axisID match { // Currently viewing a scatter-plot, so we can settle with modifying a single axis
-        case XAxis =>
-          axes.setAxisTitle(plot.xVar, axisID)
-          gui.updateFolderLabels(x = plot.xVar)
-        case YAxis =>
-          axes.setAxisTitle(plot.yVar, axisID)
-          gui.updateFolderLabels(y = plot.yVar)
-        case ZAxis =>
-          axes.setAxisTitle(plot.zVar, axisID)
-          gui.updateFolderLabels(z = plot.zVar)
-      }
-    }
   }
 
   def apply(): Dat.GUI = {

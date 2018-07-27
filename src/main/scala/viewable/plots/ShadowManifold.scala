@@ -13,10 +13,12 @@ import scala.scalajs.js.typedarray.Float32Array
   */
 object ShadowManifold {
 
-  def transform(plot: ScatterPlot): (String, String, String) = {
+  def transform(plot: ScatterPlot)(column: Int = plot.viewing(XAxis)): (String, String, String) = {
     val tau: Int = plot.getTau
-    val embeddingVar = plot.xVar
-    val embeddingValues = plot.column(XAxis) // Use variable on the X-Axis for creating shadow manifold
+
+    // Use variable on the X-Axis for creating shadow manifold
+    val embeddingVar = plot.getColumnNames(column)
+    val embeddingValues = plot.getColumnByIndex(column)
 
     val positionsAttr = plot.getPositions
     val positionsArr = positionsAttr.array.asInstanceOf[Float32Array]

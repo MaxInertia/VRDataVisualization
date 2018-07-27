@@ -9,6 +9,7 @@ import org.scalajs.threejs.{Mesh, MeshBasicMaterial}
 trait Display {
 
   val object3D: Mesh
+  var textSize: Int = 48
 
   private var updateFunction: UpdateFunction = _
   def setUpdateFunction(fn: UpdateFunction): Unit = updateFunction = fn
@@ -21,9 +22,10 @@ trait Display {
   protected def get2DGraphics: Graphics2D
 
   /** Writes text to the canvas at position. Can be centered on that position */
-  def write(text: String, position: (Int, Int), center: Boolean = true): Unit = {
+  def write(text: String, position: (Int, Int), center: Boolean = true, fontSizeInPixels: Int = 48): Unit = {
+    textSize = fontSizeInPixels
     val graphics = get2DGraphics
-    graphics.font = "48px serif"
+    graphics.font = s"${fontSizeInPixels}px serif"
     graphics.fillStyle = "white"
     if(!center) graphics.fillText(text, position._1, position._2)
     else graphics.fillText(text, (position._1 - graphics.measureText(text).width)/2, position._2)

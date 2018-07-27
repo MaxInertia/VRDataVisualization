@@ -134,7 +134,6 @@ trait Plot {
   }
 
   def getPoints: Points
-  def getName: String
 
   // Assuming it's 3D...
   def xVar: String

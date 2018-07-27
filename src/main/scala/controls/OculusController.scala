@@ -41,7 +41,7 @@ sealed abstract class OculusController extends OculusTouchEvents {
 
   /*protected[userinput] */ var controllerEl: VRController = _
   protected var controllerMesh: Mesh = _
-  protected val laser: Laser = new Laser()
+  protected[controls] val laser: Laser = new Laser()
 
   var captured: Option[Object3D] = None
   var capturedSeparation: Option[Double] = None
@@ -49,11 +49,9 @@ sealed abstract class OculusController extends OculusTouchEvents {
   var correctedPosition: Vector3 = new Vector3()
   var yOffset: Vector3 = new Vector3(0, 1.6, 0)
 
-  protected[controls] var selecting: Boolean = false
-
   def isConnected: Boolean = controllerEl != null
 
-  def isSelecting: Boolean = isConnected && laser.arrow.visible && selecting
+  def isSelecting: Boolean = isConnected && laser.arrow.visible && laser.active
 
   def isPointing: Boolean = laser.arrow != null && laser.arrow.visible
 
@@ -130,12 +128,12 @@ sealed abstract class OculusController extends OculusTouchEvents {
 
     vrc.addEventListener(Primary_PressBegan, ((event: Event) => {
       Log("Primary Press Began")
-      if (captured.isEmpty && capturedSeparation.isEmpty && laser.arrow.visible) selecting = true
+      if (captured.isEmpty && capturedSeparation.isEmpty && laser.arrow.visible) laser.active = true
     }).asInstanceOf[Any => Unit])
 
     vrc.addEventListener(Primary_PressEnded, ((event: Event) => {
       Log("Primary Press Ended")
-      selecting = false
+      laser.active = false
     }).asInstanceOf[Any => Unit])
 
     // Thumbrest Touch - for highlighting points!
@@ -148,7 +146,7 @@ sealed abstract class OculusController extends OculusTouchEvents {
     vrc.addEventListener(ThumbRest_TouchEnded, ((event: Event) => {
       Log("Thumbrest Touch Ended")
       laser.arrow.visible = false
-      selecting = false // Cannot be selecting without the rayCaster visible
+      laser.active = false // Cannot be selecting without the rayCaster visible
     }).asInstanceOf[Any => Unit])
 
     // Attempting to grab object!
@@ -158,8 +156,9 @@ sealed abstract class OculusController extends OculusTouchEvents {
       Log("Grip Press Began")
 
       val regions = Regions.getNonEmpties
-      val urc = updatedLaser.rayCaster.ray
-      val intersections = updatedLaser.rayCaster.intersectObjects(Environment.instance.scene.children)
+      val laser = updatedLaser
+      val urc = laser.rayCaster.ray
+      val intersections = laser.rayCaster.intersectObjects(Environment.instance.scene.children)
       Log.show(intersections)
 
       if(captured.isEmpty) {

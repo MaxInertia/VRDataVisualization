@@ -91,9 +91,9 @@ object CoordinateAxes3D {
     var positions: Float32Array = null
     var colors: Float32Array = null
 
-    val xTitle = PlaneDisplay(0.4, 0.1)
-    val yTitle = PlaneDisplay(0.4, 0.1)
-    val zTitle = PlaneDisplay(0.4, 0.1)
+    val xTitle = PlaneDisplay(0.4, 0.1, 1280, 1280)
+    val yTitle = PlaneDisplay(0.4, 0.1, 1280, 1280)
+    val zTitle = PlaneDisplay(0.4, 0.1, 1280, 1280)
 
     if(centeredOrigin) { // Origin of the axes is centered
       val (x, y, z) = (0, 0, 0)

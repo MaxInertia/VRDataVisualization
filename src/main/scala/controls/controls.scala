@@ -39,8 +39,8 @@ package object controls {
   }
 
   def stopSelecting(): Unit = {
-    if(OculusControllerRight.isConnected) OculusControllerRight.get.selecting = false
-    if(OculusControllerLeft.isConnected) OculusControllerLeft.get.selecting = false
+    if(OculusControllerRight.isConnected) OculusControllerRight.get.laser.active = false
+    if(OculusControllerLeft.isConnected) OculusControllerLeft.get.laser.active = false
   }
 
   def setup(env: Environment): Unit = {

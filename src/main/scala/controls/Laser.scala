@@ -11,6 +11,7 @@ import org.scalajs.threejs._
 class Laser {
   var rayCaster: RayCaster = _
   var arrow: Line = _ // effectively the rayCaster mesh
+  var active: Boolean = false
 
   def construct(position: Vector3, direction: Vector3, hexColor: Int): Unit = {
     rayCaster = new RayCaster()

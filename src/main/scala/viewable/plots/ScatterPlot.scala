@@ -3,25 +3,34 @@ package viewable.plots
 import math.{ScaleCenterProperties, Stats}
 import resources.Data
 import util.Log
+import viewable.Environment
+import viewable.displays.ListDisplay
 
 /**
   * Container of a simple scatter-plot.
   *
   * Created by Dorian Thiessen on 2018-04-05.
   */
-class ScatterPlot(points: Points, data: Array[Data], viewing: Array[Int], var props: ScaleCenterProperties) extends Plot {
-  override val ops: SelectionOps = new SelectionOps{}
+class ScatterPlot(points: Points, data: Array[Data], val viewing: Array[Int], var props: ScaleCenterProperties) extends Plot {
+  override val ops: SelectionOps = new SelectionOps {}
+
   def stats(i: Int): Stats = data(i).stats.get
 
   override def xVar: String = data(viewing(XAxis)).id // 1st column ID
   override def yVar: String = data(viewing(YAxis)).id // 2nd column ID
   override def zVar: String = data(viewing(ZAxis)).id // 3rd column ID
   override def column(axisID: Int): Array[Double] = data(viewing(axisID)).measurements
+  def getColumnByIndex(columnIndex: Int): Array[Double] = data(columnIndex).measurements
+
   def columnCount: Int = data.length
 
-  def switchAxis(axisID: AxisID, shift: Int = 1): Unit = {
-    rawAxisShift(axisID, shift)
-    fixScale()
+  def getColumnNames: Array[String] = data.map(_.id)
+
+  def switchAxis(axisID: AxisID, shift: Int = 1, shiftIsColumnIndex: Boolean = false): Unit = {
+    rawAxisShift(axisID, shift,
+      updatePointDetails = true,
+      shiftIsColumn = shiftIsColumnIndex
+    ); fixScale()
 
     getPositions.needsUpdate = true
     requestGeometryUpdate()
@@ -30,16 +39,23 @@ class ScatterPlot(points: Points, data: Array[Data], viewing: Array[Int], var pr
   def shiftEachAxis(xShift: Int, yShift: Int, zShift: Int): Unit = {
     rawAxisShift(XAxis, xShift, updatePointDetails = false)
     rawAxisShift(YAxis, yShift, updatePointDetails = false)
-    rawAxisShift(ZAxis, zShift)
+    rawAxisShift(ZAxis, zShift, updatePointDetails = true)
     fixScale()
 
     getPositions.needsUpdate = true
     requestGeometryUpdate()
   }
 
-  private def rawAxisShift(axisID: AxisID, shift: Int, updatePointDetails: Boolean = true): Unit = {
-    Log.show(s"Switching axis #$axisID from ${viewing(axisID)} to ${(viewing(axisID) + shift) % data.length})")
-    viewing(axisID) = (viewing(axisID) + shift) % data.length
+  private def rawAxisShift(axisID: AxisID, shift: Int, updatePointDetails: Boolean, shiftIsColumn: Boolean = false): Unit = {
+    if (shiftIsColumn) {
+      Log.show(s"Attempted switching axis #$axisID to column #$shift (columns = $columnCount)")
+      assert(shift >= 0 && shift < data.length, s"[rawAxisShift] - Attempted switching axis #$axisID to invalid column #$shift")
+      Log.show(s"Switching axis #$axisID from ${viewing(axisID)} to $shift)")
+      viewing(axisID) = shift
+    } else {
+      Log.show(s"Switching axis #$axisID from ${viewing(axisID)} to ${(viewing(axisID) + shift) % data.length})")
+      viewing(axisID) = (viewing(axisID) + shift) % data.length
+    }
     updateAxis(axisID, column(axisID), updatePointDetails)
   }
 
@@ -50,12 +66,6 @@ class ScatterPlot(points: Points, data: Array[Data], viewing: Array[Int], var pr
     )
   }
 
-  /*override def restoredValue(modified: Double, col: Int): Double = {
-    // TODO: Create 2D & 3D variants, then remove ` % stats.length` from here
-    Stats.restore(modified, stats(col % data.length).sd, stats(col % data.length).mean)
-  }*/
-
-  override def getName: String = "Scatterplot!" // Why do these need a name?
   override def getPoints: Points = points
 
   def getGeometry: BufferGeometry = points.geometry.asInstanceOf[BufferGeometry]
