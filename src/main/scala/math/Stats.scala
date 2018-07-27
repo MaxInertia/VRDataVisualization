@@ -1,20 +1,16 @@
 package math
 
-import util.Log
-import viewable.Points
-
 import scala.math
 
 /**
   * Created by Dorian Thiessen on 2018-02-08.
   */
 object Stats {
-  def apply(measurements: Array[Double]): Stats = {
+  def create(measurements: Array[Double]): Stats = {
     val mean = measurements.sum / measurements.length
     val standev = standardDeviation(measurements)
     var min = Double.MaxValue
     var max = Double.MinValue
-    var values: Array[Double] = Array()
     for(v <- measurements) {
       if(v < min) min = v
       if(v > max) max = v
@@ -42,6 +38,13 @@ object Stats {
   }
 
   def restore(value: Double, sd: Double, mean: Double): Double = value*sd + mean
+
+  def cloneWith(stats: Stats)(
+    sd: Double = stats.sd,
+    mean: Double = stats.mean,
+    min: Double = stats.min,
+    max: Double = stats.max
+  ): Stats = Stats(sd, mean, min, max)
 }
 
 case class Stats(sd: Double, mean: Double, min: Double, max: Double) {

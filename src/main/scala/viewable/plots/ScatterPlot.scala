@@ -87,14 +87,28 @@ object ScatterPlot {
 
     Log.show("Columns length on init: "+ data.length)
 
-    val (points, props): (Points, ScaleCenterProperties) = PointsBuilder()
+    val (points, props, vStats): (Points, ScaleCenterProperties, Array[Stats]) = PointsBuilder()
       .withXS(data(viewing(XAxis)).measurements)
       .withYS(data(viewing(YAxis)).measurements)
       .withZS(data(viewing(ZAxis)).measurements)
       .usingHue(Some(hue))
       .usingTexture(texture)
       .build3D()
+
+    for(i <- vStats.indices) { // This is happening on a certain CSV for column 1...
+      if(vStats(i).min != data(i).getStats.min) {
+        Log.show(s"\n\nWHOOPS... vStats($i).min:${vStats(i).min} != stats($i).min${data(i).getStats.min}\n")
+        // vStats is more reliable (Why?)
+        data(i).updateStats(Stats.cloneWith(data(i).getStats)(min = vStats(i).min, max = vStats(i).max)) // <- Terrible temporary fix
+      }
+      if(vStats(i).max != data(i).getStats.max) {
+        Log.show(s"\n\nWHOOPS... vStats($i).max:${vStats(i).min} != stats($i).max${data(i).getStats.min}\n")
+        data(i).updateStats(Stats.cloneWith(data(i).getStats)(min = vStats(i).min, max = vStats(i).max)) // <- Terrible temporary fix
+      }
+    }
+
     val scatterPlot = new ScatterPlot(points, data, viewing, props)
+    Log.show(s"Scatterplot constructor shows: max:${data(0).getStats.max}, min:${data(0).getStats.min}")
     scatterPlot.hue = hue
     scatterPlot
   }

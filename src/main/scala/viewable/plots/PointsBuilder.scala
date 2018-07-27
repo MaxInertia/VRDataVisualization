@@ -1,6 +1,6 @@
 package viewable.plots
 
-import math.ScaleCenterProperties
+import math.{ScaleCenterProperties, Stats}
 import org.scalajs.dom
 import org.scalajs.threejs._
 
@@ -35,7 +35,7 @@ class PointsBuilder[Props <: Component] private(xs: Array[Double], ys: Array[Dou
   def usingHue(hueIn: Option[Double]): PointsBuilder[Props] =
     new PointsBuilder[Props](xs, ys, zs, textureID, hueIn)
 
-  def build3D(): (Points, ScaleCenterProperties) = {
+  def build3D(): (Points, ScaleCenterProperties, Array[Stats]) = {
     val vertices: Array[Coordinate] = Plot.zip3(xs, ys, zs)
     makePoints(vertices, hue, textureID)
   }
@@ -60,14 +60,22 @@ object PointsBuilder{
     null,
     null)
 
-  private def makePoints(coordinates: Array[Coordinate], hue: Option[Double], textureIndex: Int): (Points, ScaleCenterProperties) = {
+  private def makePoints(coordinates: Array[Coordinate], hue: Option[Double], textureIndex: Int): (Points, ScaleCenterProperties, Array[Stats]) = {
     val vertices = makeVertices(coordinates)
     val (geometry, minimums, maximums) = makeGeometry(vertices, hue)
     val points = new Points(geometry, makeShaderMaterial(textureIndex))
     points.receiveShadow = false
     points.castShadow = false
+    println(s"During plot creation; max:${maximums._1}, min:${minimums._1}")
+    println(s"During plot creation; max:${maximums._2}, min:${minimums._2}")
+    println(s"During plot creation; max:${maximums._3}, min:${minimums._3}")
+
+    val stats = Array(
+      Stats(-1, -1, minimums._1, maximums._1),
+      Stats(-1, -1, minimums._2, maximums._2),
+      Stats(-1, -1, minimums._3, maximums._3))
     val scaleCenterProps = PlotManipulator.confineToRegion(points, minimums, maximums)
-    (points, scaleCenterProps)
+    (points, scaleCenterProps, stats)
   }
 
   private def makeVertices(coordinates: Array[Coordinate]): Array[Vector3] =
