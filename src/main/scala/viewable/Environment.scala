@@ -69,16 +69,12 @@ class Environment(val scene: Scene,
 
   def hoverAction(laser: Laser): Unit = {
     var ids: (Option[Int], Int) = (None, 0)
-    var plotNum: Int = 0
-    var isSet: Boolean = false
 
     // # Point Highlighting
-
     val regions = Regions.getNonEmpties
     // For every region (each of which contains a plot)
     for(index <- regions.indices) {
       val region = regions(index)
-
       if(region.plot.nonEmpty) {
         // Get the active plot in this region
         val plot = region.plot.get
@@ -86,23 +82,22 @@ class Environment(val scene: Scene,
         val intersects: scalajs.js.Array[Intersection] = laser.rayCaster.intersectObject(plot.getPoints)
         // If intersections exist apply interaction behaviour
         if (intersects.nonEmpty) {
-          // Shrink laser so endpoint is on the intersected point
-          laser.updateLengthScale(intersects(0).distance)
-          // Apply highlighting to the first point intersected
-          ids = Interactions.on(plot, intersects)
-          isSet = true
-          plotNum = index
-          return
+          // Apply highlighting to the first point intersected if it's visible
+          val interactionFound = Interactions.on(plot, intersects)
+          if(interactionFound) {
+            // Shrink laser so endpoint is on the intersected point
+            laser.updateLengthScale(intersects(0).distance)
+            return
+          } // else that point was not visible, continue...
         }
       }
     }
 
-    // # Column list hovering
-
-    isSet = ColumnPicker.interactionCheck(laser)
+    // # ColumnPicker hovering
+    val interactionFound = ColumnPicker.interactionCheck(laser)
 
     // Restore laser to full length
-    if(!isSet) laser.updateLengthScale(5)
+    if(!interactionFound) laser.updateLengthScale(5)
 
   }
 

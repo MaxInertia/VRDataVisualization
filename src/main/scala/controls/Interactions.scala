@@ -2,7 +2,7 @@ package controls
 
 import facades.IFThree.IntersectionExt
 import org.scalajs.threejs.Intersection
-import viewable.plots.Plot
+import viewable.plots.{Plot, ScatterPlot}
 
 /**
   * Implemented by plots that can be manipulated via user input.
@@ -13,14 +13,15 @@ import viewable.plots.Plot
   * Created by Dorian Thiessen on 2018-04-07.
   */
 trait Interactions[T] {
-  def onIntersection(entity: T, intersections: scalajs.js.Array[Intersection]): (Option[Int], Int)
+  def onIntersection(entity: T, intersections: scalajs.js.Array[Intersection]): Boolean
 }
 
 object Interactions {
   implicit object PlotInteractions extends Interactions[Plot] {
 
-    override def onIntersection(entity: Plot, intersection: scalajs.js.Array[Intersection]): (Option[Int], Int) = {
+    override def onIntersection(entity: Plot, intersection: scalajs.js.Array[Intersection]): Boolean = {
       val index = intersection(0).asInstanceOf[IntersectionExt].index
+      if(index >= entity.asInstanceOf[ScatterPlot].visiblePoints) return false
       var oldIndexMaybe = entity.highlighted
 
       // If there is currently a highlighted point
@@ -49,12 +50,12 @@ object Interactions {
         //controls.stopSelecting() // Uncomment this to disable rapid-fire point selections
       }
 
-      (oldIndexMaybe, index)
+      true
     }
   }
 
   //TODO: Pass additional State object? One use case: For checking if a specific button is currently selected
-  def on[T: Interactions](entity: T, intersections: scalajs.js.Array[Intersection]): (Option[Int], Int) = {
+  def on[T: Interactions](entity: T, intersections: scalajs.js.Array[Intersection]): Boolean = {
     implicitly[Interactions[T]].onIntersection(entity, intersections)
   }
 
