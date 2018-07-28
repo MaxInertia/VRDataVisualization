@@ -16,12 +16,23 @@ object Regions {
   def isFull: Boolean = numOccupied() == 4
 
   def update(): Unit = {
-    /*val regions = getNonEmpties
+    val regions = getNonEmpties
     for(r <- regions if r.maybeGetAxes().nonEmpty) {
+      r.object3D.updateMatrixWorld()
       val axes = r.maybeGetAxes().get
-      //for(axis <- axes.axesTitles) axis.lookAt(/*axis.worldToLocal(*/Environment.instance.camera.position/*)*/)
-      //axis.quaternion.copy(Environment.instance.camera.quaternion.multiply(r.object3D.quaternion))
-    }*/  }
+      val camPos = Environment.instance.camera.position
+      for(i <- axes.axesTitles.indices) {
+        val modCamPos = camPos.clone()
+        i match {
+          case 0 => modCamPos.x -= 0.5
+          case 1 => modCamPos.y -= 0.5
+          case 2 => modCamPos.z -= 0.5
+        }
+        r.object3D.worldToLocal(modCamPos)
+        axes.axesTitles(i).lookAt(modCamPos)
+      }
+    }
+  }
 
   /**
     * Adds a plot to a region in the scene if there is room, otherwise does nothing.
