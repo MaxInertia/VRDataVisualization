@@ -13,9 +13,7 @@ import util.Log
 trait Plot {
   val ops: SelectionOps = new SelectionOps{}
   val numPoints: Int = getSizes.array.asInstanceOf[Float32Array].length
-
   var hue: Double = 0 // Default to be overwritten if points are to have color
-
   var plotType: PlotType = ScatterPlot_Type
 
   var savedSelections: Set[Int] = Set[Int]()

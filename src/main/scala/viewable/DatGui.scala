@@ -59,7 +59,7 @@ object DatGui {
     Button(1, settingsFolder).setLabels("   Y", "Change Y Axis")
     Button(2, settingsFolder).setLabels("   Z", "Change Z Axis")
     gui.object3D.addFolder(settingsFolder)
-    settingsFolder.open()
+    //settingsFolder.open()
 
     val embeddingFolder = Dat.GUIVR.create("Shadow Manifold")
     embeddingFolder.addButton(() => {
@@ -71,7 +71,7 @@ object DatGui {
     embeddingFolder.add(plot.rawTau, "TauHundreds", 0, 900).step(100).name("Tau Hundreds")
     Button(0, embeddingFolder).setLabels("Embed!", "Embed xVar")
     gui.object3D.addFolder(embeddingFolder)
-    embeddingFolder.open()
+    //embeddingFolder.open()
 
     gui
   }
@@ -111,7 +111,7 @@ object DatGui {
     // Add folder to gui object (and therefore the scene)
     gui.addFolder(selectFolder)
     // Open the folder
-    //selectFolder.open()
+    selectFolder.open()
   }
 
   object Button {

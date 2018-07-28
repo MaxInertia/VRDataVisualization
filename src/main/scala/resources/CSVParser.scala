@@ -52,7 +52,7 @@ private[resources] object CSVParser {
         for (r <- parsedData.indices) {
           Log(s"$c - $r")
           if(parsedData(r)(c) != js.undefined) cdata = cdata :+ parsedData(r)(c).asInstanceOf[Double]
-          else Log.show("CSVParsingError! row:$r, col:$c is undefined!")
+          else Log.show(s"CSVParsingError! row:$r, col:$c is undefined!")
         }
 
         formattedData = formattedData :+ (s"column$c", cdata)
@@ -64,7 +64,7 @@ private[resources] object CSVParser {
         var cdata: Array[Double] = Array()
         for (r <- 1 until parsedData.length) {
           if(parsedData(r)(c) != js.undefined)  cdata = cdata :+ parsedData(r)(c).asInstanceOf[Double]
-          else Log.show("CSVParsingError! row:$r, col:$c is undefined!")
+          else Log.show(s"CSVParsingError! row:$r, col:$c is undefined!")
         }
 
         formattedData = formattedData :+ (parsedData(0)(c).asInstanceOf[String], cdata)

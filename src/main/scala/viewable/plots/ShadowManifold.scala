@@ -15,6 +15,7 @@ object ShadowManifold {
 
   def transform(plot: ScatterPlot)(column: Int = plot.viewing(XAxis)): Either[(String, String, String), _] = {
     val tau: Int = plot.getTau
+
     // Use variable on the X-Axis for creating shadow manifold
     val embeddingVar = plot.getColumnNames(column)
     val embeddingValues = plot.getColumnByIndex(column)

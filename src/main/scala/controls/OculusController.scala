@@ -41,7 +41,7 @@ sealed abstract class OculusController extends OculusTouchEvents {
 
   /*protected[userinput] */ var controllerEl: VRController = _
   protected var controllerMesh: Mesh = _
-  protected[controls] val laser: Laser = new Laser()
+  protected[controls] val laser: ActionLaser = new ActionLaser(this)
 
   var captured: Option[Object3D] = None
   var capturedSeparation: Option[Double] = None
@@ -51,11 +51,11 @@ sealed abstract class OculusController extends OculusTouchEvents {
 
   def isConnected: Boolean = controllerEl != null
 
-  def isSelecting: Boolean = isConnected && laser.arrow.visible && laser.active
+  def isSelecting: Boolean = isConnected && laser.arrow.visible && laser.clicking
 
   def isPointing: Boolean = laser.arrow != null && laser.arrow.visible
 
-  def updatedLaser: Laser = {
+  def updatedLaser: ActionLaser = {
     // Adjust raycaster origin to account for fakeOrigin (The controllers parent)
     laser.rayCaster.set(getCorrectedPosition, controllerDirection())
     laser
@@ -78,6 +78,13 @@ sealed abstract class OculusController extends OculusTouchEvents {
     correctedPosition
   }
 
+  def grab(obj: Object3D): Unit = {
+    if(laser.isGrabbing && captured.isEmpty && obj.parent == Environment.instance.scene) {
+      SceneUtils2.attach(obj, Environment.instance.scene, controllerEl)
+      captured = Some(obj)
+    }
+  }
+
   protected def init(vrc: VRController, hexColor: Int): Unit = {
     Log.show("some controller is being setup...")
     controllerEl = vrc
@@ -98,14 +105,8 @@ sealed abstract class OculusController extends OculusTouchEvents {
   protected def createControllerMesh(color: Int): Mesh = {
     val controllerMaterial = new MeshBasicMaterial()
     controllerMaterial.color = new Color(color)
-    val controllerMesh = new Mesh(
-      new CylinderGeometry(0.005, 0.05, 0.1, 6),
-      controllerMaterial)
-    val handleMesh = new Mesh(
-      new BoxGeometry(0.03, 0.1, 0.03),
-      controllerMaterial)
-
-    //controllerMaterial.flatShading = true;
+    val controllerMesh = new Mesh(new CylinderGeometry(0.005, 0.05, 0.1, 6), controllerMaterial)
+    val handleMesh = new Mesh(new BoxGeometry(0.03, 0.1, 0.03), controllerMaterial)
     controllerMesh.rotation.x = -Math.PI / 2
     handleMesh.position.y = -0.05
     controllerMesh.add(handleMesh)
@@ -128,30 +129,31 @@ sealed abstract class OculusController extends OculusTouchEvents {
 
     vrc.addEventListener(Primary_PressBegan, ((event: Event) => {
       Log("Primary Press Began")
-      if (captured.isEmpty && capturedSeparation.isEmpty && laser.arrow.visible) laser.active = true
+      inputDevice.pressed(true)
+      if(captured.isEmpty && capturedSeparation.isEmpty && laser.arrow.visible) laser.clicking = true
     }).asInstanceOf[Any => Unit])
 
     vrc.addEventListener(Primary_PressEnded, ((event: Event) => {
       Log("Primary Press Ended")
-      laser.active = false
+      inputDevice.pressed(false)
+      laser.clicking = false
     }).asInstanceOf[Any => Unit])
 
     // Thumbrest Touch - for highlighting points!
 
     vrc.addEventListener(ThumbRest_TouchBegan, ((event: Event) => {
       Log("Thumbrest Touch Began")
-      if (captured.isEmpty && capturedSeparation.isEmpty) laser.arrow.visible = true
+      if(captured.isEmpty && capturedSeparation.isEmpty) laser.arrow.visible = true
     }).asInstanceOf[Any => Unit])
 
     vrc.addEventListener(ThumbRest_TouchEnded, ((event: Event) => {
       Log("Thumbrest Touch Ended")
       laser.arrow.visible = false
-      laser.active = false // Cannot be selecting without the rayCaster visible
+      laser.clicking = false // Cannot be selecting without the rayCaster visible
     }).asInstanceOf[Any => Unit])
 
     // Attempting to grab object!
 
-    //TODO: Operations on captured visualizations!?
     vrc.addEventListener(Grip_PressBegan, ((event: Event) => {
       Log("Grip Press Began")
 
@@ -162,7 +164,6 @@ sealed abstract class OculusController extends OculusTouchEvents {
       Log.show(intersections)
 
       if(captured.isEmpty) {
-        //inputDevice.gripped(true)
         for(i <- regions.indices) {
           val r = regions(i).object3D
           val controllerPos = getCorrectedPosition
@@ -182,13 +183,7 @@ sealed abstract class OculusController extends OculusTouchEvents {
               // In this case, that region can be grabbed
               SceneUtils2.attach(r, Environment.instance.scene, vrc)
               captured = Some(r)
-            }/* else {
-              // That region has already been grabbed...
-              // The value of the ratio of the updated distance between the controllers over
-              // the current distance will be applied to the region as a scale.
-              // This should appear to the user as stretching the plot.
-              capturedSeparation = Some(OculusControllers.separationDistance())
-            }*/
+            }
           }
         }
       }
@@ -202,8 +197,6 @@ sealed abstract class OculusController extends OculusTouchEvents {
         val dropped = captured.get
         SceneUtils2.detach(dropped, vrc, Environment.instance.scene)
         captured = None
-      } else { //if (capturedSeparation.nonEmpty) capturedSeparation = None
-        //inputDevice.gripped(false)
       }
     }).asInstanceOf[Any => Unit])
 
@@ -233,22 +226,6 @@ sealed abstract class OculusController extends OculusTouchEvents {
     }).asInstanceOf[Any => Unit])
   }
 
-  /*protected def modifyCaptured(option: Boolean): Unit = {
-    if (captured.isEmpty) return
-
-    val cid = captured.get
-    val env = Environment.instance
-
-    for (r <- Regions.getNonEmpties) {
-      if (r.object3D == cid) {
-        val maybeAxes = r.maybeGetAxes()
-        if (maybeAxes.nonEmpty) r.object3D.remove(maybeAxes.get)
-        val newAxes = CoordinateAxes3D.create(1, color = Colors.White, centeredOrigin = true, planeGrids = option)
-        r.addOrUpdateAxes(Some(newAxes))
-      }
-    }
-  }*/
-
 }
 
 /**
@@ -277,34 +254,23 @@ class OculusControllerLeft(vrc: VRController) extends OculusController {
 
     // Setup events unique for this controller
 
-    var menuLeft: Object3D = new Object3D
-    var menuOpen: Boolean = false
-    var panels = Actions.getPanels(new Vector2(0.03, 0.03), 0.05, 0.05 to 0.15 by 0.05, 0.05 to 0.15 by 0.05)
-    for(p <- panels) menuLeft.add(p.object3D)
+    /*
     vrc.addEventListener(X_PressBegan, ((event: Event) => {
       Log("X Press Began")
-      //modifyCaptured(true)
-      if(!menuOpen) {
-        vrc.add(menuLeft)
-        menuLeft.lookAt(Environment.instance.camera.position.projectOnVector(vrc.position))
-      } else vrc.remove(menuLeft)
-      menuOpen = !menuOpen
-      inputDevice.asInstanceOf[js.Dynamic].pressed(true)
     }).asInstanceOf[Any => Unit])
 
     vrc.addEventListener(X_PressEnded, ((event: Event) => {
       Log("X Press Ended")
-      inputDevice.asInstanceOf[js.Dynamic].pressed(false)
     }).asInstanceOf[Any => Unit])
 
     vrc.addEventListener(Y_PressBegan, ((event: Event) => {
       Log("Y Press Began")
-      //modifyCaptured(false)
     }).asInstanceOf[Any => Unit])
 
     vrc.addEventListener(Y_PressEnded, ((event: Event) => {
       Log("Y Press Ended")
     }).asInstanceOf[Any => Unit])
+    */
   }
 
   def update(): Unit = {
@@ -339,22 +305,20 @@ class OculusControllerRight(vrc: VRController) extends OculusController {
 
     // Setup events unique for this controller
 
+    /*
     vrc.addEventListener(A_PressBegan, ((event: Event) => {
       Log("A Press Began")
-      //modifyCaptured(true)
-      inputDevice.asInstanceOf[js.Dynamic].pressed(true)
     }).asInstanceOf[Any => Unit])
     vrc.addEventListener(A_PressEnded, ((event: Event) => {
       Log("A Press Ended")
-      inputDevice.asInstanceOf[js.Dynamic].pressed(false)
     }).asInstanceOf[Any => Unit])
     vrc.addEventListener(B_PressBegan, ((event: Event) => {
       Log("B Press Began")
-      //modifyCaptured(false)
     }).asInstanceOf[Any => Unit])
     vrc.addEventListener(B_PressEnded, ((event: Event) => {
       Log("B Press Ended")
     }).asInstanceOf[Any => Unit])
+    */
   }
 
   def update(): Unit = controllerEl.update()

@@ -4,14 +4,20 @@ import facades.IFThree.RaycasterParametersExt
 import org.scalajs.threejs._
 
 /**
-  * A rayCaster wrapper.
+  * A rayCaster wrapper with flags to determine whether
+  * an interacted object should be grabbed or clicked.
   *
   * Created by Dorian Thiessen on 2018-07-19.
   */
-class Laser {
+class ActionLaser(val controller: OculusController) {
   var rayCaster: RayCaster = _
   var arrow: Line = _ // effectively the rayCaster mesh
-  var active: Boolean = false
+  private[controls] var clicking: Boolean = false
+  private[controls] var grabbing: Boolean = false
+
+  def isActive: Boolean = arrow.visible
+  def isClicking: Boolean = clicking
+  def isGrabbing: Boolean = grabbing
 
   def construct(position: Vector3, direction: Vector3, hexColor: Int): Unit = {
     rayCaster = new RayCaster()

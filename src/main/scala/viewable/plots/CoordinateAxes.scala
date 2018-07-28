@@ -3,9 +3,8 @@ package viewable.plots
 import facades.IFThree.GridHelperExt
 import org.scalajs.threejs.{LineBasicMaterial, Mesh}
 import org.scalajs.{threejs => THREE}
-import viewable.{Environment, Text}
+import viewable.Text
 import viewable.displays.PlaneDisplay
-import viewable.plots.ScatterPlot.CoordinateAxisIDs
 
 import scala.scalajs.js
 import js.typedarray.Float32Array

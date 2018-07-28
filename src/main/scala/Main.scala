@@ -31,9 +31,6 @@ object Main {
       Rendering.enterFullscreen(env.renderer.domElement.asInstanceOf[DomElementExt2])
     }).asInstanceOf[js.Function1[js.Any, _]])
 
-    // Load data provided at setup window
-    var dataset = BrowserStorage("SM1_timeSeries").collect()
-
     val loader = new FontLoader()
     Log.show("FontLoader created.")
     loader.load( "fonts/helvetiker_regular.typeface.json", (font: js.Dynamic) => {
@@ -81,9 +78,4 @@ object Main {
     else env.plot(FileAsText(data).collect(), Colors.BLUE_HUE_SHIFT, plotNum)
   }
 
-  @JSExport("renderer") // Temporary. renderer currently required in global scope.
-  def renderer: Renderer = env.renderer
-
-  @JSExport("scene")
-  def scene: Scene = Environment.instance.scene
 }

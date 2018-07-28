@@ -28,7 +28,7 @@ package object controls {
   private val rayCaster: RayCaster = new RayCaster() // Used for the mouse
   rayCaster.params.asInstanceOf[RaycasterParametersExt].Points.threshold = 0.015
 
-  def getSelectionRayCaster(camera: => PerspectiveCamera): Option[Laser] = {
+  def getSelectionRayCaster(camera: => PerspectiveCamera): Option[ActionLaser] = {
     if(OculusControllerRight.isConnected && OculusControllerRight.get.isPointing)
       Some(OculusControllerRight.get.updatedLaser)
 
@@ -36,11 +36,6 @@ package object controls {
       Some(OculusControllerLeft.get.updatedLaser)
 
     else None
-  }
-
-  def stopSelecting(): Unit = {
-    if(OculusControllerRight.isConnected) OculusControllerRight.get.laser.active = false
-    if(OculusControllerLeft.isConnected) OculusControllerLeft.get.laser.active = false
   }
 
   def setup(env: Environment): Unit = {

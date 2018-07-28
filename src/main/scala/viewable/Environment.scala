@@ -4,7 +4,7 @@ import facades.IFThree._
 import org.scalajs.dom
 import org.scalajs.threejs._
 import resources._
-import controls.{Interactions, Laser}
+import controls.{Interactions, ActionLaser}
 import viewable.displays.ColumnPicker
 import viewable.plots._
 import window.Window
@@ -30,10 +30,6 @@ class Environment(val scene: Scene,
   fakeOrigin.position.set(0, 1.6, 0)
   scene.add(fakeOrigin)
 
-  // -- VR GUIs! (implementation pending)
-
-  //val displays: mutable.MutableList[PlaneDisplay] = mutable.MutableList()
-
   // ------ Plot stuff
 
   private val plots3D: Array[Option[Array[Plot]]] = Array(None, None, None, None)
@@ -54,7 +50,7 @@ class Environment(val scene: Scene,
   // ----- Rendering!
 
   def render(): Unit = {
-    val maybeRC: Option[Laser] = controls.getSelectionRayCaster(camera)
+    val maybeRC: Option[ActionLaser] = controls.getSelectionRayCaster(camera)
     if(maybeRC.nonEmpty) {
       if (Regions.numOccupied() >= 1) {
         hoverAction(maybeRC.get)
@@ -67,7 +63,7 @@ class Environment(val scene: Scene,
 
   // TODO: pointHighlighting is a user interaction, and the Environment should be ignorant of those?
 
-  def hoverAction(laser: Laser): Unit = {
+  def hoverAction(laser: ActionLaser): Unit = {
     var ids: (Option[Int], Int) = (None, 0)
 
     // # Point Highlighting

@@ -23,7 +23,6 @@ object ModelController {
   def setAxes(axes: CoordinateAxes3D): Unit = this.AXES = axes
   def setGUI(gui: DatGui): Unit = this.GUI = gui
 
-
   // Applies an axis change. Changes (1) plot point positions, (2) axes titles, and (3) gui labels
   def requestAxisChange(axisID: AxisID, plot: ScatterPlot = PLOT, axes: CoordinateAxes3D = AXES, gui: DatGui = GUI, columnIndex: Option[Int] = None): Unit =
     if(plot.plotType == ShadowManifold_Type) { // Currently viewing a shadow manifold, so we have to adjust each axis
