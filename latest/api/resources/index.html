@@ -89,8 +89,20 @@ package is private to this package with the exception of those in this file.</p>
 </p></div><dl class="attributes block"> <dt>Definition Classes</dt><dd><a href="../index.html" class="extype" name="_root_">root</a></dd></dl></div>
     </li><li class="current-entities indented1">
                         <span class="separator"></span>
-                        <a class="object" href="package$$BrowserStorage$.html" title=""></a>
-                        <a href="package$$BrowserStorage$.html" title="">BrowserStorage</a>
+                        <a class="class" href="BrowserStorage.html" title=""></a>
+                        <a href="BrowserStorage.html" title="">BrowserStorage</a>
+                      </li><li class="current-entities indented1">
+                        <a class="object" href="Data$.html" title=""></a>
+                        <a class="class" href="Data.html" title="Created by Dorian Thiessen on 2018-07-05."></a>
+                        <a href="Data.html" title="Created by Dorian Thiessen on 2018-07-05.">Data</a>
+                      </li><li class="current-entities indented1">
+                        <span class="separator"></span>
+                        <a class="trait" href="DataSource.html" title="Defines a means by which data can be acquired for viewing."></a>
+                        <a href="DataSource.html" title="Defines a means by which data can be acquired for viewing.">DataSource</a>
+                      </li><li class="current-entities indented1">
+                        <span class="separator"></span>
+                        <a class="class" href="FileAsText.html" title=""></a>
+                        <a href="FileAsText.html" title="">FileAsText</a>
                       </li><li class="current-entities indented1">
                         <span class="separator"></span>
                         <a class="object" href="package$$Res$.html" title=""></a>
@@ -175,17 +187,86 @@ package is private to this package with the exception of those in this file.</p>
         <div id="allMembers">
         
 
-        
+        <div id="types" class="types members">
+              <h3>Type Members</h3>
+              <ol><li name="resources.BrowserStorage" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="BrowserStorageextendsDataSourcewithProductwithSerializable"></a><a id="BrowserStorage:BrowserStorage"></a>
+      <span class="permalink">
+      <a href="../resources/index.html#BrowserStorageextendsDataSourcewithProductwithSerializable" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a title="" href="BrowserStorage.html"><span class="name">BrowserStorage</span></a><span class="params">(<span name="localStorageID">localStorageID: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result"> extends <a href="DataSource.html" class="extype" name="resources.DataSource">DataSource</a> with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      
+      
+    </li><li name="resources.Data" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="DataextendsProductwithSerializable"></a><a id="Data:Data"></a>
+      <span class="permalink">
+      <a href="../resources/index.html#DataextendsProductwithSerializable" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a title="Created by Dorian Thiessen on 2018-07-05." href="Data.html"><span class="name">Data</span></a><span class="params">(<span name="id">id: <span class="extype" name="scala.Predef.String">String</span></span>, <span name="measurements">measurements: <span class="extype" name="scala.Array">Array</span>[<span class="extype" name="scala.Double">Double</span>]</span>)</span><span class="result"> extends <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      
+      <p class="shortcomment cmt">Created by Dorian Thiessen on 2018-07-05.</p>
+    </li><li name="resources.DataSource" visbl="pub" class="indented0 " data-isabs="true" fullComment="yes" group="Ungrouped">
+      <a id="DataSourceextendsAnyRef"></a><a id="DataSource:DataSource"></a>
+      <span class="permalink">
+      <a href="../resources/index.html#DataSourceextendsAnyRef" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">trait</span>
+      </span>
+      <span class="symbol">
+        <a title="Defines a means by which data can be acquired for viewing." href="DataSource.html"><span class="name">DataSource</span></a><span class="result"> extends <span class="extype" name="scala.AnyRef">AnyRef</span></span>
+      </span>
+      
+      <p class="shortcomment cmt">Defines a means by which data can be acquired for viewing.</p><div class="fullcomment"><div class="comment cmt"><p>Defines a means by which data can be acquired for viewing.
+Created by Dorian Thiessen on 2018-05-08.
+</p></div></div>
+    </li><li name="resources.FileAsText" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="FileAsTextextendsDataSourcewithProductwithSerializable"></a><a id="FileAsText:FileAsText"></a>
+      <span class="permalink">
+      <a href="../resources/index.html#FileAsTextextendsDataSourcewithProductwithSerializable" title="Permalink">
+        <i class="material-icons"></i>
+      </a>
+    </span>
+      <span class="modifier_kind">
+        <span class="modifier"></span>
+        <span class="kind">case class</span>
+      </span>
+      <span class="symbol">
+        <a title="" href="FileAsText.html"><span class="name">FileAsText</span></a><span class="params">(<span name="text">text: <span class="extype" name="scala.Predef.String">String</span></span>)</span><span class="result"> extends <a href="DataSource.html" class="extype" name="resources.DataSource">DataSource</a> with <span class="extype" name="scala.Product">Product</span> with <span class="extype" name="scala.Serializable">Serializable</span></span>
+      </span>
+      
+      
+    </li></ol>
+            </div>
 
         
 
         <div class="values members">
               <h3>Value Members</h3>
               <ol>
-                <li name="resources.BrowserStorage" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
-      <a id="BrowserStorage"></a><a id="BrowserStorage:BrowserStorage"></a>
+                <li name="resources.Data" visbl="pub" class="indented0 " data-isabs="false" fullComment="no" group="Ungrouped">
+      <a id="Data"></a><a id="Data:Data"></a>
       <span class="permalink">
-      <a href="../resources/index.html#BrowserStorage" title="Permalink">
+      <a href="../resources/index.html#Data" title="Permalink">
         <i class="material-icons"></i>
       </a>
     </span>
@@ -194,7 +275,7 @@ package is private to this package with the exception of those in this file.</p>
         <span class="kind">object</span>
       </span>
       <span class="symbol">
-        <a title="" href="package$$BrowserStorage$.html"><span class="name">BrowserStorage</span></a>
+        <a title="" href="Data$.html"><span class="name">Data</span></a><span class="result"> extends <span class="extype" name="scala.Serializable">Serializable</span></span>
       </span>
       
       
