@@ -226,14 +226,13 @@ class Plotter(scene: Scene, camera: Camera) extends ModelComponent[Action] {
       repositionRegions()
     }*/
 
-    val maybeNewSM: Option[ShadowManifold] = {
+    val maybeNewSM: Option[ShadowManifold] =
       PLOT(plotIndex) match {
         case sm: ShadowManifold =>
           Log.show(s"embedding from SM->SM with columnIndex: $columnIndex (id: ${DATA(0)(columnIndex).id})")
-          ShadowManifold.fromShadowManifold(sm)(DATA(0)(columnIndex), tau)
+          ShadowManifold.fromShadowManifold(sm)(/*DATA(0)(columnIndex),*/ tau)
         case sp: ScatterPlot => ShadowManifold.fromScatterPlot(sp)(tau, axisID)
       }
-    }
 
     if (maybeNewSM.isEmpty) {
       Log.show("[Plotter.requestEmbedding()] maybeNewSM.isEmpty == true")

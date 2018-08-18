@@ -117,6 +117,8 @@ object ShadowManifold {
       val positionsAttr = PointsUtils.positions(newPoints)
       positionsAttr.needsUpdate = true
       val sm = ShadowManifold(plot.getColumnData(axisID), tau, plot.props, newPoints)
+      sm.data = plot.getColumnData(axisID)
+      sm.varName = embeddingVar
       sm.hue = plot.hue
       sm.computeProps()
       //sm.requestFullGeometryUpdate()
@@ -124,12 +126,13 @@ object ShadowManifold {
     } else None
   }
 
-  def fromShadowManifold(plot: ShadowManifold)(embeddingData: Data, tau: Int = plot.tau): Option[ShadowManifold] = {
+  def fromShadowManifold(plot: ShadowManifold)(/*embeddingData: Data, */tau: Int = plot.tau): Option[ShadowManifold] = {
     Log.show("[ShadowManifold.fromShadowManifold()]")
+    val embeddingData = plot.data
     val succeeded = embed(plot.getPoints, embeddingData.measurements, embeddingData.id, tau)
     if(succeeded) {
       //plot.setVisiblePointRange(0, embeddingData.measurements.length - 2*tau)
-      plot.data = embeddingData
+      //plot.data = embeddingData
       plot.varName = embeddingData.id
       plot.tau = tau
       val positionsAttr = PointsUtils.positions(plot.getPoints)

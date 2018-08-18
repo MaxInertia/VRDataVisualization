@@ -63,7 +63,7 @@ object DatGui {
 
     val embeddingFolder = Dat.GUIVR.create("Shadow Manifold")
     embeddingFolder.addButton(() => plot match {
-      case sm: ShadowManifold ⇒ mc.requestEmbedding(XAxis, /*sm.viewing(XAxis)*/1, gui.getTau)//, 1)
+      case sm: ShadowManifold ⇒ mc.requestEmbedding(XAxis, sm.data.columnNumber, gui.getTau)//, 1)
       case sp: ScatterPlot ⇒ mc.requestEmbedding(XAxis, sp.viewing(XAxis), gui.getTau)//, 1)
     })
     embeddingFolder.add(gui.rawTau, "TauOnes", 0, 10).step(1).name("Tau Ones")
