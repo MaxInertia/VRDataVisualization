@@ -26,8 +26,9 @@ enablePlugins(GhpagesPlugin)
 enablePlugins(SiteScaladocPlugin)
 git.remoteRepo := s"git@github.com:MaxInertia/$name.git"
 mappings in makeSite ++= Seq(
-  file(s"${Paths.www}/index.html") -> "index.html",
+  file(s"${Paths.www}/deploy.html") -> "index.html",
   file(s"${Paths.www}/css/style.css") -> "css/style.css",
+  file(s"${Paths.www}/fonts/helvetiker_regular.typeface.json") -> "fonts/helvetiker_regular.typeface.json",
   file(s"${Paths.www}/img/disc.png") -> "img/disc.png",
   file(s"${Paths.www}/img/disc2.png") -> "img/disc2.png",
   file(s"${Paths.www}/img/blueOrb.png") -> "img/blueOrb.png",

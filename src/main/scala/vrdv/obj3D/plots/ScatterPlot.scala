@@ -36,16 +36,6 @@ class ScatterPlot(points: Points, private var x: Data, private var y: Data, priv
     requestFullGeometryUpdate()
   }
 
-  /*def shiftEachAxis(xShift: Int, yShift: Int, zShift: Int): Unit = {
-    rawAxisShift(XAxis, xShift, updatePointDetails = false)
-    rawAxisShift(YAxis, yShift, updatePointDetails = false)
-    rawAxisShift(ZAxis, zShift, updatePointDetails = true)
-    fixScale()
-
-    getPositions.needsUpdate = true
-    requestFullGeometryUpdate()
-  }*/
-
   override def getPoints: Points = points
   override def stats(i: Int): Stats = columnData(i).getStats
   override def getProps: ScaleCenterProperties = props

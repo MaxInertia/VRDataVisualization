@@ -218,38 +218,19 @@ class Plotter(scene: Scene, camera: Camera) extends ModelComponent[Action] {
   def requestEmbedding(axisID: AxisID, columnIndex: Int, tau: Int, plotIndex: Int = 0): Unit = {
     Log.show("[Plotter.requestEmbedding()]")
 
-    var regionCreated: Boolean = false
+    /*var regionCreated: Boolean = false
     if (plotIndex >= PLOT.length) {
       regionCreated = true
       val i = regions.length
       addRegion(Region(i))
       repositionRegions()
-    }
+    }*/
 
     val maybeNewSM: Option[ShadowManifold] = {
-      /*if(regionCreated) {
-      Log.show("before [requestEmbedding]")
-      PLOT(0) match {
-        case sm: ShadowManifold ⇒
-
-        case sp: ScatterPlot ⇒
-
-      }
-      val sm = ShadowManifold.fromScatterPlot(PLOT(0))(tau, axisID)
-      Log.show("after [rE]")
-
-      if (sm.isEmpty) None
-      else {
-        PLOT = PLOT :+ sm.get
-        regions(plotIndex).addPlot(sm.get)
-        addPlot(sm.get)
-        addAxes(regions(plotIndex).maybeGetAxes().get)
-        sm
-      }
-    } else */
-      var shadowManifold: ShadowManifold = null
       PLOT(plotIndex) match {
-        case sm: ShadowManifold => ShadowManifold.fromShadowManifold(sm)(DATA(0)(columnIndex), tau)
+        case sm: ShadowManifold =>
+          Log.show(s"embedding from SM->SM with columnIndex: $columnIndex (id: ${DATA(0)(columnIndex).id})")
+          ShadowManifold.fromShadowManifold(sm)(DATA(0)(columnIndex), tau)
         case sp: ScatterPlot => ShadowManifold.fromScatterPlot(sp)(tau, axisID)
       }
     }
@@ -258,8 +239,9 @@ class Plotter(scene: Scene, camera: Camera) extends ModelComponent[Action] {
       Log.show("[Plotter.requestEmbedding()] maybeNewSM.isEmpty == true")
       return
     }
-    val newSM: ShadowManifold = maybeNewSM.get
 
+    val newSM: ShadowManifold = maybeNewSM.get
+    PLOT(plotIndex) = newSM
     newSM.fixScale()
     newSM.setVisiblePointRange(0, newSM.numPoints - 2 * tau)
     newSM.requestFullGeometryUpdate()

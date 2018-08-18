@@ -43,7 +43,6 @@ package object vrdv {
   }
 
   /**
-    * \${add}
     * Load data from file on users device.
     * precondition: File must be a CSV.
     */

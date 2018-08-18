@@ -3,6 +3,8 @@ package vrdv.obj3D.plots
 import resources.{Data, Res}
 import util.{Log, ScaleCenterProperties, Stats}
 import vrdv.obj3D.CustomColors
+
+import scala.scalajs.js
 import scala.scalajs.js.typedarray.Float32Array
 
 /**
@@ -26,6 +28,28 @@ case class ShadowManifold(var data: Data, var tau: Int, var scp: ScaleCenterProp
   override private[plots] def getGeometry: BufferGeometry = points.geometry.asInstanceOf[BufferGeometry]
   override def getProps: ScaleCenterProperties = scp
   override def updateProps(props: ScaleCenterProperties): Unit = scp = props
+  def computeProps(): Unit = {
+    val positionsAttr = getPositions
+    val array = positionsAttr.array.asInstanceOf[Float32Array]
+
+    var (minX, minY, minZ) = (Double.MaxValue, Double.MaxValue, Double.MaxValue)
+    var (maxX, maxY, maxZ) = (Double.MinValue, Double.MinValue, Double.MinValue)
+
+    var i = 0
+    while(i < array.length) {
+      if(array(i) > maxX) maxX = array(i)
+      if(array(i) < minX) minX = array(i)
+      i += 1
+      if(array(i) > maxY) maxY = array(i)
+      if(array(i) < minY) minY = array(i)
+      i += 1
+      if(array(i) > maxZ) maxZ = array(i)
+      if(array(i) < minZ) minZ = array(i)
+      i += 1
+    }
+
+    scp = PointOperations.confineToRegion3D(points, (minX, minY, minZ), (maxX, maxY, maxZ))
+  }
 }
 
 object ShadowManifold {
@@ -50,7 +74,6 @@ object ShadowManifold {
         data.updateStats(Stats.cloneWith(data.getStats)(min = vStats(0).min, max = vStats(0).max)) // <- Terrible temporary fix
       }
     //}*/
-    Log.show("after")
 
     val sm = new ShadowManifold(data, tau, props, points)
     sm.hue = hue
@@ -73,15 +96,18 @@ object ShadowManifold {
     val embeddingVar = plot.getColumnData(axisID).id
     val embeddingValues = plot.column(axisID)
 
-    val (newPoints, scp, stats) = PointsBuilder() // `stats` can be compared to value in `plot.columnData(column)getStats`, should be the same
+    /*val (newPoints, scp, stats) = PointsBuilder() // `stats` can be compared to value in `plot.columnData(column)getStats`, should be the same
       .withXS(embeddingValues.drop(2*tau) ++ Array.fill(2*tau)(embeddingValues(0)))
       .withYS(embeddingValues.slice(tau, embeddingValues.length - tau) ++ Array.fill(2*tau)(embeddingValues(0)))
       .withZS(embeddingValues.take(embeddingValues.length - 2*tau) ++ Array.fill(2*tau)(embeddingValues(0)))
       .usingTexture(Res.getLastLoadedTextureID)
       .usingHue(Some(CustomColors.RED_HUE_SHIFT))
-      .build3D()
-    /*newPoints.geometry.asInstanceOf[js.Dynamic].setDrawRange(0, embeddingValues.length - 2*tau)
-    newPoints.geometry.buffersNeedUpdate = true
+      .build3D()*/
+
+    val newPoints = plot.getPoints
+    newPoints.geometry.asInstanceOf[js.Dynamic].setDrawRange(0, embeddingValues.length - 2*tau)
+    ShadowManifold.embed(newPoints, embeddingValues, embeddingVar, tau)
+    /*newPoints.geometry.buffersNeedUpdate = true
     newPoints.geometry.computeBoundingSphere()
     newPoints.geometry.computeBoundingBox()*/
 
@@ -90,7 +116,9 @@ object ShadowManifold {
       //plot.setVisiblePointRange(0, embeddingValues.length - 2*tau)
       val positionsAttr = PointsUtils.positions(newPoints)
       positionsAttr.needsUpdate = true
-      val sm = ShadowManifold(plot.getColumnData(axisID), tau, scp, newPoints)
+      val sm = ShadowManifold(plot.getColumnData(axisID), tau, plot.props, newPoints)
+      sm.hue = plot.hue
+      sm.computeProps()
       //sm.requestFullGeometryUpdate()
       Some(sm)
     } else None
