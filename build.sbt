@@ -1,6 +1,6 @@
 name := "VRDataVisualization"
-version := "0.1"
-scalaVersion := "2.12.4"
+version := "0.2"
+scalaVersion := "2.12.6"
 
 
 resolvers += sbt.Resolver.bintrayRepo("scalajs-facades", "scalajs-facades-releases") //add resolver
@@ -21,26 +21,27 @@ skip in packageJSDependencies := false
 libraryDependencies += "org.scalactic" %% "scalactic" % "3.0.5"
 libraryDependencies += "org.scalatest" %% "scalatest" % "3.0.5" % "test"
 
-
+// sbt ghpagesPushSite
 enablePlugins(GhpagesPlugin)
 enablePlugins(SiteScaladocPlugin)
 git.remoteRepo := s"git@github.com:MaxInertia/$name.git"
 mappings in makeSite ++= Seq(
-  file("src/main/www/index.html") -> "index.html",
-  file(s"${Paths.vrSrc}/index.html") -> "vr/index.html",
-  file(s"${Paths.vrSrc}/css/style.css") -> "vr/css/style.css",
-  file(s"${Paths.vrSrc}/img/disc.png") -> "vr/img/disc.png",
-  file(s"${Paths.vrSrc}/img/disc2.png") -> "vr/img/disc2.png",
-  file(s"${Paths.vrSrc}/img/blueOrb.png") -> "vr/img/blueOrb.png",
-  file(s"${Paths.vrSrc}/img/orangeOrb.png") -> "vr/img/orangeOrb.png",
-  file(s"${Paths.vrSrc}/js/lib/FirstPersonVRControls.js") -> "vr/js/lib/FirstPersonVRControls.js",
-  file(s"${Paths.vrSrc}/js/lib/PhoneVR.js") -> "vr/js/lib/PhoneVR.js",
-  file(s"${Paths.vrSrc}/js/lib/stats.min.js") -> "vr/js/lib/stats.min.js",
-  file(s"${Paths.vrSrc}/js/lib/three.js") -> "vr/js/lib/three.js",
-  file(s"${Paths.vrSrc}/js/lib/VRController.js") -> "vr/js/lib/VRController.js",
-  file(s"${Paths.vrSrc}/js/lib/VRControls.js") -> "vr/js/lib/VRControls.js",
-  file(s"${Paths.vrSrc}/js/lib/WebVR.js") -> "vr/js/lib/WebVR.js",
-  file(s"${Paths.vrSrc}/js/lib/SceneUtils.js") -> "vr/js/lib/SceneUtils.js",
-  file(s"${Paths.vrSrc}/js/lib/webvr-polyfill.min.js") -> "vr/js/lib/webvr-polyfill.min.js",
-  file("target/scala-2.12/vrdatavisualization-opt.js") -> "vr/js/vrdatavisualization-opt.js"
+  file(s"${Paths.www}/index.html") -> "index.html",
+  file(s"${Paths.www}/css/style.css") -> "css/style.css",
+  file(s"${Paths.www}/img/disc.png") -> "img/disc.png",
+  file(s"${Paths.www}/img/disc2.png") -> "img/disc2.png",
+  file(s"${Paths.www}/img/blueOrb.png") -> "img/blueOrb.png",
+  file(s"${Paths.www}/img/orangeOrb.png") -> "img/orangeOrb.png",
+  file(s"${Paths.www}/js/lib/FirstPersonVRControls.js") -> "js/lib/FirstPersonVRControls.js",
+  file(s"${Paths.www}/js/lib/PhoneVR.js") -> "js/lib/PhoneVR.js",
+  file(s"${Paths.www}/js/lib/stats.min.js") -> "js/lib/stats.min.js",
+  file(s"${Paths.www}/js/lib/three.js") -> "js/lib/three.js",
+  file(s"${Paths.www}/js/lib/VRController.js") -> "js/lib/VRController.js",
+  file(s"${Paths.www}/js/lib/VRControls.js") -> "js/lib/VRControls.js",
+  file(s"${Paths.www}/js/lib/WebVR.js") -> "js/lib/WebVR.js",
+  file(s"${Paths.www}/js/lib/SceneUtils.js") -> "js/lib/SceneUtils.js",
+  file(s"${Paths.www}/js/lib/papaparse.min.js") -> "js/lib/papaparse.min.js",
+  file(s"${Paths.www}/js/lib/datguivr.js") -> "js/lib/datguivr.js",
+  file(s"${Paths.www}/js/lib/webvr-polyfill.min.js") -> "js/lib/webvr-polyfill.min.js",
+  file("target/scala-2.12/vrdatavisualization-opt.js") -> "js/vrdatavisualization-opt.js"
 )

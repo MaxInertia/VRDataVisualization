@@ -1,6 +1,0 @@
-language: scala
-scala: 2.12.4
-jdk: oraclejdk8
-
-script:
-  - sbt scalastyle test

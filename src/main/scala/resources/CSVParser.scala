@@ -1,6 +1,6 @@
 package resources
 
-import facades.PapaParser.{Config, Meta, Papa, RowedResults}
+import facade.PapaParser.{Config, Papa, RowedResults}
 import util.Log
 
 import scala.scalajs.js
@@ -27,7 +27,7 @@ private[resources] object CSVParser {
     * @return
     */
   def parse(data: String): Array[(String, Array[Double])] = { // TODO: Write tests for this method
-    Log("PreProcessing Data...")
+    Log("[CSVParser.parse]")
 
     type Row = js.Array[Double] // what we get (mostly)
 
@@ -71,6 +71,7 @@ private[resources] object CSVParser {
       }
     }
 
+    Log.show("[CSVParser.parse - Complete]")
     formattedData
   }
 

@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>VRDV</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0, shrink-to-fit=no">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <link rel="stylesheet" type="text/css" href="css/style.css"/>
+    <!-- External Project Dependencies -->
+    <script src="js/lib/three.js"></script>
+    <script src="js/lib/datguivr.js"></script>
+    <script src="js/lib/SceneUtils.js"></script>
+    <script src="js/lib/WebVR.js"></script>
+    <script src="js/lib/webvr-polyfill.min.js"></script>
+    <script src="js/lib/VRController.js"></script>
+    <!--<script src='https://cdn.jsdelivr.net/npm/webxr-polyfill@latest/build/webxr-polyfill.js'></script>-->
+    <!--<script src="js/lib/FirstPersonVRControls.js"></script>-->
+    <script src="js/lib/stats.min.js"></script>
+    <script src="js/lib/papaparse.min.js"></script>
+    <!--<script src="https://www.gstatic.com/firebasejs/5.3.0/firebase.js"></script>-->
+    <!-- Internal Project Dependency -->
+    <script src="../../../target/scala-2.12/vrdatavisualization-fastopt.js"></script>
+    <!-- Replaces project dependency above for pushing to gh-pages. TODO: Automate this -->
+    <!--<script src="js/vrdatavisualization-opt.js"></script>-->
+</head>
+
+<body onload="vrdv.start()">
+
+    <div id="buttons">
+        <button id="fullscreenButton">Fullscreen</button><br>
+        <input type="file" id="csvDataFile" onchange="loadCSV()"/><br>
+    </div>
+
+    <script type="x-shader/x-vertex" id="vertexshader">
+        attribute float size;
+        attribute vec3 customColor;
+        varying vec3 vColor;
+        void main() {
+            vColor = customColor;
+            vec4 mvPosition = modelViewMatrix * vec4( position, 1.0 );
+            gl_PointSize = size * ( 300.0 / - mvPosition.z );
+            gl_Position = projectionMatrix * mvPosition;
+        }
+    </script>
+
+    <script type="x-shader/x-fragment" id="fragmentshader">
+        uniform vec3 color;
+        uniform sampler2D texture;
+        varying vec3 vColor;
+        void main() {
+            gl_FragColor = vec4( color * vColor, 1.0 );
+            gl_FragColor = gl_FragColor * texture2D( texture, gl_PointCoord );
+            if ( gl_FragColor.a < ALPHATEST ) discard;
+        }
+    </script>
+
+    <div id="scene-container"></div>
+
+    <script>
+
+        var filesLoaded = 0;
+
+        function loadCSV() {
+            var csv = document.getElementById("csvDataFile");
+            console.log("File: "+csv.files[0]);
+
+            var reader = new FileReader();
+            // Other reader event handlers: onabort, onerror, onloadstart, onloadend, onprogress
+            reader.onload = function(e) {
+                //console.log("reader.result: \n"+ reader.result);
+                vrdv.addData(reader.result);
+                filesLoaded = filesLoaded + 1;
+            };
+            reader.onprogress = function(e) {
+                console.log(e.loaded + " / " + e.total + " loaded.");
+            };
+            reader.readAsText(csv.files[0], 'UTF-8');
+        }
+    </script>
+
+</body>
+
+<script>
+    WebVRConfig = {
+        BUFFER_SCALE: 1.0
+    };
+
+    window.addEventListener('vrdisplaypresentchange', function() {
+        console.log('onVRDisplayPresentChange');
+    });
+
+    function enterFullscreen (el) {
+        if (el.requestFullscreen) el.requestFullscreen();
+        else if (el.mozRequestFullScreen) el.mozRequestFullScreen();
+        else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
+        else if (el.msRequestFullscreen) el.msRequestFullscreen();
+    }
+</script>
+
+</html>
