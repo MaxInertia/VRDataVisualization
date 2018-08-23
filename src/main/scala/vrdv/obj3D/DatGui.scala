@@ -50,10 +50,21 @@ class DatGui {
     "TauTens" -> 0,
     "TauHundreds" -> 0)
 
+  val filterRange: js.Object = js.Dynamic.literal(
+    "Start" → 0,
+    "End" → 0
+  )
+
   def getTau: Int =
     rawTau.asInstanceOf[js.Dynamic].selectDynamic("TauOnes").asInstanceOf[Int] +
     rawTau.asInstanceOf[js.Dynamic].selectDynamic("TauTens").asInstanceOf[Int] +
     rawTau.asInstanceOf[js.Dynamic].selectDynamic("TauHundreds").asInstanceOf[Int]
+
+  def getRange: Range = {
+    val start = filterRange.asInstanceOf[js.Dynamic].selectDynamic("Start").asInstanceOf[Int]
+    val end = filterRange.asInstanceOf[js.Dynamic].selectDynamic("End").asInstanceOf[Int]
+    start to end
+  }
 }
 
 object DatGui {
@@ -64,15 +75,27 @@ object DatGui {
     createHighlightedPointDataFolder(gui, plot)
     createSelectedPointsDataFolder(gui, plot, mc)
 
+    val filterFolder = Dat.GUIVR.create("Time Filter")
+    filterFolder.add(gui.filterRange, "Start", 0, plot.numPoints - 1).step(1).name("Start index")
+    filterFolder.add(gui.filterRange, "End", 0, plot.numPoints - 1).step(1).name("End index")
+    filterFolder.addButton(() => plot match {
+      case sp: ScatterPlot ⇒
+        val range = gui.getRange
+        sp.setVisiblePointRange(range.start, range.end)
+      case sm: ShadowManifold ⇒
+    })
+    Button(2, filterFolder).setLabels("Filter!", "Apply Filter")
+    gui.object3D.addFolder(filterFolder)
+
     val embeddingFolder = Dat.GUIVR.create("Shadow Manifold")
+    embeddingFolder.add(gui.rawTau, "TauOnes", 0, 10).step(1).name("Tau Ones")
+    embeddingFolder.add(gui.rawTau, "TauTens", 0, 90).step(10).name("Tau Tens")
+    embeddingFolder.add(gui.rawTau, "TauHundreds", 0, 900).step(100).name("Tau Hundreds")
     embeddingFolder.addButton(() => plot match {
       case sm: ShadowManifold ⇒ mc.requestEmbedding(XAxis, sm.data.columnNumber, gui.getTau)//, 1)
       case sp: ScatterPlot ⇒ mc.requestEmbedding(XAxis, sp.viewing(XAxis), gui.getTau)//, 1)
     })
-    embeddingFolder.add(gui.rawTau, "TauOnes", 0, 10).step(1).name("Tau Ones")
-    embeddingFolder.add(gui.rawTau, "TauTens", 0, 90).step(10).name("Tau Tens")
-    embeddingFolder.add(gui.rawTau, "TauHundreds", 0, 900).step(100).name("Tau Hundreds")
-    Button(0, embeddingFolder).setLabels("Embed!", "Embed xVar")
+    Button(3, embeddingFolder).setLabels("Embed!", "Embed xVar")
     gui.object3D.addFolder(embeddingFolder)
 
     gui
