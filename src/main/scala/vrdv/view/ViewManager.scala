@@ -50,8 +50,6 @@ private[vrdv] class ViewManager(mc: RenderRequirements) extends SuppliesRenderer
 
 object ViewManager {
 
-  var instance : ViewManager = null
-
   def apply(r: RenderRequirements, viewContainer: Element): ViewManager = {
     // Wraps rendering-specific objects and methods
     val view = new ViewManager(r)

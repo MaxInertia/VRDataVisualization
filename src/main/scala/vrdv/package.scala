@@ -36,7 +36,6 @@ package object vrdv {
 
     // Wraps rendering-specific objects and methods
     val viewContainer = dom.document.getElementById("scene-container")
-    ViewManager.instance = ViewManager(modelManager, viewContainer)
 
     loadResources()
     //FirebaseTesting.start()
