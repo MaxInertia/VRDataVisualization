@@ -80,8 +80,8 @@ object DatGui {
 
   def apply(): Dat.GUI = {
     val gui = Dat.GUIVR.create("Plot Details")
-    gui.position.set(-1.5, 1.6, -0.5)
-    gui.rotateY(3.14/4 * 1.1)
+    gui.position.set(-0.8, 1.4, -2)
+    //gui.rotateY(3.14/4 * 1.1)
     gui
   }
 

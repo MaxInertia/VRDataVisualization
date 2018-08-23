@@ -70,13 +70,13 @@ package object model {
       val white: Color = new Color(0xffffff)//ColorKeywords.white)
       val floorMaterial: MeshLambertMaterial = new MeshLambertMaterial()
       floorMaterial.color = white
-      val floorGeometry: PlaneGeometry = new PlaneGeometry( 2, 2, 32 )
+      val floorGeometry: PlaneGeometry = new PlaneGeometry( 1, 1 )
       val floor: Mesh = new Mesh(floorGeometry, floorMaterial)
       floor.receiveShadow = false
       floor.rotateX(-3.1415/2)
 
       // Add 6x6m Grid broken into 36 sections
-      val floorGrid: GridHelper = new GridHelperExt(2, 4, black, black)
+      val floorGrid: GridHelper = new GridHelperExt(1, 2, black, black)
       floorGrid.position.setY(0.001)
       floorGrid.material.linewidth = 2.0
       scene.add(floorGrid)

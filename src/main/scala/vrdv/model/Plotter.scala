@@ -47,8 +47,8 @@ class Plotter(scene: Scene, camera: Camera) extends ModelComponent[Action] {
 
       val csc = new ColumnSelectionConsole(data.map(_.id), CSC_DefaultConfig)
       REGIONS(0).object3D.parent.add(csc.object3D)
-      csc.object3D.position.set(1, 0.5, -1)
-      csc.object3D.rotateY(-3.1415/4)
+      csc.object3D.position.set(0.8, 0.5, -2)
+      //csc.object3D.rotateY(-3.1415/4)
       ColumnSelectionConsole.setInstance(csc)
 
     } else {

@@ -26,7 +26,7 @@ class ColumnSelectionConsole(val columnNames: Array[String], val config: CSC_Con
   val columnButtons: Array[Button] = createColumnButtons()
   private def createColumnButtons(): Array[Button] = {
     var inProgressButtons: Array[Button] = Array()
-    for(cName <- columnNames) inProgressButtons = inProgressButtons :+ new Button(cName, config.fontSize, createCanvas(400/*1200*/, config.fontSize), 0.6/*1.0*/, 0.1)
+    for(cName <- columnNames) inProgressButtons = inProgressButtons :+ new Button(cName, config.fontSize, createCanvas(400, config.fontSize), 0.6, 0.1)
     inProgressButtons
   }
 
@@ -79,8 +79,6 @@ class ColumnSelectionConsole(val columnNames: Array[String], val config: CSC_Con
   trait Hoverable_And_Selectable extends Selectable with Hoverable {
     override def hoverOn(draw: Boolean = true): Unit = super.hoverOn(draw = !selected)
     override def hoverOff(draw: Boolean = true): Unit = super.hoverOff(draw = !selected)
-    //override def selectOn(axis: AxisID, column: Int, draw: Boolean = true): Unit = super.selectOn(axis, column, draw)
-    //override def selectOff(draw: Boolean = true): Unit = super.selectOff(draw)
   }
 
   class Button(label: String, fontSize: Int, canvas: CanvasEl, val width: Double, val height: Double) extends Hoverable_And_Selectable {
@@ -133,7 +131,7 @@ class ColumnSelectionConsole(val columnNames: Array[String], val config: CSC_Con
     override def selectOn(selectedAxis: AxisID = NOAxis, column: Int = -42, draw: Boolean): Unit = {
       selected = true
       selectedAxes += myAxis
-      redraw("white"/*selectionColors(selectedAxis)*/, "black")
+      redraw("white", "black")
     }
   }
 
@@ -170,7 +168,6 @@ class ColumnSelectionConsole(val columnNames: Array[String], val config: CSC_Con
     }
 
     intersectionsLastTime = true
-    //Log.show("Intersections not null!")
     val intersected = intersections(0).`object`
 
     var interacted = false
@@ -222,7 +219,9 @@ class ColumnSelectionConsole(val columnNames: Array[String], val config: CSC_Con
 }
 
 object ColumnSelectionConsole {
+
   val AxesColors: Array[String] = Array("blue", "green", "red")
+
   private var instance: Option[ColumnSelectionConsole] = None
   def getInstance: Option[ColumnSelectionConsole] = instance
   def setInstance(csc: ColumnSelectionConsole): Unit = {
@@ -231,8 +230,6 @@ object ColumnSelectionConsole {
     obj3D.setMoveable(csc.object3D)
     instance = Some(csc)
   }
-
-  //def apply(): ColumnSelectionConsole
 
   def positionColumnButtons(csc: ColumnSelectionConsole, scatter: Boolean): Unit = {
     val columnButtons = csc.columnButtons
