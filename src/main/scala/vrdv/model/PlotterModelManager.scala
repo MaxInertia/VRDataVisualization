@@ -17,12 +17,6 @@ class PlotterModelManager extends ModelManager[Action, Result] with Room  {
 
   def plotter: Plotter = model.components(0).asInstanceOf[Plotter]
 
-  /*var persistingInputs: List[input.Action] = List()
-  def peel(inputs: List[input.Action]): Unit = {
-    passInput(inputs.head)
-    peel(inputs.tail)
-  }*/
-
   val lastPoint: Array[input.Point] = Array(
     new input.Point(null, 0) { persist = false },
     new input.Point(null, 1) { persist = false })
@@ -35,8 +29,6 @@ class PlotterModelManager extends ModelManager[Action, Result] with Room  {
     case g: input.Grab => // ==============
       val ray = g.rc.updateRaycaster(g.source).rayCaster.ray
       val controllerPos = g.sourcePosition
-
-      //Log.show(intersections)
 
       val sceneContents = model.scene.children
       for(c <- sceneContents if obj3D.isMoveable(c)) {

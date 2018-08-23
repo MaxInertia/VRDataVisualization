@@ -22,12 +22,9 @@ class ScatterPlot2D(points: Points, private var x: Data, private var y: Data, va
 
   def switchAxis(axisID: AxisID, newColumn: Data, updateMetaData: Boolean = true): Unit = {
     if(axisID != YAxis) return
-    //assert(axisID >= XAxis && axisID <= YAxis, s"[rawAxisShift] - Attempted switching invalid axis: $axisID")
     updateAxis(axisID, newColumn.measurements, updateMetaData)
-    axisID match {
-      //case XAxis => x = newColumn
-      case YAxis => y = newColumn
-    }
+
+    y = newColumn
     columnData = Array(x, y)
     fixScale()
 

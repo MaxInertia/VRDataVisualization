@@ -30,7 +30,6 @@ class CoordinateAxes2D(geometry: THREE.Geometry, material: THREE.LineBasicMateri
     x.position.set(0, -0.6, 0)
     x.rotateZ(-3.1415/4)
     this.add(x)
-    //x.lookAt(Environment.instance.camera.position)
 
     val y = Text.createTextMesh(yT)
     y.scale.set(scale, scale, scale)
@@ -76,19 +75,16 @@ class CoordinateAxes3D(geometry: THREE.Geometry, material: THREE.LineBasicMateri
     x.scale.set(scale, scale, scale)
     x.position.set(0.6, 0, 0)
     this.add(x)
-    //x.lookAt(Environment.instance.camera.position)
 
     val y = Text.createTextMesh(yT)
     y.scale.set(scale, scale, scale)
     y.position.set(0, 0.6, 0)
     this.add(y)
-    //y.lookAt(Environment.instance.camera.position)
 
     val z = Text.createTextMesh(zT)
     z.scale.set(scale, scale, scale)
     z.position.set(0, 0, 0.6)
     this.add(z)
-    //z.lookAt(Environment.instance.camera.position)
 
     axesTitles = Array(x, y, z)
   }
@@ -199,10 +195,6 @@ object CoordinateAxes {
     var positions: Float32Array = null
     var colors: Float32Array = null
 
-    //val xTitle = PlaneDisplay(0.4, 0.1, 1280, 1280)
-    //val yTitle = PlaneDisplay(0.4, 0.1, 1280, 1280)
-    //val zTitle = PlaneDisplay(0.4, 0.1, 1280, 1280)
-
     if(centeredOrigin) { // Origin of the axes is centered
       val (x, y, z) = (0, 0, 0)
       positions = new Float32Array(36)
@@ -213,13 +205,10 @@ object CoordinateAxes {
       }
 
       positions(3) += len
-      //xTitle.object3D.position.set(positions(3), 0, 0)
       positions(10) += len
       positions(17) += len
-      //yTitle.object3D.position.set(0, positions(17), 0)
       positions(21) -= len
       positions(28) -= len
-      //zTitle.object3D.position.set(0, 0, -positions(28))
       positions(35) -= len
       colors = new Float32Array(36)
       for (i <- 0 until 36) colors(i) = 0.5.toFloat
@@ -250,17 +239,12 @@ object CoordinateAxes {
     geometry.addAttribute("color", new THREE.BufferAttribute(colors, 3))
     geometry.computeBoundingSphere()
     val axes = new CoordinateAxes3D(geometry, material.asInstanceOf[LineBasicMaterial])
-    //val gh = new AxesHelper(1)
-    //axes.add(gh)
 
     if(planeGrids) { // TODO: Account for the case when the origin is not centered
       val gridXZ = new GridHelperExt(1, 10, color, color)
-      //val gridXZ = new GridHelperExt(1, 10, Colors.Blue, Colors.Blue)
       val gridXY = new GridHelperExt(1, 10, color, color)
-      //val gridXY = new GridHelperExt(1, 10, Colors.Red, Colors.Red)
       gridXZ.rotateZ(3.1415/2)
       val gridZY = new GridHelperExt(1, 10, color, color)
-      //val gridZY = new GridHelperExt(1, 10, Colors.Green, Colors.Green)
       gridZY.rotateX(3.1415/2)
       axes.add(gridXY)
       axes.add(gridXZ)

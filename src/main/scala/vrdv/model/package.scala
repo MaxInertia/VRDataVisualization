@@ -29,12 +29,11 @@ package object model {
 
     def addController(vrc: VRController): Unit = {
       model.fakeOrigin.add(vrc)
-      //model.scene.add(vrc)
       model.controllers = model.controllers :+ vrc
     }
 
     def afterRender(): Unit = {
-      //VRControllerManager.update()
+      VRControllerManager.update()
       for(c <- model.controllers) c.update()
     }
 
@@ -62,18 +61,10 @@ package object model {
     def passEvent(input: Action): Unit
   }
 
-  /*trait ModelTransformer[ModelA <: Model, ModelB <: Model] {
-    def forward(a: ModelA): ModelB
-    def reverse(b: ModelB): ModelA
-  }*/
-
-  //class FirebaseModel
-
-  //abstract class ConnectDisconnect() extends ModelTransformer[LocalModel, FirebaseModel]{}
-  // or also test modifications to a model by transforming a running model into it?
-
   trait Room {
+
     def addRoom(scene: Scene): Unit = {
+
       // # Create room
       val black: Color = new Color(0x000000)//ColorKeywords.black)
       val white: Color = new Color(0xffffff)//ColorKeywords.white)
@@ -83,12 +74,14 @@ package object model {
       val floor: Mesh = new Mesh(floorGeometry, floorMaterial)
       floor.receiveShadow = false
       floor.rotateX(-3.1415/2)
+
       // Add 6x6m Grid broken into 36 sections
       val floorGrid: GridHelper = new GridHelperExt(2, 4, black, black)
       floorGrid.position.setY(0.001)
       floorGrid.material.linewidth = 2.0
       scene.add(floorGrid)
       scene.add(floor)
+
       // Add Light
       val spotlight: SpotLight = new SpotLight(0xffffff, 0.5)
       spotlight.distance = 10
@@ -96,6 +89,7 @@ package object model {
       spotlight.position.set(0, 3, 0)
       scene.add(spotlight)
     }
+
   }
 
 }

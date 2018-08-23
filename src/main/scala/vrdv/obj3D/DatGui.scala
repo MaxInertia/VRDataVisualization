@@ -2,7 +2,7 @@ package vrdv.obj3D
 
 import facade.Dat
 import facade.Dat.{GuiButton, GuiSlider}
-import vrdv.model.{PlotterModelManager, Plotter}
+import vrdv.model.Plotter
 import vrdv.obj3D.plots._
 
 import scala.scalajs.js
@@ -12,10 +12,13 @@ import scala.scalajs.js
   */
 class DatGui {
   var object3D: Dat.GUI = DatGui()
+
   // Highlighted Point Details
   val hs: Array[GuiSlider] = Array(null, null, null)
+
   // Selected Points Summary
   val ss: Array[GuiSlider] = Array(null, null, null)
+
   // 0: HPD Folder, 1: SPS Folder
   var folders: Array[Dat.GUI] = Array()
 
@@ -71,9 +74,7 @@ object DatGui {
     embeddingFolder.add(gui.rawTau, "TauHundreds", 0, 900).step(100).name("Tau Hundreds")
     Button(0, embeddingFolder).setLabels("Embed!", "Embed xVar")
     gui.object3D.addFolder(embeddingFolder)
-    //embeddingFolder.open()
 
-    //gui.object3D.addButton(() => {mc.request2DPlot()})
     gui
   }
 
@@ -86,30 +87,37 @@ object DatGui {
 
   def createHighlightedPointDataFolder(gui: DatGui, plot: Plot3D): Unit = {
     val highlightFolder = Dat.GUIVR.create("Highlighted Point Values")
+
     // Rows that display the coordinates of the highlighted point
     gui.hs(XAxis) = highlightFolder.add(plot.highlightedDetails, "xVar", 0, 0).name(plot.xVar).listen()
     gui.hs(YAxis) = highlightFolder.add(plot.highlightedDetails, "yVar", 0, 0).name(plot.yVar).listen()
     gui.hs(ZAxis) = highlightFolder.add(plot.highlightedDetails, "zVar", 0, 0).name(plot.zVar).listen()
+
     // Add folder to gui object (and therefore the scene)
     gui.addFolder(highlightFolder)
+
     // Open the folder
     highlightFolder.open()
   }
 
   def createSelectedPointsDataFolder(gui: DatGui, plot: Plot3D, plotter: Plotter): Unit = {
     val selectFolder = Dat.GUIVR.create("Selected Points Mean")
+
     // Rows that display the mean value of all selected points
     gui.ss(XAxis) = selectFolder.add(plot.selectedSummary, "xVar", 0, 0).name(plot.xVar).listen() // 0
     gui.ss(YAxis) = selectFolder.add(plot.selectedSummary, "yVar", 0, 0).name(plot.yVar).listen() // 1
     gui.ss(ZAxis) = selectFolder.add(plot.selectedSummary, "zVar", 0, 0).name(plot.zVar).listen() // 2
+
     // A button for clearing set of selected points
     selectFolder.addButton(() => {
       plotter.clearSelections()
       PointOperations.updateSelectedSummary(plot)
     })
-    Button(3, selectFolder).setLabel_Description("Clear Selections") // 3 used b/c rows added above take up indices 0-2
+    Button(3, selectFolder).setLabels("Clear", "Clear Selections") // 3 used b/c rows added above take up indices 0-2
+
     // Add folder to gui object (and therefore the scene)
     gui.addFolder(selectFolder)
+
     // Open the folder
     selectFolder.open()
   }

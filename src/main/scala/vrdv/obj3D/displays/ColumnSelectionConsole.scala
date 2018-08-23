@@ -107,8 +107,6 @@ class ColumnSelectionConsole(val columnNames: Array[String], val config: CSC_Con
     /** Writes text to the canvas at position. Can be centered on that position */
     def write(text: String, tc: String, wc: String, position: (Int, Int), center: Boolean = false): Unit = {
       val graphics = get2DGraphics
-      //graphics.fillStyle = wc
-      //graphics.fillRect(0, 0, canvas.width, canvas.height)
       graphics.clearRect(0, 0, canvas.width, canvas.height)
       graphics.font = s"${fontSize}px  Lucida Console"
       graphics.fillStyle = tc
@@ -151,7 +149,6 @@ class ColumnSelectionConsole(val columnNames: Array[String], val config: CSC_Con
     canvas.id = s"canvas-$num"; num = num + 1
     canvas.width = width
     canvas.height = height
-    //Display.numCreated += 1
     canvas
   }
 

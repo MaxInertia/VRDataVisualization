@@ -22,7 +22,6 @@ object Text {
 
     mesh.scale.set(0.1, 0.1, 0.1)
     mesh.position.set(0, 0, 0)
-    //if(lookatCamera) mesh.lookAt(Environment.instance.camera.position)
     mesh
   }
 }

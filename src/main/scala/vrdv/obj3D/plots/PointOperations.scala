@@ -13,29 +13,35 @@ object PointOperations {
   // ---- Scaling
 
   def confineToRegion3D(points: Points, minimums: (Double, Double, Double), maximums: (Double, Double, Double)): ScaleCenterProperties = {
+
     // The amount to scale the points so they fit within a 1x1x1 cube.
     val xScale = scala.math.abs(maximums._1 - minimums._1)
     val yScale = scala.math.abs(maximums._2 - minimums._2)
     val zScale = scala.math.abs(maximums._3 - minimums._3)
     points.scale.set(1.0/xScale, 1.0/yScale, 1.0/zScale)
+
     // Find center of points, position them so this is at center of the parent region.
     val centerX: Double = (maximums._1 + minimums._1) / (2.0 * xScale)
     val centerY: Double = (maximums._2 + minimums._2) / (2.0 * yScale)
     val centerZ: Double = (maximums._3 + minimums._3) / (2.0 * zScale)
     points.position.set(-centerX, -centerY, -centerZ)
+
     // Return the updates centers and scales
     ScaleCenterProperties(xScale, yScale, zScale, centerX, centerY, centerZ)
   }
 
   def confineToRegion2D(points: Points, minimums: (Double, Double), maximums: (Double, Double)): ScaleCenterProperties = {
+
     // The amount to scale the points so they fit within a 1x1x1 cube.
     val xScale = scala.math.abs(maximums._1 - minimums._1)
     val yScale = scala.math.abs(maximums._2 - minimums._2)
     points.scale.set(1.0/xScale, 1.0/yScale, 1.0)
+
     // Find center of points, position them so this is at center of the parent region.
     val centerX: Double = (maximums._1 + minimums._1) / (2.0 * xScale)
     val centerY: Double = (maximums._2 + minimums._2) / (2.0 * yScale)
     points.position.set(-centerX, -centerY, 0)
+
     // Return the updates centers and scales
     ScaleCenterProperties(xScale, yScale, 0, centerX, centerY, 0)
   }
@@ -206,10 +212,12 @@ object PointOperations {
   }
 
   private def resetColor(plot: Plot, pIndex: Int): Unit = {
+
     // Recompute this points original color
     val color: Color = new Color()
     val newHue: Double = plot.hue + Plot3D.HUE_GRADIENT_FACTOR * ( pIndex * 1.0 / plot.numPoints )
     color.setHSL( newHue, 1.0, 0.5 )
+
     // Assign color to point
     val colorsAttr = plot.getColors
     val cArr = colorsAttr.array.asInstanceOf[Float32Array]

@@ -34,7 +34,7 @@ object PapaParser {
     var skipEmptyLines: Boolean = js.native //false
     var chunk: (Results, js.Any) = js.native //undefined
     var fastMode: Boolean = false // undefined
-    var beforeFirstChunk: (js.Any) => js.Any = js.native // undefined
+    var beforeFirstChunk: js.Any => js.Any = js.native // undefined
     var withCredentials: Boolean = js.native // undefined
   }
 

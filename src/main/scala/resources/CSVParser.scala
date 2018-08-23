@@ -38,11 +38,6 @@ private[resources] object CSVParser {
     Log(result.asInstanceOf[RowedResults])
     val parsedData: js.Array[js.Array[Any]] = result.data
 
-    /*if(result.errors.length > 0) {
-      for(err <- result.errors) Log.show(err)
-      return Array()
-    }*/
-
     type Column = (String, Array[Double]) // what we want
     var formattedData: Array[Column] = Array()
     if(isNumber(parsedData(0)(0).toString)) {
@@ -52,7 +47,7 @@ private[resources] object CSVParser {
         for (r <- parsedData.indices) {
           Log(s"$c - $r")
           if(parsedData(r)(c) != js.undefined) cdata = cdata :+ parsedData(r)(c).asInstanceOf[Double]
-          else Log.show(s"CSVParsingError! row:$r, col:$c is undefined!")
+          else Log.show(s"CSVParsing End of Column OR Error! row:$r, col:$c is undefined!") // Occurs at the end of each column
         }
 
         formattedData = formattedData :+ (s"column$c", cdata)
@@ -64,7 +59,7 @@ private[resources] object CSVParser {
         var cdata: Array[Double] = Array()
         for (r <- 1 until parsedData.length) {
           if(parsedData(r)(c) != js.undefined)  cdata = cdata :+ parsedData(r)(c).asInstanceOf[Double]
-          else Log.show(s"CSVParsingError! row:$r, col:$c is undefined!")
+          else Log.show(s"CSVParsing End of Column OR Error! row:$r, col:$c is undefined!") // Occurs at the end of each column
         }
 
         formattedData = formattedData :+ (parsedData(0)(c).asInstanceOf[String], cdata)

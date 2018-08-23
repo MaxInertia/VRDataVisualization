@@ -85,11 +85,9 @@ object ShadowManifold {
 
     val newPoints = plot.getPoints
     newPoints.geometry.asInstanceOf[js.Dynamic].setDrawRange(0, embeddingValues.length - 2*tau)
-    //ShadowManifold.embed(newPoints, embeddingValues, embeddingVar, tau)
 
     val succeeded = embed(newPoints, embeddingValues, embeddingVar, tau)
     if(succeeded) {
-      //plot.setVisiblePointRange(0, embeddingValues.length - 2*tau)
       val positionsAttr = PointsUtils.positions(newPoints)
       positionsAttr.needsUpdate = true
       val sm = ShadowManifold(plot.getColumnData(axisID), tau, plot.props, newPoints)
@@ -97,7 +95,6 @@ object ShadowManifold {
       sm.varName = embeddingVar
       sm.hue = plot.hue
       sm.computeProps()
-      //sm.requestFullGeometryUpdate()
       Some(sm)
     } else None
   }
@@ -107,13 +104,10 @@ object ShadowManifold {
     val embeddingData = plot.data
     val succeeded = embed(plot.getPoints, embeddingData.measurements, embeddingData.id, tau)
     if(succeeded) {
-      //plot.setVisiblePointRange(0, embeddingData.measurements.length - 2*tau)
-      //plot.data = embeddingData
       plot.varName = embeddingData.id
       plot.tau = tau
       val positionsAttr = PointsUtils.positions(plot.getPoints)
       positionsAttr.needsUpdate = true
-      //plot.requestFullGeometryUpdate()
       Some(plot)
     } else None
   }
