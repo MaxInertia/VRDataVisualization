@@ -2,6 +2,7 @@ package vrdv.obj3D
 
 import facade.Dat
 import facade.Dat.{GuiButton, GuiSlider}
+import vrdv.input.InputDetails
 import vrdv.model.Plotter
 import vrdv.obj3D.plots._
 
@@ -55,6 +56,11 @@ class DatGui {
     "End" → 0
   )
 
+  val raycasterThresholds: js.Object = js.Dynamic.literal(
+    "Right" → 0.1,
+    "Left" → 0.1
+  )
+
   def getTau: Int =
     rawTau.asInstanceOf[js.Dynamic].selectDynamic("TauOnes").asInstanceOf[Int] +
     rawTau.asInstanceOf[js.Dynamic].selectDynamic("TauTens").asInstanceOf[Int] +
@@ -65,6 +71,10 @@ class DatGui {
     val end = filterRange.asInstanceOf[js.Dynamic].selectDynamic("End").asInstanceOf[Int]
     start to end
   }
+
+  def getLeftThreshold: Float = raycasterThresholds.asInstanceOf[js.Dynamic].selectDynamic("Left").asInstanceOf[Float]
+  def getRightThreshold: Float = raycasterThresholds.asInstanceOf[js.Dynamic].selectDynamic("Right").asInstanceOf[Float]
+
 }
 
 object DatGui {
@@ -74,6 +84,13 @@ object DatGui {
 
     createHighlightedPointDataFolder(gui, plot)
     createSelectedPointsDataFolder(gui, plot, mc)
+
+    val rcThresholdFolder = Dat.GUIVR.create("Selection Sensitivity")
+    rcThresholdFolder.add(gui.raycasterThresholds, "Left", 0, 0.1).step(0.001).name("Left")
+    rcThresholdFolder.add(gui.raycasterThresholds, "Right", 0, 0.1).step(0.001).name("Right")
+    rcThresholdFolder.addButton(() => InputDetails.updateThresholds(gui.getLeftThreshold, gui.getRightThreshold))
+    Button(2, rcThresholdFolder).setLabels("Update!", "Apply Threshold")
+    gui.object3D.addFolder(rcThresholdFolder)
 
     val filterFolder = Dat.GUIVR.create("Time Filter")
     filterFolder.add(gui.filterRange, "Start", 0, plot.numPoints - 1).step(1).name("Start index")

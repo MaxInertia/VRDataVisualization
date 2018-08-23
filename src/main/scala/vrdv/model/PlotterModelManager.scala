@@ -60,11 +60,13 @@ class PlotterModelManager extends ModelManager[Action, Result] with Room  {
       lastPoint(p.cid) = p
       lastPress(p.cid).persist = false
       if(p.persist) plotter.hoverAction(p.rc.updateRaycaster(p.source), select = false)
+      afterRender()
       input.NothingHappened
 
     case p: input.Press => // ==============
       lastPress(p.cid) = p
       plotter.hoverAction(p.rc.updateRaycaster(p.source), select = true)
+      afterRender()
       input.NothingHappened
 
     case c: input.Connect => // ==============

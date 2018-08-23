@@ -51,7 +51,7 @@ class InputDetails(val controller: OculusController) {
     this
   }
 
-  def construct(position: Vector3, direction: Vector3, hexColor: Int): Unit = {
+  def construct(position: Vector3, direction: Vector3, hexColor: Int, isRight: Boolean): Unit = {
     rayCaster = new Raycaster()
     rayCaster.set(position, direction)
     rayCaster.params.asInstanceOf[RaycasterParametersExt].Points.threshold = 0.02
@@ -67,6 +67,9 @@ class InputDetails(val controller: OculusController) {
     arrow.material.transparent = true
     arrow.material.opacity = 0.5
     arrow.visible = false
+
+    if(isRight) InputDetails.right = rayCaster
+    else InputDetails.left = rayCaster
   }
 
   def updateLengthScale(scale: Double): Unit = {
@@ -84,5 +87,16 @@ class InputDetails(val controller: OculusController) {
     arrow.visible = false
     arrow.parent.remove(arrow)
     arrow = null
+  }
+}
+
+// A hacky way to allow modifying threshold from DatGUI
+object InputDetails {
+  var left: Raycaster = _
+  var right: Raycaster = _
+
+  def updateThresholds(leftValue: Float, rightValue: Float): Unit = {
+    if(left != null) left.params.asInstanceOf[RaycasterParametersExt].Points.threshold = leftValue
+    if(right != null) right.params.asInstanceOf[RaycasterParametersExt].Points.threshold = rightValue
   }
 }

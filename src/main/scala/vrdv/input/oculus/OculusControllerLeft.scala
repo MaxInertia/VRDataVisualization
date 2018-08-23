@@ -22,7 +22,7 @@ class OculusControllerLeft(vrc: VRController, val mc: PlotterModelManager) exten
     // Create Controller Appearance
     val hexColor = meshColorWhite
     controllerMesh = createControllerMesh(hexColor)
-    inputDetails.construct(vrc.position, getControllerDirection, hexColor)
+    inputDetails.construct(vrc.position, getControllerDirection, hexColor, isRight = false)
     vrc.add(inputDetails.arrow)
     vrc.add(controllerMesh)
 
