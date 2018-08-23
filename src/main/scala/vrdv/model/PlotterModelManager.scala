@@ -33,7 +33,7 @@ class PlotterModelManager extends ModelManager[Action, Result] with Room  {
   // add parser of request types (one example being AxisChangeRequest below)
   override def passInput(action: input.Action): input.Result = action match {
     case g: input.Grab => // ==============
-      val ray = g.rc.updatedLaser(g.source).rayCaster.ray
+      val ray = g.rc.updateRaycaster(g.source).rayCaster.ray
       val controllerPos = g.sourcePosition
 
       //Log.show(intersections)
@@ -67,12 +67,12 @@ class PlotterModelManager extends ModelManager[Action, Result] with Room  {
     case p: input.Point => // ==============
       lastPoint(p.cid) = p
       lastPress(p.cid).persist = false
-      if(p.persist) plotter.hoverAction(p.rc.updatedLaser(p.source), select = false)
+      if(p.persist) plotter.hoverAction(p.rc.updateRaycaster(p.source), select = false)
       input.NothingHappened
 
     case p: input.Press => // ==============
       lastPress(p.cid) = p
-      plotter.hoverAction(p.rc.updatedLaser(p.source), select = true)
+      plotter.hoverAction(p.rc.updateRaycaster(p.source), select = true)
       input.NothingHappened
 
     case c: input.Connect => // ==============
@@ -91,9 +91,9 @@ class PlotterModelManager extends ModelManager[Action, Result] with Room  {
     plotter.update()
     for(cid <- 0 to 1) {
       if(lastPress(cid).persist)
-        plotter.hoverAction(lastPoint(cid).rc.updatedLaser(lastPoint(cid).source), select = true)
+        plotter.hoverAction(lastPoint(cid).rc.updateRaycaster(lastPoint(cid).source), select = true)
       else if(lastPoint(cid).persist)
-        plotter.hoverAction(lastPoint(cid).rc.updatedLaser(lastPoint(cid).source), select = false)
+        plotter.hoverAction(lastPoint(cid).rc.updateRaycaster(lastPoint(cid).source), select = false)
     }
   }
 

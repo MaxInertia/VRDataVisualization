@@ -1,17 +1,15 @@
 package vrdv.input
 
-import facade.IFThree.{RaycasterParametersExt, VRController}
+import facade.IFThree.RaycasterParametersExt
 import org.scalajs.threejs._
 import vrdv.input.oculus.OculusController
 import vrdv.obj3D.plots.{AxisID, NOAxis}
 
 /**
-  * A rayCaster wrapper with flags to determine whether
-  * an interacted object should be grabbed or clicked.
-  *
+  * Wrapper for controller input details.
   * Created by Dorian Thiessen on 2018-07-19.
   */
-class ActionLaser(val controller: OculusController) {
+class InputDetails(val controller: OculusController) {
   var rayCaster: Raycaster = _
   var arrow: Line = _ // effectively the rayCaster mesh
   private[input] var clicking: Boolean = false
@@ -33,7 +31,7 @@ class ActionLaser(val controller: OculusController) {
 
   protected var yOffset: Vector3 = new Vector3(0, 1.6, 0)
 
-  def updatedLaser(vrc: Object3D): ActionLaser = {
+  def updateRaycaster(vrc: Object3D): InputDetails = {
     // Adjust raycaster origin to account for fakeOrigin (The controllers parent)
     val correctedPosition = new Vector3(
       vrc.position.x,

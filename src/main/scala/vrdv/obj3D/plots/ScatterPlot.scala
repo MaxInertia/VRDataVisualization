@@ -1,6 +1,5 @@
 package vrdv.obj3D.plots
 
-import scala.scalajs.js
 import resources.Data
 import util._
 

@@ -1,10 +1,9 @@
 package vrdv.model
 
-import org.scalajs.dom
 import org.scalajs.threejs.{Camera, Intersection, Scene, Vector3}
 import resources.{Data, Res}
 import util.Log
-import vrdv.input.{Action, ActionLaser, Interactions}
+import vrdv.input.{Action, InputDetails, Interactions}
 import vrdv.obj3D.displays.{CSC_DefaultConfig, ColumnSelectionConsole}
 import vrdv.obj3D.plots._
 import vrdv.obj3D.{CustomColors, DatGui, Region}
@@ -256,7 +255,7 @@ class Plotter(scene: Scene, camera: Camera) extends ModelComponent[Action] {
 
   // Point highlighting and such
 
-  def hoverAction(laser: ActionLaser, select: Boolean): Unit = {
+  def hoverAction(laser: InputDetails, select: Boolean): Unit = {
     var ids: (Option[Int], Int) = (None, 0)
 
     // # Point Highlighting

@@ -1,8 +1,7 @@
 package vrdv.obj3D.plots
 
-import resources.{Data, Res}
+import resources.Data
 import util.{Log, ScaleCenterProperties, Stats}
-import vrdv.obj3D.CustomColors
 
 import scala.scalajs.js
 import scala.scalajs.js.typedarray.Float32Array
@@ -63,18 +62,6 @@ object ShadowManifold {
       .usingTexture(texture)
       .build3D()
 
-    /*//for(i <- vStats.indices) { // This is happening on a certain CSV for column 1...
-      if(vStats(0).min != data.getStats.min) {
-        Log.show(s"\n\nWHOOPS... vStats(0).min:${vStats(0).min} != stats(0).min${data.getStats.min}\n")
-        // vStats is more reliable (Why?)
-        data.updateStats(Stats.cloneWith(data.getStats)(min = vStats(0).min, max = vStats(0).max)) // <- Terrible temporary fix
-      }
-      if(vStats(0).max != data.getStats.max) {
-        Log.show(s"\n\nWHOOPS... vStats(0).max:${vStats(0).min} != stats(0).max${data.getStats.min}\n")
-        data.updateStats(Stats.cloneWith(data.getStats)(min = vStats(0).min, max = vStats(0).max)) // <- Terrible temporary fix
-      }
-    //}*/
-
     val sm = new ShadowManifold(data, tau, props, points)
     sm.hue = hue
     sm
@@ -96,20 +83,9 @@ object ShadowManifold {
     val embeddingVar = plot.getColumnData(axisID).id
     val embeddingValues = plot.column(axisID)
 
-    /*val (newPoints, scp, stats) = PointsBuilder() // `stats` can be compared to value in `plot.columnData(column)getStats`, should be the same
-      .withXS(embeddingValues.drop(2*tau) ++ Array.fill(2*tau)(embeddingValues(0)))
-      .withYS(embeddingValues.slice(tau, embeddingValues.length - tau) ++ Array.fill(2*tau)(embeddingValues(0)))
-      .withZS(embeddingValues.take(embeddingValues.length - 2*tau) ++ Array.fill(2*tau)(embeddingValues(0)))
-      .usingTexture(Res.getLastLoadedTextureID)
-      .usingHue(Some(CustomColors.RED_HUE_SHIFT))
-      .build3D()*/
-
     val newPoints = plot.getPoints
     newPoints.geometry.asInstanceOf[js.Dynamic].setDrawRange(0, embeddingValues.length - 2*tau)
-    ShadowManifold.embed(newPoints, embeddingValues, embeddingVar, tau)
-    /*newPoints.geometry.buffersNeedUpdate = true
-    newPoints.geometry.computeBoundingSphere()
-    newPoints.geometry.computeBoundingBox()*/
+    //ShadowManifold.embed(newPoints, embeddingValues, embeddingVar, tau)
 
     val succeeded = embed(newPoints, embeddingValues, embeddingVar, tau)
     if(succeeded) {
@@ -126,7 +102,7 @@ object ShadowManifold {
     } else None
   }
 
-  def fromShadowManifold(plot: ShadowManifold)(/*embeddingData: Data, */tau: Int = plot.tau): Option[ShadowManifold] = {
+  def fromShadowManifold(plot: ShadowManifold)(tau: Int = plot.tau): Option[ShadowManifold] = {
     Log.show("[ShadowManifold.fromShadowManifold()]")
     val embeddingData = plot.data
     val succeeded = embed(plot.getPoints, embeddingData.measurements, embeddingData.id, tau)

@@ -3,7 +3,7 @@ package vrdv.obj3D.displays
 import org.scalajs.dom.document
 import org.scalajs.threejs._
 import util.Log
-import vrdv.input.ActionLaser
+import vrdv.input.InputDetails
 import vrdv.model.Plotter
 import vrdv.obj3D
 import vrdv.obj3D.plots.{AxisID, Column, NOAxis, XAxis, YAxis, ZAxis}
@@ -161,7 +161,7 @@ class ColumnSelectionConsole(val columnNames: Array[String], val config: CSC_Con
   // Overly complicated, could be more efficient, but the results look awesome!
   // Note: One controller can enter a terminal state wrt this interaction (it can no longer
   // be used to change axes) selects if each controller selects a column within the same frame.
-  def interactionCheck(laser: ActionLaser, plotter: Plotter, userSelecting: Boolean): Boolean = {
+  def interactionCheck(laser: InputDetails, plotter: Plotter, userSelecting: Boolean): Boolean = {
     val intersections: scalajs.js.Array[Intersection] = laser.rayCaster.intersectObject(object3D, recursive = true)
     if(intersections.isEmpty) {
       if(intersectionsLastTime) {

@@ -21,8 +21,8 @@ class OculusControllerRight(vrc: VRController, val mc: PlotterModelManager) exte
     // Create Controller Appearance
     val hexColor = meshColorWhite
     controllerMesh = createControllerMesh(hexColor)
-    laser.construct(vrc.position, getControllerDirection, hexColor)
-    vrc.add(laser.arrow)
+    inputDetails.construct(vrc.position, getControllerDirection, hexColor)
+    vrc.add(inputDetails.arrow)
     vrc.add(controllerMesh)
 
     // Add this controller as an input device for Dat.GuiVR
@@ -33,20 +33,27 @@ class OculusControllerRight(vrc: VRController, val mc: PlotterModelManager) exte
     initCommonEventListeners(inputDevice)
 
     // Setup events unique for this controller
-    /*
+
+    /* -- Unused inputs
+
     setEventListener(Input.Right.A_PressBegan, (event: Event) => {
       Log("A Press Began")
     })
+
     setEventListener(Input.Right.A_PressEnded, (event: Event) => {
       Log("A Press Ended")
     })
+
     setEventListener(Input.Right.B_PressBegan, (event: Event) => {
       Log("B Press Began")
     })
+
     setEventListener(Input.Right.B_PressEnded, (event: Event) => {
       Log("B Press Ended")
     })
+
     */
+
   }
 
   def update(): Unit = vrc.update()

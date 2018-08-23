@@ -1,10 +1,8 @@
 import facade.IFThree.{Font, FontLoader}
 import org.scalajs.dom
-import org.scalajs.dom.{Event, console, window}
-import org.scalajs.threejs.{PerspectiveCamera, Renderer}
 import resources.{FileAsText, Res}
 import util.Log
-import vrdv.input.{DeviceConnectionManager, VRControllerM}
+import vrdv.input.DeviceConnectionManager
 import vrdv.model.PlotterModelManager
 import vrdv.obj3D.{CustomColors, Text}
 import vrdv.view.ViewManager
@@ -28,7 +26,6 @@ package object vrdv {
   def start(): Unit = {
     // Wraps all changes to the model
     val modelManager: PlotterModelManager = new PlotterModelManager()
-    //VRControllerM.mdl = modelManager
     maybeModelManager = Some(modelManager)
 
     // Handles connection/disconnection events for controllers
@@ -36,9 +33,9 @@ package object vrdv {
 
     // Wraps rendering-specific objects and methods
     val viewContainer = dom.document.getElementById("scene-container")
+    ViewManager(modelManager, viewContainer)
 
     loadResources()
-    //FirebaseTesting.start()
   }
 
   /**

@@ -38,7 +38,7 @@ class DeviceConnectionManager(mc: PlotterModelManager) {
   })
 
   Log.show("Adding event listener: Disconnected")
-  dom.window.addEventListener(Input.Disconnected, (event: Event) => {
+  dom.window.addEventListener(Input.Disconnected, (event: Event) => {     // This is never fired.
     Log.show(s"!!!!!!!!!!! Input.Disconnected (${Input.Disconnected}) EVENT FIRED !!!!!!!!!!!!!!!!!!!!!!")
     Log.show(event)
     //Log.show(s"${controllers(i).name} Disconnecting...")

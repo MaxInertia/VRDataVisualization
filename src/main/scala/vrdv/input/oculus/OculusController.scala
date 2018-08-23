@@ -17,9 +17,6 @@ import scala.scalajs.js
   * @author Dorian Thiessen
   */
 abstract class OculusController(vrc: VRController) extends input.Device {
-  // Color options for the controller mesh
-  //val meshColorRed: Int = 0xFF0000
-  //val meshColorBlue: Int = 0x0000FF
   val meshColorWhite: Int = 0xFFFFFF
 
   protected def myCID: Int
@@ -30,25 +27,23 @@ abstract class OculusController(vrc: VRController) extends input.Device {
     currentColor = color
     val newColor = new ColorExt(color)
     controllerMesh.material.asInstanceOf[MeshBasicMaterial].color = newColor
-    laser.arrow.material.color = newColor
+    inputDetails.arrow.material.color = newColor
     controllerMesh.material.needsUpdate = true
-    laser.arrow.material.needsUpdate = true
+    inputDetails.arrow.material.needsUpdate = true
   }
 
-  protected val laser: ActionLaser = new ActionLaser(this)
+  protected val inputDetails: InputDetails = new InputDetails(this)
   protected var captured: Option[Object3D] = None
 
   protected var correctedPosition: Vector3 = new Vector3()
   protected var yOffset: Vector3 = new Vector3(0, 1.6, 0)
 
   def isConnected: Boolean = vrc != null
-  def isSelecting: Boolean = isConnected && laser.arrow.visible && laser.clicking
-  def isPointing: Boolean = laser.arrow != null && laser.arrow.visible
 
-  def updatedLaser: ActionLaser = {
+  def updatedLaser: InputDetails = {
     // Adjust raycaster origin to account for fakeOrigin (The controllers parent)
-    laser.rayCaster.set(getCorrectedPosition, getControllerDirection)
-    laser
+    inputDetails.rayCaster.set(getCorrectedPosition, getControllerDirection)
+    inputDetails
   }
 
   /**
@@ -107,99 +102,32 @@ abstract class OculusController(vrc: VRController) extends input.Device {
     */
   protected def initCommonEventListeners(inputDevice: Dat.InputDevice): Unit = {
 
-    // Primary Press - for selecting points! (requires thumbrest touch to be active)
-
-    /*setEventListener(Input.Primary_TouchBegan, (event: Event) => {
-      Log("Primary Touch Began")
-    })
-
-    setEventListener(Input.Primary_TouchEnded, (event: Event) => {
-      Log("Primary Touch Ended")
-    })
-
-    setEventListener(Input.Grip_TouchBegan, (event: Event) => {
-      Log("Grip Touch Began")
-    })
-
-    setEventListener(Input.Grip_TouchEnded, (event: Event) => {
-      Log("Grip Touch Ended")
-    })*/
-
-    /*setEventListener(Input.Primary_PressBegan, (event: Event) => {
-      Log("Primary Press Began")
-      inputDevice.pressed(true) // For DAT.GuiVR
-      inputParser.passInput(new Point(vrc, myCID) {
-        rc = laser
-        magnitude = primaryValue(event.target)
-        persist = true
-      })
-    })*/
-
+    // Primary Press - for clicking buttons, moving sliders, and highlighting/selecting points!
     setEventListener(Input.Primary_ValueChanged, (event: Event) => {
       Log("Primary Value Changed")//; Log(event)
       val value = primaryValue(event.target)
       if(value > 0.05) {
-        laser.arrow.visible = true
+        inputDetails.arrow.visible = true
         inputDevice.pressed(true)
       } else {
-        laser.arrow.visible = false
+        inputDetails.arrow.visible = false
         inputDevice.pressed(false)
       }
 
       if(value < 0.95) {
         inputParser.passInput(new Point(vrc, myCID) {
-          rc = laser
+          rc = inputDetails
           magnitude = value
           persist = magnitude > 0.05
         })
       } else {
         inputParser.passInput(new Press(vrc, myCID) {
-          rc = laser
+          rc = inputDetails
           magnitude = value
           persist = true
         })
       }
     })
-
-    /*setEventListener(Input.Primary_PressEnded, (event: Event) => {
-      Log("Primary Press Ended")
-      inputDevice.pressed(false)// For DAT.GuiVR
-      val value: Double = primaryValue(event.target)
-      inputParser.passInput(new Point(vrc, myCID) {
-        rc = laser
-        magnitude = value
-        persist = false
-      })
-    })*/
-
-    // Thumbrest Touch
-
-    /*setEventListener(Input.ThumbRest_TouchBegan, (event: Event) => {
-      Log("Thumbrest Touch Began")
-      //if(captured.isEmpty) laser.arrow.visible = true
-    })
-
-    setEventListener(Input.ThumbRest_TouchEnded, (event: Event) => {
-      Log("Thumbrest Touch Ended")
-      //laser.arrow.visible = false
-      //laser.clicking = false // Cannot be selecting without the rayCaster visible
-    })*/
-
-    // Attempting to grab object!
-
-    /*setEventListener(Input.Grip_PressBegan, (event: Event) => {
-      Log.show("Grip Press Began")
-
-      inputParser.passInput(new Grab {
-        source = vrc
-        sourcePosition = correctedPosition
-        rc = laser
-      }) match {
-        case NothingHappened => // ...
-        case r: Result => captured = Some(r.object3D)
-      }})*/
-
-    // Releasing object (if holding)!
 
     setEventListener(Input.Grip_ValueChanged, (event: Event) => {
       Log("Grip Value Changed")//; Log(event)
@@ -208,7 +136,7 @@ abstract class OculusController(vrc: VRController) extends input.Device {
         inputParser.passInput(new Grab {
           source = vrc
           sourcePosition = correctedPosition
-          rc = laser
+          rc = inputDetails
         }) match {
           case NothingHappened => // ...
           case r: Result => captured = Some(r.object3D)
@@ -225,21 +153,6 @@ abstract class OculusController(vrc: VRController) extends input.Device {
       }
     })
 
-    /*setEventListener(Input.Grip_PressEnded, (event: Event) => {
-      Log.show("Grip Press Ended")
-      if (captured.nonEmpty) inputParser.passInput(new Drop {
-        source = vrc
-        target = captured.get
-      }) match {
-        case NothingHappened => // ...
-        case r: Result => captured = None
-      }
-    })*/
-
-    // Axes changed! - Currently no action
-
-    Log.show("Adding event listener: Axes_Changes")
-
     setAxesEventListener(Input.Axes_Changed, (event: AxesChangedEvent) => {
       Log("Axes Changed!")
       if(captured.nonEmpty) {
@@ -251,6 +164,51 @@ abstract class OculusController(vrc: VRController) extends input.Device {
           MotionOperations.rotateAroundWorldAxis(heldObject, new Vector3(1, 0, 0), 2*axes(1)*scala.math.Pi/180)
       }
     })
+
+    /* -- Unused inputs
+
+    setEventListener(Input.Primary_TouchBegan, (event: Event) => {
+      Log("Primary Touch Began")
+    })
+
+    setEventListener(Input.Primary_TouchEnded, (event: Event) => {
+      Log("Primary Touch Ended")
+    })
+
+    setEventListener(Input.Primary_PressBegan, (event: Event) => {
+      Log("Primary Press Began")
+    })
+
+    setEventListener(Input.Primary_PressEnded, (event: Event) => {
+      Log("Primary Press Ended")
+    })
+
+    setEventListener(Input.Grip_TouchBegan, (event: Event) => {
+      Log("Grip Touch Began")
+    })
+
+    setEventListener(Input.Grip_TouchEnded, (event: Event) => {
+      Log("Grip Touch Ended")
+    })
+
+    setEventListener(Input.Grip_PressBegan, (event: Event) => {
+      Log("Grip Press Began")
+    })
+
+    setEventListener(Input.Grip_PressEnded, (event: Event) => {
+      Log("Grip Press Ended")
+    })
+
+    setEventListener(Input.ThumbRest_TouchBegan, (event: Event) => {
+      Log("Thumbrest Touch Began")
+    })
+
+    setEventListener(Input.ThumbRest_TouchEnded, (event: Event) => {
+      Log("Thumbrest Touch Ended")
+    })
+
+    */
+
   } // end of initCommonEventListeners
 
 }

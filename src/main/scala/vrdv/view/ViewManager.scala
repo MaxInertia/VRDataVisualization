@@ -5,9 +5,8 @@ import facade.Stats
 import org.scalajs.dom
 import org.scalajs.dom.raw.Element
 import org.scalajs.dom.{Event, console, window}
-import org.scalajs.threejs.{Color, PerspectiveCamera, Renderer}
+import org.scalajs.threejs.{PerspectiveCamera, Renderer}
 import util.Log
-import vrdv.input.VRControllerM
 import vrdv.model.RenderRequirements
 
 /**

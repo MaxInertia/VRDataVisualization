@@ -17,27 +17,27 @@ package object input {
 
   case class Point(source: Object3D, cid: Int) extends Action {
     //var source: Object3D = _
-    var rc: ActionLaser = _
+    var rc: InputDetails = _
     var persist: Boolean = false
     var magnitude: Double = 0.5
   }
 
   case class Press(source: Object3D, cid: Int) extends Action {
     //var source: Object3D = _
-    var rc: ActionLaser = _
+    var rc: InputDetails = _
     var persist: Boolean = false
     var magnitude: Double = 0.99
   }
 
   case class Grab() extends Action {
     var source: Object3D = _
-    var rc: ActionLaser = _
+    var rc: InputDetails = _
     var sourcePosition: Vector3 = _
   }
 
   case class Drop() extends Action {
     var source: Object3D = _
-    var rc: ActionLaser = _
+    var rc: InputDetails = _
     var target: Object3D = _
   }
 
