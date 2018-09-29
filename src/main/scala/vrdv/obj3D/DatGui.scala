@@ -99,6 +99,7 @@ object DatGui {
       case sp: ScatterPlot ⇒
         val range = gui.getRange
         sp.setVisiblePointRange(range.start, range.end)
+        mc.setVisiblePointRange(range.start, range.end)
       case sm: ShadowManifold ⇒
     })
     Button(2, filterFolder).setLabels("Filter!", "Apply Filter")

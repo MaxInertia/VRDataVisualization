@@ -47,6 +47,7 @@ package object plots {
     var hue: Double = 0 // Default to be overwritten if points are to have color
     val numPoints: Int = getSizes.array.asInstanceOf[Float32Array].length
     var visiblePoints: Int = numPoints
+    var firstVisiblePointIndex: Int = 0
 
     /**
      * Sets the range of points to be rendered. [first, last)
@@ -54,6 +55,7 @@ package object plots {
      * @param last last point index, previous point is the last to be rendered
      */
     def setVisiblePointRange(first: Int, last: Int): Unit = {
+      firstVisiblePointIndex = first
       visiblePoints = last - first
       getGeometry.asInstanceOf[js.Dynamic].setDrawRange(first, last)
     }

@@ -157,6 +157,31 @@ class Plotter(scene: Scene, camera: Camera) extends ModelComponent[Action] {
     }
   }
 
+  def setVisiblePointRange(start: Int, end: Int): Unit = {
+    val plot2D = PLOT(1)
+    Log.show("Position:")
+    Log.show(plot2D.getPoints.position)
+    val prevStart = plot2D.firstVisiblePointIndex
+    val prevEnd = plot2D.visiblePoints + prevStart
+    plot2D.setVisiblePointRange(start, end)
+
+    // 1. Shift plot (-x) proportional to |start|
+    val numPoints = plot2D.numPoints
+    val points = plot2D.getPoints
+    val deltaT = 1.0 / numPoints // distance between points along x-axis
+
+    val prevDist2FirstVisible = 1.0 / (prevEnd - prevStart) * prevStart
+    val dist2FirstVisible = 1.0 / plot2D.visiblePoints * start
+    points.translateX(prevDist2FirstVisible - dist2FirstVisible)
+
+    // 2. Scale plot (x) proportional to | end - start |
+    Log.show("Scale: ")
+    Log.show(points.scale)
+    val scaleChange = (1.0*(prevEnd - prevStart)) / (1.0*(end - start))
+    Log.show(s"Scale Change: $scaleChange")
+    points.scale.setX(scaleChange * points.scale.x)
+  }
+
   // Applies an axis change. Changes (1) plot point positions, (2) axes titles, and (3) gui labels
   def requestAxisChange(plotIndex: Int, axisID: AxisID, columnIndex: Int): Unit = {
     Log.show("[requestAxisChange] start")

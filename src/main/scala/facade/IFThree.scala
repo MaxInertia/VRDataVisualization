@@ -108,7 +108,7 @@ object IFThree {
   class WebGLRendererExt extends WebGLRenderer {
     var vr: WebVRManager = js.native
     var shadowMap: ShadowMap = js.native
-    def setAnimationLoop(callback: js.Function1[Double, Unit]): Unit = js.native
+    def setAnimationLoop(callback: js.Function0[Unit]): Unit = js.native
   }
   @js.native
   @JSGlobal("THREE.WebVRManager")

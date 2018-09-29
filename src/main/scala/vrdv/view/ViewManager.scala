@@ -8,6 +8,7 @@ import org.scalajs.dom.{Event, console, window}
 import org.scalajs.threejs.{PerspectiveCamera, Renderer}
 import util.Log
 import vrdv.model.RenderRequirements
+import vrdv.view
 
 /**
   * View Controller
@@ -21,9 +22,21 @@ private[vrdv] class ViewManager(mc: RenderRequirements) extends SuppliesRenderer
   renderer.setSize(window.innerWidth, window.innerHeight)
   renderer.devicePixelRatio = window.devicePixelRatio
   renderer.vr.enabled = true
-  renderer.vr.setAnimationLoop(render)
+  renderer.vr.setAnimationLoop(renderVR)
+  //renderer.setAnimationLoop(render.asInstanceOf[scalajs.js.Function0[Unit]])
 
-  def render(timestamp: Double): Unit = {
+
+  def renderVR(timestamp: Double): Unit = {
+    stats.update()
+    val (scene, camera) = mc.getRenderables // Request renderable model contents
+    renderer.render(scene, camera) // Render scene from cameras POV
+    //VRControllerM.update()
+    VRControllerManager.update()
+    mc.afterRender() // Inform model of render completion
+    dom.window.requestAnimationFrame(renderVR)
+  }
+
+  def render(): Unit = {
     stats.update()
     val (scene, camera) = mc.getRenderables // Request renderable model contents
     renderer.render(scene, camera) // Render scene from cameras POV
@@ -60,6 +73,9 @@ object ViewManager {
     // Add window event listeners
     view.passRendererTo(resizeEventListener)(camera)
     //vc.passRendererTo(fullscreenEventListener)
+
+    dom.console.log("Requesting animation frame")
+    dom.window.requestAnimationFrame(view.renderVR)
 
     view
   }

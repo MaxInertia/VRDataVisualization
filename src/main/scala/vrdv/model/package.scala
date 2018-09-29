@@ -61,6 +61,16 @@ package object model {
     def passEvent(input: Action): Unit
   }
 
+  /*trait ModelTransformer[ModelA <: Model, ModelB <: Model] {
+    def forward(a: ModelA): ModelB
+    def reverse(b: ModelB): ModelA
+  }*/
+
+  //class FirebaseModel
+
+  //abstract class ConnectDisconnect() extends ModelTransformer[LocalModel, FirebaseModel]{}
+  // or also test modifications to a model by transforming a running model into it?
+
   trait Room {
 
     def addRoom(scene: Scene): Unit = {
