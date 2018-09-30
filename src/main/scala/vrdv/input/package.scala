@@ -15,14 +15,14 @@ package object input {
 
   trait Action {}
 
-  case class Point(source: Object3D, cid: Int) extends Action {
+  case class Point(source: Option[Object3D], cid: Int) extends Action {
     //var source: Object3D = _
     var rc: InputDetails = _
     var persist: Boolean = false
     var magnitude: Double = 0.5
   }
 
-  case class Press(source: Object3D, cid: Int) extends Action {
+  case class Press(source: Option[Object3D], cid: Int) extends Action {
     //var source: Object3D = _
     var rc: InputDetails = _
     var persist: Boolean = false

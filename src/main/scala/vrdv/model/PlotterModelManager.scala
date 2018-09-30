@@ -3,7 +3,7 @@ package vrdv.model
 import facade.IFThree.SceneUtils2
 import org.scalajs.threejs._
 import util.Log
-import vrdv.input.{Action, Result}
+import vrdv.input.{Action, Result, mouse}
 import vrdv.{input, obj3D}
 
 /**
@@ -65,13 +65,23 @@ class PlotterModelManager extends ModelManager[Action, Result] with Room  {
     case p: input.Point => // ==============
       lastPoint(p.cid) = p
       lastPress(p.cid).persist = false
-      if(p.persist) plotter.hoverAction(p.rc.updateRaycaster(p.source), select = false)
+      if(p.persist) {
+        if(p.source.nonEmpty) plotter.hoverAction(p.rc.updateRaycaster(p.source.get), select = false)
+        else {
+          val (_, camera) = getRenderables
+          plotter.hoverAction(mouse.getUpdatedRaycaster(camera), select = false)
+        }
+      }
       afterRender()
       input.NothingHappened
 
     case p: input.Press => // ==============
       lastPress(p.cid) = p
-      plotter.hoverAction(p.rc.updateRaycaster(p.source), select = true)
+      if(p.source.nonEmpty) plotter.hoverAction(p.rc.updateRaycaster(p.source.get), select = true)
+      else {
+        val (_, camera) = getRenderables
+        plotter.hoverAction(mouse.getUpdatedRaycaster(camera), select = true)
+      }
       afterRender()
       input.NothingHappened
 
@@ -80,7 +90,7 @@ class PlotterModelManager extends ModelManager[Action, Result] with Room  {
       input.NothingHappened
 
     case _ =>
-      Log.show(s"Unkown input entered: $action")
+      Log.show(s"Unknown input entered: $action")
       input.NothingHappened
   }
 
@@ -90,10 +100,21 @@ class PlotterModelManager extends ModelManager[Action, Result] with Room  {
     super.afterRender()
     plotter.update()
     for(cid <- 0 to 1) {
-      if(lastPress(cid).persist)
-        plotter.hoverAction(lastPoint(cid).rc.updateRaycaster(lastPoint(cid).source), select = true)
-      else if(lastPoint(cid).persist)
-        plotter.hoverAction(lastPoint(cid).rc.updateRaycaster(lastPoint(cid).source), select = false)
+      if(lastPress(cid).persist) {
+        if(lastPoint(cid).source.nonEmpty)
+          plotter.hoverAction(lastPoint(cid).rc.updateRaycaster(lastPoint(cid).source.get), select = true)
+        else {
+          val (_, camera) = getRenderables
+          plotter.hoverAction(mouse.getUpdatedRaycaster(camera), select = true)
+        }
+      }
+      else if(lastPoint(cid).persist && lastPoint(cid).source.nonEmpty)
+        if(lastPoint(cid).source.nonEmpty)
+          plotter.hoverAction(lastPoint(cid).rc.updateRaycaster(lastPoint(cid).source.get), select = false)
+        else {
+          val (_, camera) = getRenderables
+          plotter.hoverAction(mouse.getUpdatedRaycaster(camera), select = false)
+        }
     }
   }
 

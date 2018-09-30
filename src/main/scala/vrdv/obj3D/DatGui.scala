@@ -81,7 +81,6 @@ object DatGui {
 
   def apply(plot: Plot3D, axes: CoordinateAxes, mc: Plotter): DatGui = {
     val gui = new DatGui()
-
     createHighlightedPointDataFolder(gui, plot)
     createSelectedPointsDataFolder(gui, plot, mc)
 

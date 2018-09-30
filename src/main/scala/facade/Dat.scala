@@ -1,6 +1,6 @@
 package facade
 
-import org.scalajs.threejs.{Camera, Object3D}
+import org.scalajs.threejs.{Camera, Object3D, Renderer}
 
 import scala.scalajs.js
 import scala.scalajs.js.annotation.JSGlobal
@@ -20,7 +20,7 @@ object Dat {
     def create(title: String): GUI = js.native
     def addInputObject(obj: Object3D): Object3D = js.native
     def addInputObject(obj: js.Any): Unit = js.native
-    def enableMouse(camera: Camera): Unit = js.native
+    def enableMouse(camera: Camera, renderer: Renderer): Unit = js.native
   }
   @js.native
   trait GUI extends Object3D {

@@ -21,8 +21,11 @@ abstract class OculusController(vrc: VRController) extends input.Device {
 
   protected def myCID: Int
   protected var controllerMesh: Mesh = _
+
   var currentColor: String = "white"
+
   def currentColorIs(color: String): Boolean = currentColor == color
+
   def setControllerColor(color: String = "white"): Unit = {
     currentColor = color
     val newColor = new ColorExt(color)
@@ -115,13 +118,13 @@ abstract class OculusController(vrc: VRController) extends input.Device {
       }
 
       if(value < 0.95) {
-        inputParser.passInput(new Point(vrc, myCID) {
+        inputParser.passInput(new Point(Some(vrc), myCID) {
           rc = inputDetails
           magnitude = value
           persist = magnitude > 0.05
         })
       } else {
-        inputParser.passInput(new Press(vrc, myCID) {
+        inputParser.passInput(new Press(Some(vrc), myCID) {
           rc = inputDetails
           magnitude = value
           persist = true
