@@ -105,6 +105,7 @@ package object vrdv {
 
     mouse.setPMM(mc)
     dom.window.addEventListener("mousemove", (event: MouseEvent) ⇒ mouse.onDocumentMouseMove(event))
+    dom.window.addEventListener("click", (event: MouseEvent) ⇒ mouse.onDocumentMouseClick(event))
 
     dom.window.addEventListener("vr controller connected", (event: SomeEvent) => {
       val controller: VRController = event.detail.asInstanceOf[VRController]

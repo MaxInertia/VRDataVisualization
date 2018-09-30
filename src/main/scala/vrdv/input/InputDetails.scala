@@ -9,7 +9,7 @@ import vrdv.obj3D.plots.{AxisID, NOAxis}
   * Wrapper for controller input details.
   * Created by Dorian Thiessen on 2018-07-19.
   */
-class InputDetails(val controller: OculusController) {
+class InputDetails(val controller: Device) {
   var rayCaster: Raycaster = _
   var arrow: Line = _ // effectively the rayCaster mesh
   private[input] var clicking: Boolean = false
@@ -20,11 +20,17 @@ class InputDetails(val controller: OculusController) {
   def unloadAxis(): AxisID = {
     val temp = loadedAxis
     loadedAxis = NOAxis
-    controller.setControllerColor()
+    controller match {
+      case c: OculusController ⇒ c.setControllerColor()
+      case _ ⇒ // nothing
+    }
     temp
   }
   def loadAxis(axisID: AxisID, color: String): AxisID = {
-    controller.setControllerColor(color)
+    controller match {
+      case c: OculusController ⇒ c.setControllerColor(color)
+      case _ ⇒ // nothing
+    }
     loadedAxis = axisID
     loadedAxis
   }
@@ -52,13 +58,18 @@ class InputDetails(val controller: OculusController) {
   }
 
   def construct(position: Vector3, direction: Vector3, hexColor: Int, isRight: Boolean): Unit = {
+    constructNoHandedness()
+    if(isRight) InputDetails.right = rayCaster
+    else InputDetails.left = rayCaster
+  }
+
+  def constructNoHandedness(): Unit = {
     rayCaster = new Raycaster()
-    rayCaster.set(position, direction)
     rayCaster.params.asInstanceOf[RaycasterParametersExt].Points.threshold = 0.02
 
     var material = new LineBasicMaterial()
-    material.color.setHex(hexColor)
-    var geometry = new Geometry()
+    material.color.setHex(0xFFFFFF)
+    val geometry = new Geometry()
     geometry.vertices.push(new Vector3(0, 0, -1))
     geometry.vertices.push(new Vector3(0, 0, 0))
     geometry.vertices.push(new Vector3(0, 0, 0))
@@ -67,9 +78,6 @@ class InputDetails(val controller: OculusController) {
     arrow.material.transparent = true
     arrow.material.opacity = 0.5
     arrow.visible = false
-
-    if(isRight) InputDetails.right = rayCaster
-    else InputDetails.left = rayCaster
   }
 
   def updateLengthScale(scale: Double): Unit = {
