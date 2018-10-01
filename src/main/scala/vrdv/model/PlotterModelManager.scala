@@ -69,7 +69,7 @@ class PlotterModelManager extends ModelManager[Action, Result] with Room  {
         if(p.source.nonEmpty) plotter.hoverAction(p.rc.updateRaycaster(p.source.get), select = false)
         else {
           val (_, camera) = getRenderables
-          plotter.hoverAction(mouse.getUpdatedRaycaster(camera), select = false)
+          plotter.hoverAction(mouse.Instance.getUpdatedRaycaster(camera), select = false)
         }
       }
       afterRender()
@@ -80,7 +80,7 @@ class PlotterModelManager extends ModelManager[Action, Result] with Room  {
       if(p.source.nonEmpty) plotter.hoverAction(p.rc.updateRaycaster(p.source.get), select = true)
       else {
         val (_, camera) = getRenderables
-        plotter.hoverAction(mouse.getUpdatedRaycaster(camera), select = true)
+        plotter.hoverAction(mouse.Instance.getUpdatedRaycaster(camera), select = true)
       }
       afterRender()
       input.NothingHappened
@@ -105,7 +105,7 @@ class PlotterModelManager extends ModelManager[Action, Result] with Room  {
           plotter.hoverAction(lastPoint(cid).rc.updateRaycaster(lastPoint(cid).source.get), select = true)
         else {
           val (_, camera) = getRenderables
-          plotter.hoverAction(mouse.getUpdatedRaycaster(camera), select = true)
+          plotter.hoverAction(mouse.Instance.getUpdatedRaycaster(camera), select = true)
         }
       }
       else if(lastPoint(cid).persist && lastPoint(cid).source.nonEmpty)
@@ -113,7 +113,7 @@ class PlotterModelManager extends ModelManager[Action, Result] with Room  {
           plotter.hoverAction(lastPoint(cid).rc.updateRaycaster(lastPoint(cid).source.get), select = false)
         else {
           val (_, camera) = getRenderables
-          plotter.hoverAction(mouse.getUpdatedRaycaster(camera), select = false)
+          plotter.hoverAction(mouse.Instance.getUpdatedRaycaster(camera), select = false)
         }
     }
   }

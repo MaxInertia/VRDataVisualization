@@ -45,7 +45,7 @@ private[vrdv] class ViewManager(mc: RenderRequirements) extends SuppliesRenderer
   def renderNonVR(timestamp: Double): Unit = {
     render(timestamp)
     fpcontrols.update(timestamp)
-    mouse.update(camera)
+    mouse.Instance.update(camera)
     dom.window.requestAnimationFrame(renderNonVR)
   }
 

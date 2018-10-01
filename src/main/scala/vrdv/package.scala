@@ -103,9 +103,10 @@ package object vrdv {
    */
   private def setEventListeners(mc: PlotterModelManager): Unit = {
 
-    mouse.setPMM(mc)
-    dom.window.addEventListener("mousemove", (event: MouseEvent) ⇒ mouse.onDocumentMouseMove(event))
-    dom.window.addEventListener("click", (event: MouseEvent) ⇒ mouse.onDocumentMouseClick(event))
+    val m = mouse.Instance
+    m.setPMM(mc)
+    dom.window.addEventListener("mousemove", (event: MouseEvent) ⇒ m.onDocumentMouseMove(event))
+    dom.window.addEventListener("click", (event: MouseEvent) ⇒ m.onDocumentMouseClick(event))
 
     dom.window.addEventListener("vr controller connected", (event: SomeEvent) => {
       val controller: VRController = event.detail.asInstanceOf[VRController]
@@ -122,8 +123,8 @@ package object vrdv {
         Log.show(controller)
       }
 
-      mouse.removePMM()
-      dom.window.removeEventListener("mousemove", (event: MouseEvent) ⇒ mouse.onDocumentMouseMove(event))
+      m.removePMM()
+      dom.window.removeEventListener("mousemove", (event: MouseEvent) ⇒ m.onDocumentMouseMove(event))
     })
 
     // NOTE: This never fires when using VRController to handle controller state queries

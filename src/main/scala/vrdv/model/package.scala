@@ -3,7 +3,6 @@ package vrdv
 import facade.IFThree.{GridHelperExt, Group, VRController, VRControllerManager}
 import org.scalajs.threejs._
 import util.Log
-import vrdv.input.VRControllerM
 
 /**
   * @author Dorian Thiessen | MaxInertia
