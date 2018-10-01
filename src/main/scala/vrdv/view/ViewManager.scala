@@ -1,10 +1,10 @@
 package vrdv.view
 
-import facade.IFThree.{VRControllerManager, WEBVR, WebGLRendererExt}
+import facade.IFThree._
 import facade.Stats
 import org.scalajs.dom
 import org.scalajs.dom.raw.Element
-import org.scalajs.dom.{Event, console, window}
+import org.scalajs.dom.{Event, window}
 import org.scalajs.threejs.{PerspectiveCamera, Renderer}
 import util.Log
 import vrdv.input.mouse
@@ -19,23 +19,33 @@ private[vrdv] class ViewManager(mc: RenderRequirements) extends SuppliesRenderer
   val renderer: WebGLRendererExt = new WebGLRendererExt()
   private val stats = new Stats()
 
+  // ========== Temporary
+  val (scene, camera) = mc.getRenderables
+  val fpcontrols: FirstPersonVRControls = new FirstPersonVRControls(camera, scene)
+  // ==========
+
   renderer.setSize(window.innerWidth, window.innerHeight)
   renderer.devicePixelRatio = window.devicePixelRatio
-  renderer.vr.enabled = true
-  renderer.vr.setAnimationLoop(render)
+  //renderer.vr.enabled = true
+  renderer.vr.setAnimationLoop(renderVR)
   dom.window.requestAnimationFrame(renderNonVR)
 
   def render(timestamp: Double): Unit = {
-    stats.update()
     val (scene, camera) = mc.getRenderables // Request renderable model contents
     renderer.render(scene, camera)          // Render scene from cameras POV
-    mouse.update(camera)
+    mc.afterRender()                        // Post-render actions
+    stats.update()
+  }
+
+  def renderVR(timestamp: Double): Unit = {
     VRControllerManager.update()
-    mc.afterRender()                        // Inform model of render completion
+    render(timestamp)
   }
 
   def renderNonVR(timestamp: Double): Unit = {
     render(timestamp)
+    fpcontrols.update(timestamp)
+    mouse.update(camera)
     dom.window.requestAnimationFrame(renderNonVR)
   }
 

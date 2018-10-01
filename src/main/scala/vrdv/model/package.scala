@@ -45,7 +45,7 @@ package object model {
       var components: Array[ModelComponent[Action]] = Array()
       val scene: Scene = new Scene()
       val camera: PerspectiveCamera = new PerspectiveCamera()
-      camera.fov = 90
+      camera.fov = 45
       scene.add(camera)
 
       var controllers: Array[VRController] = Array()

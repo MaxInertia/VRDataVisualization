@@ -51,6 +51,9 @@ THREE.FirstPersonVRControls = function ( camera, scene ) {
       case 39: /*right*/
       case 68: /*D*/ this.moveRight = true; break;
 
+      case 81: /*Q*/ this.snap('left'); break;
+      case 69: /*E*/ this.snap('right'); break;
+
       case 82: /*R*/ this.moveUp = true; break;
       case 70: /*F*/ this.moveDown = true; break;
 
@@ -74,8 +77,8 @@ THREE.FirstPersonVRControls = function ( camera, scene ) {
       case 39: /*right*/
       case 68: /*D*/ this.moveRight = false; break;
         
-      case 81: /*Q*/ this.snap('left'); break;
-      case 69: /*E*/ this.snap('right'); break;
+      case 81: /*Q*/ this.snap('none'); break;
+      case 69: /*E*/ this.snap('none'); break;
 
       case 82: /*R*/ this.moveUp = false; break;
       case 70: /*F*/ this.moveDown = false; break;
@@ -84,10 +87,14 @@ THREE.FirstPersonVRControls = function ( camera, scene ) {
 
   };
 
-  var SNAP_ANGLE = /*30 */ Math.PI / 180; 
+  var SNAP_ANGLE = (Math.PI / 180) / 4;
   this.snap = function (direction) {
-    this.angle += SNAP_ANGLE * (direction === 'left' ? 1 : -1);
-    this.angleQuaternion.setFromAxisAngle(YAXIS, this.angle);
+    if(direction === 'none') {
+        this.angleQuaternion.setFromAxisAngle(YAXIS, 0);
+    } else {
+        this.angle = SNAP_ANGLE * (direction === 'left' ? 1 : -1);
+        this.angleQuaternion.setFromAxisAngle(YAXIS, this.angle);
+    }
   };
 
   var setFromQuaternionYComponent = function (dest, source) {
