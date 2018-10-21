@@ -26,7 +26,7 @@ private[vrdv] class ViewManager(mc: RenderRequirements) extends SuppliesRenderer
 
   renderer.setSize(window.innerWidth, window.innerHeight)
   renderer.devicePixelRatio = window.devicePixelRatio
-  //renderer.vr.enabled = true
+  renderer.vr.enabled = true
   renderer.vr.setAnimationLoop(renderVR)
   dom.window.requestAnimationFrame(renderNonVR)
 

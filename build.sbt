@@ -21,6 +21,7 @@ skip in packageJSDependencies := false
 libraryDependencies += "org.scalactic" %% "scalactic" % "3.0.5"
 libraryDependencies += "org.scalatest" %% "scalatest" % "3.0.5" % "test"
 
+/*
 // sbt ghpagesPushSite
 enablePlugins(GhpagesPlugin)
 enablePlugins(SiteScaladocPlugin)
@@ -46,3 +47,4 @@ mappings in makeSite ++= Seq(
   file(s"${Paths.www}/js/lib/webvr-polyfill.min.js") -> "js/lib/webvr-polyfill.min.js",
   file("target/scala-2.12/vrdatavisualization-opt.js") -> "js/vrdatavisualization-opt.js"
 )
+*/
