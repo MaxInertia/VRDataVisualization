@@ -2,6 +2,7 @@ package vrdv.obj3D
 
 import facade.Dat
 import facade.Dat.{GuiButton, GuiSlider}
+import util.Log
 import vrdv.input.InputDetails
 import vrdv.model.Plotter
 import vrdv.obj3D.plots._
@@ -114,6 +115,13 @@ object DatGui {
     })
     Button(3, embeddingFolder).setLabels("Embed!", "Embed xVar")
     gui.object3D.addFolder(embeddingFolder)
+
+    val testFolder = Dat.GUIVR.create("Testing")
+    testFolder.addButton(() => {
+      Log.show("Test button clicked!")
+    })
+    Button(0, testFolder).setLabels("TestButton!", "Test button.")
+    gui.object3D.addFolder(testFolder)
 
     gui
   }
