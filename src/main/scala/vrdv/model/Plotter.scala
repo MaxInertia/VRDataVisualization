@@ -13,7 +13,8 @@ import vrdv.obj3D.{CustomColors, DatGui, Region}
   */
 class Plotter(scene: Scene, camera: Camera) extends ModelComponent[Action] {
 
-  scene.add(DatGui.sample.object3D)
+  //Instantiating the Initial Menu
+  scene.add(DatGui.initialMenu.object3D)
 
   private var DATA: Array[Array[Data]] = Array()
   private var REGIONS: Array[Region] = Array()
