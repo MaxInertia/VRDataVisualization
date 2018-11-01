@@ -6,7 +6,7 @@ import util.Log
 import vrdv.input.{Action, InputDetails, Interactions}
 import vrdv.obj3D.displays.{CSC_DefaultConfig, ColumnSelectionConsole}
 import vrdv.obj3D.plots._
-import vrdv.obj3D.{CustomColors, DatGui, Region}
+import vrdv.obj3D.{CustomColors, DatGui, DatGuiW, InitialMenu, Region}
 
 /**
   * Created by Dorian Thiessen on 2018-07-29.
@@ -14,7 +14,7 @@ import vrdv.obj3D.{CustomColors, DatGui, Region}
 class Plotter(scene: Scene, camera: Camera) extends ModelComponent[Action] {
 
   //Instantiating the Initial Menu
-  scene.add(DatGui.initialMenu.object3D)
+  scene.add(new InitialMenu().object3D)
 
   private var DATA: Array[Array[Data]] = Array()
   private var REGIONS: Array[Region] = Array()
