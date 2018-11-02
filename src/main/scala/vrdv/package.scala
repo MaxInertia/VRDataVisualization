@@ -63,7 +63,8 @@ package object vrdv {
     if(maybeModelManager.isEmpty) return
     val modelManager = maybeModelManager.get
     if(data.isEmpty) Log.show("  Empty data on plot request")
-    else modelManager.plotter.plot2D3D(FileAsText(data).collect(), CustomColors.BLUE_HUE_SHIFT)
+    //else modelManager.plotter.plot2D3D(FileAsText(data).collect(), CustomColors.BLUE_HUE_SHIFT)
+    else modelManager.plotter.setupData(FileAsText(data).collect(), CustomColors.BLUE_HUE_SHIFT)
   }
 
   /**

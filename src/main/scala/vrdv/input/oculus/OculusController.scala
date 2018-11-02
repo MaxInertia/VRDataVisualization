@@ -202,15 +202,19 @@ abstract class OculusController(vrc: VRController) extends input.Device {
       Log("Grip Press Ended")
     })
 
+    */
+
     setEventListener(Input.ThumbRest_TouchBegan, (event: Event) => {
-      Log("Thumbrest Touch Began")
+      Log("Thumbrest Touch Began - event: " + event.`type`)
     })
 
     setEventListener(Input.ThumbRest_TouchEnded, (event: Event) => {
-      Log("Thumbrest Touch Ended")
+      Log("Thumbrest Touch Ended - event: " + event.`type`)
     })
 
-    */
+    setEventListener(Input.Home_PressEnded, (event: Event) => {
+      Log("Home Button Pressed - event: " + event.`type`)//; Log(event)
+    })
 
   } // end of initCommonEventListeners
 

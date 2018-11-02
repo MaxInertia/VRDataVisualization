@@ -1,15 +1,18 @@
 package vrdv.obj3D
 
 import util.Log
+import vrdv.model.Plotter
 
 
 /**
   * Created by Wade McDonald 2018-11-01
   */
-class InitialMenu() 
+class InitialMenu(plotter: Plotter)
   extends DatGuiW("Welcome", 0, 2, -3) {
 
-  addButton((() => { Log.show("Graph 1 button clicked!") }), "Create", "Graph 1")
-  addButton((() => { Log.show("Graph 2 button clicked!") }), "Create", "Graph 2")
-  addButton((() => { Log.show("Graph 3 button clicked!") }), "Create", "Graph 3")
+  override def setVisible(vis: Boolean): Unit = super.setVisible(vis)
+
+  addButton(() => { plotter.newPlot3DWithData; setVisible(false) }, "Create", "Graph 1")
+  addButton(() => { plotter.newPlot3DWithData }, "Create", "Graph 2")
+  addButton(() => { plotter.newPlot3DWithData }, "Create", "Graph 3")
 }

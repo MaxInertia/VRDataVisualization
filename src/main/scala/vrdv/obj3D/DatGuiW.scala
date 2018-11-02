@@ -29,6 +29,10 @@ class DatGuiW(title: String, xInit: Double, yInit: Double, zInit: Double) {
     object3D.addButton(function)
     WButton(idx, object3D).setLabels(name, description)
   }
+
+  def setVisible(vis: Boolean): Unit = {
+    object3D.visible = vis
+  }
 }
 
 object DatGuiW {

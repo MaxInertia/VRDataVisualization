@@ -10,11 +10,9 @@ import vrdv.obj3D.{CustomColors, DatGui, DatGuiW, InitialMenu, Region}
 
 /**
   * Created by Dorian Thiessen on 2018-07-29.
+  * Modified by Wade McDonald on 2018-10-02.
   */
 class Plotter(scene: Scene, camera: Camera) extends ModelComponent[Action] {
-
-  //Instantiating the Initial Menu
-  scene.add(new InitialMenu().object3D)
 
   private var DATA: Array[Array[Data]] = Array()
   private var REGIONS: Array[Region] = Array()
@@ -38,6 +36,58 @@ class Plotter(scene: Scene, camera: Camera) extends ModelComponent[Action] {
   override def passEvent(event: Action): Unit = {}
 
   // ------ Plot stuff
+
+  /*---- New 2018-11-02 ----*/
+
+  private val initialMenu = new InitialMenu(this)
+
+  def setupData(data: Array[Data], pointColor: Double = CustomColors.BLUE_HUE_SHIFT): Unit = {
+    if (data.isEmpty) return
+    DATA = DATA :+ data
+
+    if(data.length >= 3) {
+      //Instantiating the Initial Menu
+      scene.add(initialMenu.object3D)
+
+    } else {
+      val i = data.length - 1
+      val shadowManifold: ShadowManifold = ShadowManifold(data(i), Res.getLastLoadedTextureID, pointColor)
+      addPlot3DToRegion(shadowManifold)
+      plot2D(false)
+    }
+  }
+
+  def newPlot3DWithData: Unit = {
+    val data = DATA(0)
+    val pointColor = CustomColors.BLUE_HUE_SHIFT
+
+    if (PLOT.length < 3) {
+      Log.show(s"Data.length == ${data.length}")
+
+      val scatterPlot: ScatterPlot = ScatterPlot(data, Res.getLastLoadedTextureID, pointColor)
+
+      Log("[Regions] - Adding 3D plot to new region")
+      val i = regions.length
+      addRegion(Region(i))
+      regions(i).addPlot(scatterPlot)
+      repositionRegions()
+
+
+      val gui = DatGui(scatterPlot, regions(i).maybeGetAxes().get, this)
+      regions(i).gui = Some(gui)
+      regions(i).add(gui.object3D)
+      //gui.object3D.position.setX(gui.object3D.position.x - 0.8)
+
+      //gui.object3D.rotateY(3.14 / 4)
+
+      addPlot(scatterPlot)
+      addAxes(regions(i).maybeGetAxes().get)
+      addGUI(gui)
+
+    }
+  }
+
+  /*---- End New ----*/
 
   def plot2D3D(data: Array[Data], pointColor: Double = CustomColors.BLUE_HUE_SHIFT): Unit = {
     if (data.isEmpty) return

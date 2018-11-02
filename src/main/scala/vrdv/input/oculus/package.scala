@@ -24,6 +24,9 @@ package object oculus {
     val Axes_Changed: String = "thumbstick axes changed"
     val Disconnected: String = "vr controller disconnected"
 
+    val Home_PressBegan: String = "home press began"
+    val Home_PressEnded: String = "home press ended"
+
     object Left {
       // Event ID's specific to the Left controller
       val X_PressBegan: String = "X press began"

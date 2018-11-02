@@ -2,7 +2,6 @@ package vrdv.obj3D
 
 import facade.Dat
 import facade.Dat.{GuiButton, GuiSlider}
-import util.Log
 import vrdv.input.InputDetails
 import vrdv.model.Plotter
 import vrdv.obj3D.plots._
@@ -23,11 +22,6 @@ class DatGui {
 
   // 0: HPD Folder, 1: SPS Folder
   var folders: Array[Dat.GUI] = Array()
-
-  var samples: js.Object = js.Dynamic.literal(
-    "someBoolean" → false,
-    "someValue" → "a"
-  )
 
   def addFolder(folder: Dat.GUI): Unit = {
     object3D.addFolder(folder)
@@ -85,43 +79,7 @@ class DatGui {
 
 object DatGui {
 
-  def initialMenu: DatGui = {
-    val gui = new DatGui()
-
-    gui.object3D.position.set(0, 2, -3)
-
-    gui.object3D.addButton(() => {
-      Log.show("Graph 1 button clicked!")
-    })
-    Button(0, gui.object3D).setLabels("Create", "Graph 1")
-
-    gui.object3D.addButton((() => {
-      Log.show("Graph 2 button clicked!")
-    }))
-    Button(1, gui.object3D).setLabels("Create", "Graph 2")
-
-    gui.object3D.addButton(() => {
-      Log.show("Graph 3 button clicked!")
-    })
-    Button(2, gui.object3D).setLabels("Create", "Graph 3")
-
-    gui
-  }
-
-  def sample: DatGui = {
-    val gui = new DatGui()
-    // # Checkbox sample
-    gui.object3D.add(gui.samples, "someBoolean")
-
-    // # Drop-down sample
-    // NOTE: Position of selected value is lower than it should be.
-    val dropDownOptions = js.Array("a", "b", "c")
-    gui.object3D.add(gui.samples, "someValue", dropDownOptions)
-
-    gui
-  }
-
-  def plotDetailsMenu(plot: Plot3D, axes: CoordinateAxes, mc: Plotter): DatGui = {
+  def apply(plot: Plot3D, axes: CoordinateAxes, mc: Plotter): DatGui = {
     val gui = new DatGui()
     createHighlightedPointDataFolder(gui, plot)
     createSelectedPointsDataFolder(gui, plot, mc)
@@ -157,24 +115,6 @@ object DatGui {
     Button(3, embeddingFolder).setLabels("Embed!", "Embed xVar")
     gui.object3D.addFolder(embeddingFolder)
 
-    val testFolder = Dat.GUIVR.create("Testing")
-    testFolder.addButton(() => {
-      Log.show("Test button clicked!")
-    })
-    Button(0, testFolder).setLabels("TestButton!", "Test button.")
-    gui.object3D.addFolder(testFolder)
-
-    gui
-  }
-
-  def apply(plot: Plot3D, axes: CoordinateAxes, mc: Plotter): DatGui = {
-    plotDetailsMenu(plot, axes, mc)
-  }
-
-  def apply(title: String): Dat.GUI = {
-    val gui = Dat.GUIVR.create(title)
-    gui.position.set(-0.8, 1.4, -2)
-    //gui.rotateY(3.14/4 * 1.1)
     gui
   }
 
