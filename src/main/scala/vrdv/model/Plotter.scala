@@ -75,10 +75,14 @@ class Plotter(scene: Scene, camera: Camera) extends ModelComponent[Action] {
 
       val gui = DatGui(scatterPlot, regions(i).maybeGetAxes().get, this)
       regions(i).gui = Some(gui)
-      regions(i).add(gui.object3D)
-      //gui.object3D.position.setX(gui.object3D.position.x - 0.8)
+      //regions(i).add(gui.object3D)
+      scene.add(gui.object3D)
+      gui.object3D.position.setX(regions(i).object3D.position.x)
+      gui.object3D.position.setY(regions(i).object3D.position.y + 1.0)
+      gui.object3D.position.setZ(regions(i).object3D.position.z)
 
       //gui.object3D.rotateY(3.14 / 4)
+
 
       addPlot(scatterPlot)
       addAxes(regions(i).maybeGetAxes().get)
