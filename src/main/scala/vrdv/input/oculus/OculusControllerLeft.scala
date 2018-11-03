@@ -70,12 +70,36 @@ class OculusControllerLeft(vrc: VRController, val mc: PlotterModelManager) exten
       Log.show("Left Thumbstick Button Pressed - event: " + event.`type`)
     })
 
+    setEventListener(Input.Left.Thumbstick_TouchBegan, (event: Event) => {
+      Log.show("Left Thumbstick Touch Began - event: " + event.`type`)
+    })
+
+    setEventListener(Input.Left.Thumbstick_TouchEnded, (event: Event) => {
+      Log.show("Left Thumbstick Touch Ended - event: " + event.`type`)
+    })
+
     setEventListener(Input.Left.ThumbRest_TouchBegan, (event: Event) => {
       Log.show("Left Thumbrest Touch Began - event: " + event.`type`)
     })
 
     setEventListener(Input.Left.ThumbRest_TouchEnded, (event: Event) => {
       Log.show("Left Thumbrest Touch Ended - event: " + event.`type`)
+    })
+
+    setEventListener(Input.Left.X_TouchBegan, (event: Event) => {
+      Log.show("X Touch Began - event: " + event.`type`)
+    })
+
+    setEventListener(Input.Left.X_TouchEnded, (event: Event) => {
+      Log.show("X Touch Ended - event: " + event.`type`)
+    })
+
+    setEventListener(Input.Left.Y_TouchBegan, (event: Event) => {
+      Log.show("Y Touch Began - event: " + event.`type`)
+    })
+
+    setEventListener(Input.Left.Y_TouchEnded, (event: Event) => {
+      Log.show("Y Touch Ended - event: " + event.`type`)
     })
 
   }

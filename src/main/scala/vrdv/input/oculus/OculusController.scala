@@ -212,10 +212,6 @@ abstract class OculusController(vrc: VRController) extends input.Device {
 
     */
 
-    setEventListener("", (event: Event) => {
-      Log.show("Event: " + event.`type`)
-    })
-
   } // end of initCommonEventListeners
 
 }
