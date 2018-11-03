@@ -41,6 +41,10 @@ class Plotter(scene: Scene, camera: Camera) extends ModelComponent[Action] {
 
   private val initialMenu = new InitialMenu(this)
 
+  def toggleGuiVisibility: Unit = {
+    Log.show("Toggle GUI visibility.")
+  }
+
   def setupData(data: Array[Data], pointColor: Double = CustomColors.BLUE_HUE_SHIFT): Unit = {
     if (data.isEmpty) return
     DATA = DATA :+ data
@@ -389,6 +393,7 @@ class Plotter(scene: Scene, camera: Camera) extends ModelComponent[Action] {
         val plot = r.plot.get
         for(p <- plot.selectedPointIndices) PointOperations.deselect(plot, p)
         plot.selectedPointIndices = plot.selectedPointIndices.empty
+        PointOperations.updateSelectedSummary(plot)
       }
     }
   }

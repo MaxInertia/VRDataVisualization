@@ -35,22 +35,22 @@ class OculusControllerRight(vrc: VRController, val mc: PlotterModelManager) exte
 
     // Setup events unique for this controller
 
-    // -- Unused inputs
+    setEventListener(Input.Right.B_PressEnded, (event: Event) => {
+      mc.plotter.clearSelections()
+    })
+
+    setEventListener(Input.Right.A_PressEnded, (event: Event) => {
+      mc.plotter.toggleGuiVisibility
+    })
+
+    /* -- Unused inputs
 
     setEventListener(Input.Right.A_PressBegan, (event: Event) => {
       Log.show("A Press Began")
     })
 
-    setEventListener(Input.Right.A_PressEnded, (event: Event) => {
-      Log.show("A Press Ended")
-    })
-
     setEventListener(Input.Right.B_PressBegan, (event: Event) => {
       Log.show("B Press Began")
-    })
-
-    setEventListener(Input.Right.B_PressEnded, (event: Event) => {
-      Log.show("B Press Ended")
     })
 
     setEventListener(Input.Right.Thumbstick_PressBegan, (event: Event) => {
@@ -92,6 +92,8 @@ class OculusControllerRight(vrc: VRController, val mc: PlotterModelManager) exte
     setEventListener(Input.Right.B_TouchEnded, (event: Event) => {
       Log.show("B Touch Ended - event: " + event.`type`)
     })
+
+    */
 
   }
 

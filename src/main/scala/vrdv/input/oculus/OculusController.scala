@@ -109,11 +109,12 @@ abstract class OculusController(vrc: VRController) extends input.Device {
     setEventListener(Input.Primary_ValueChanged, (event: Event) => {
       Log("Primary Value Changed")//; Log(event)
       val value = primaryValue(event.target)
+
       if(value > 0.05) {
-        inputDetails.arrow.visible = true
+        //inputDetails.arrow.visible = true
         inputDevice.pressed(true)
       } else {
-        inputDetails.arrow.visible = false
+        //inputDetails.arrow.visible = false
         inputDevice.pressed(false)
       }
 
@@ -154,6 +155,14 @@ abstract class OculusController(vrc: VRController) extends input.Device {
           case r: Result => captured = None
         }
       }
+    })
+
+    setEventListener(Input.ThumbRest_TouchBegan, (event: Event) => {
+      inputDetails.arrow.visible = true
+    })
+
+    setEventListener(Input.ThumbRest_TouchEnded, (event: Event) => {
+      inputDetails.arrow.visible = false
     })
 
     setAxesEventListener(Input.Axes_Changed, (event: AxesChangedEvent) => {
@@ -200,14 +209,6 @@ abstract class OculusController(vrc: VRController) extends input.Device {
 
     setEventListener(Input.Grip_PressEnded, (event: Event) => {
       Log("Grip Press Ended")
-    })
-
-    setEventListener(Input.ThumbRest_TouchBegan, (event: Event) => {
-      Log.show("Thumbrest Touch Began - event: " + event.`type`)
-    })
-
-    setEventListener(Input.ThumbRest_TouchEnded, (event: Event) => {
-      Log.show("Thumbrest Touch Ended - event: " + event.`type`)
     })
 
     */

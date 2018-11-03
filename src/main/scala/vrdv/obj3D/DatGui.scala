@@ -151,7 +151,7 @@ object DatGui {
     // A button for clearing set of selected points
     selectFolder.addButton(() => {
       plotter.clearSelections()
-      PointOperations.updateSelectedSummary(plot)
+      //PointOperations.updateSelectedSummary(plot)
     })
     Button(3, selectFolder).setLabels("Clear", "Clear Selections") // 3 used b/c rows added above take up indices 0-2
 

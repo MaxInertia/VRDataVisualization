@@ -36,22 +36,22 @@ class OculusControllerLeft(vrc: VRController, val mc: PlotterModelManager) exten
 
     // Setup events unique for this controller
 
-    // -- Unused inputs
+    setEventListener(Input.Left.Y_PressEnded, (event: Event) => {
+      mc.plotter.clearSelections()
+    })
+
+    setEventListener(Input.Left.X_PressEnded, (event: Event) => {
+      mc.plotter.toggleGuiVisibility
+    })
+
+    /* -- Unused inputs
 
     setEventListener(Input.Left.X_PressBegan, (event: Event) => {
       Log.show("X Press Began")
     })
 
-    setEventListener(Input.Left.X_PressEnded, (event: Event) => {
-      Log.show("X Press Ended")
-    })
-
     setEventListener(Input.Left.Y_PressBegan, (event: Event) => {
       Log.show("Y Press Began")
-    })
-
-    setEventListener(Input.Left.Y_PressEnded, (event: Event) => {
-      Log.show("Y Press Ended")
     })
 
     setEventListener(Input.Left.Menu_PressBegan, (event: Event) => {
@@ -101,6 +101,8 @@ class OculusControllerLeft(vrc: VRController, val mc: PlotterModelManager) exten
     setEventListener(Input.Left.Y_TouchEnded, (event: Event) => {
       Log.show("Y Touch Ended - event: " + event.`type`)
     })
+
+    */
 
   }
 
