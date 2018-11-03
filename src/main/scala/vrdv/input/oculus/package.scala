@@ -24,15 +24,18 @@ package object oculus {
     val Axes_Changed: String = "thumbstick axes changed"
     val Disconnected: String = "vr controller disconnected"
 
-    val Home_PressBegan: String = "home press began"
-    val Home_PressEnded: String = "home press ended"
-
     object Left {
       // Event ID's specific to the Left controller
       val X_PressBegan: String = "X press began"
       val X_PressEnded: String = "X press ended"
       val Y_PressBegan: String = "Y press began"
       val Y_PressEnded: String = "Y press ended"
+      val Thumbstick_PressBegan: String = "thumbstick press began"
+      val Thumbstick_PressEnded: String = "thumbstick press ended"
+      val ThumbRest_TouchBegan: String = "thumbrest touch began"
+      val ThumbRest_TouchEnded: String = "thumbrest touch ended"
+      val Menu_PressBegan: String = "menu press began"
+      val Menu_PressEnded: String = "menu press ended"
     }
 
     object Right {
@@ -41,6 +44,10 @@ package object oculus {
       val A_PressEnded: String = "A press ended"
       val B_PressBegan: String = "B press began"
       val B_PressEnded: String = "B press ended"
+      val Thumbstick_PressBegan: String = "thumbstick press began"
+      val Thumbstick_PressEnded: String = "thumbstick press ended"
+      val ThumbRest_TouchBegan: String = "thumbrest touch began"
+      val ThumbRest_TouchEnded: String = "thumbrest touch ended"
     }
 
     // These touch events for Oculus Controls are not registering. (Firefox 61.0.1)

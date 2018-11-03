@@ -2,6 +2,7 @@ package vrdv.input.oculus
 
 import facade.Dat
 import facade.IFThree.VRController
+import org.scalajs.dom.raw.Event
 import util.Log
 import vrdv.model.PlotterModelManager
 
@@ -34,25 +35,39 @@ class OculusControllerRight(vrc: VRController, val mc: PlotterModelManager) exte
 
     // Setup events unique for this controller
 
-    /* -- Unused inputs
+    // -- Unused inputs
 
     setEventListener(Input.Right.A_PressBegan, (event: Event) => {
-      Log("A Press Began")
+      Log.show("A Press Began")
     })
 
     setEventListener(Input.Right.A_PressEnded, (event: Event) => {
-      Log("A Press Ended")
+      Log.show("A Press Ended")
     })
 
     setEventListener(Input.Right.B_PressBegan, (event: Event) => {
-      Log("B Press Began")
+      Log.show("B Press Began")
     })
 
     setEventListener(Input.Right.B_PressEnded, (event: Event) => {
-      Log("B Press Ended")
+      Log.show("B Press Ended")
     })
 
-    */
+    setEventListener(Input.Right.Thumbstick_PressBegan, (event: Event) => {
+      Log.show("Right Thumbstick Button Pressed - event: " + event.`type`)
+    })
+
+    setEventListener(Input.Right.Thumbstick_PressEnded, (event: Event) => {
+      Log.show("Right Thumbstick Button Pressed - event: " + event.`type`)
+    })
+
+    setEventListener(Input.Right.ThumbRest_TouchBegan, (event: Event) => {
+      Log.show("Right Thumbrest Touch Began - event: " + event.`type`)
+    })
+
+    setEventListener(Input.Right.ThumbRest_TouchEnded, (event: Event) => {
+      Log.show("Right Thumbrest Touch Ended - event: " + event.`type`)
+    })
 
   }
 
