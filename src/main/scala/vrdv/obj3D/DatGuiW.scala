@@ -1,7 +1,8 @@
 package vrdv.obj3D
 
 import facade.Dat
-import facade.Dat.{GuiButton, GuiSlider}
+//import facade.Dat.{GuiButton, GuiSlider}
+import facade.Dat._
 import util.Log
 import vrdv.input.InputDetails
 import vrdv.model.Plotter
@@ -35,14 +36,14 @@ class DatGuiW(title: String, xInit: Double, yInit: Double, zInit: Double) {
     object3D.add(something, id).name(description)
   }
 
-  def addDropdown(something: js.Object, id: String, options: js.Array[String]): Unit = {
-    val idx = object3D.children(0).children.length
-    object3D.addDropdown(something, id, options)
+  def addDropdown(something: js.Object, id: String, options: js.Array[String], description: String): GuiComponent = {
+    //val idx = object3D.children(0).children.length
+    object3D.addDropdown(something, id, options)//.name(description)
     //WButton(idx, object3D).setLabel_Description(id)
     //object3D.children(0).children(idx).asInstanceOf[js.Dynamic].updateLabel(id)
     //object3D.children(0).children(idx).asInstanceOf[js.Dynamic].name(id)
 
-    object3D.children(0).children(idx).name = id
+    //object3D.children(0).children(idx).name = id
   }
 
   def setVisible(vis: Boolean): Unit = {

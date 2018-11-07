@@ -24,15 +24,15 @@ object Dat {
   }
   @js.native
   trait GUI extends Object3D {
-    def add(something: js.Object): Unit = js.native
+    def add(something: js.Object): GuiComponent = js.native
     def add(something: js.Object, id: String): GuiComponent = js.native
-    def add(something: js.Object, id: String, options: js.Array[String]): Unit = js.native // For drop-downs
+    def add(something: js.Object, id: String, options: js.Array[String]): GuiComponent = js.native // For drop-downs
     def add(something: js.Object, id: String, min: Double, max: Double): GuiSlider = js.native
     def addFolder(folder: GUI): GUI = js.native
     def addCheckbox(something: js.Object, id: String): Unit = js.native
     def addButton(fn: js.Function, id: String = "Button"): Unit = js.native
     def addButton(id: String, fn: js.Function): Unit = js.native
-    def addDropdown(something: js.Object, id: String, options: js.Array[String]): Unit = js.native
+    def addDropdown(something: js.Object, id: String, options: js.Array[String]): GuiComponent = js.native
     def open(): Unit = js.native
     def close(): Unit = js.native
     def removeFolder(gui: GUI): Unit = js.native
