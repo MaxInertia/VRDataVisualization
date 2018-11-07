@@ -30,10 +30,40 @@ class DatGuiW(title: String, xInit: Double, yInit: Double, zInit: Double) {
     WButton(idx, object3D).setLabels(name, description)
   }
 
+  def addCheckbox(something: js.Object, id: String, description: String): Unit = {
+    //val idx = object3D.children(0).children.length
+    object3D.add(something, id).name(description)
+  }
+
+  def addDropdown(something: js.Object, id: String, options: js.Array[String]): Unit = {
+    val idx = object3D.children(0).children.length
+    object3D.addDropdown(something, id, options)
+    //WButton(idx, object3D).setLabel_Description(id)
+    //object3D.children(0).children(idx).asInstanceOf[js.Dynamic].updateLabel(id)
+    //object3D.children(0).children(idx).asInstanceOf[js.Dynamic].name(id)
+
+    object3D.children(0).children(idx).name = id
+  }
+
   def setVisible(vis: Boolean): Unit = {
     object3D.visible = vis
   }
 }
+
+/*
+  def sample: DatGui = {
+    val gui = new DatGui()
+    // # Checkbox sample
+    gui.object3D.add(gui.samples, "someBoolean")
+
+    // # Drop-down sample
+    // NOTE: Position of selected value is lower than it should be.
+    val dropDownOptions = js.Array("a", "b", "c")
+    gui.object3D.add(gui.samples, "someValue", dropDownOptions)
+
+    gui
+  }
+ */
 
 object DatGuiW {
 

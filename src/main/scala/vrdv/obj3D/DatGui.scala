@@ -2,6 +2,7 @@ package vrdv.obj3D
 
 import facade.Dat
 import facade.Dat.{GuiButton, GuiSlider}
+import util.Log
 import vrdv.input.InputDetails
 import vrdv.model.Plotter
 import vrdv.obj3D.plots._
@@ -22,6 +23,11 @@ class DatGui {
 
   // 0: HPD Folder, 1: SPS Folder
   var folders: Array[Dat.GUI] = Array()
+
+  var samples: js.Object = js.Dynamic.literal(
+    "someBoolean" → false,
+    "someValue" → "a"
+  )
 
   def addFolder(folder: Dat.GUI): Unit = {
     object3D.addFolder(folder)
@@ -79,6 +85,19 @@ class DatGui {
 
 object DatGui {
 
+  def sample: DatGui = {
+    val gui = new DatGui()
+    // # Checkbox sample
+    gui.object3D.add(gui.samples, "someBoolean")
+
+    // # Drop-down sample
+    // NOTE: Position of selected value is lower than it should be.
+    val dropDownOptions = js.Array("a", "b", "c")
+    gui.object3D.add(gui.samples, "someValue", dropDownOptions)
+
+    gui
+  }
+
   def apply(plot: Plot3D, axes: CoordinateAxes, mc: Plotter): DatGui = {
     val gui = new DatGui()
     createHighlightedPointDataFolder(gui, plot)
@@ -114,6 +133,13 @@ object DatGui {
     })
     Button(3, embeddingFolder).setLabels("Embed!", "Embed xVar")
     gui.object3D.addFolder(embeddingFolder)
+
+    val testFolder = Dat.GUIVR.create("Testing")
+    testFolder.addButton(() => {
+      Log.show("Test button clicked!")
+    })
+    Button(0, testFolder).setLabels("TestButton!", "Test button.")
+    gui.object3D.addFolder(testFolder)
 
     gui
   }
@@ -151,7 +177,7 @@ object DatGui {
     // A button for clearing set of selected points
     selectFolder.addButton(() => {
       plotter.clearSelections()
-      //PointOperations.updateSelectedSummary(plot)
+      PointOperations.updateSelectedSummary(plot)
     })
     Button(3, selectFolder).setLabels("Clear", "Clear Selections") // 3 used b/c rows added above take up indices 0-2
 
