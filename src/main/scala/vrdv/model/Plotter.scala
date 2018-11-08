@@ -6,7 +6,7 @@ import util.Log
 import vrdv.input.{Action, InputDetails, Interactions}
 import vrdv.obj3D.displays.{CSC_DefaultConfig, ColumnSelectionConsole}
 import vrdv.obj3D.plots._
-import vrdv.obj3D.{CustomColors, DatGui, DatGuiW, InitialMenu, Region}
+import vrdv.obj3D.{CustomColors, DatGui, DatGuiW, SettingsGui, InitialMenu, Region}
 
 /**
   * Created by Dorian Thiessen on 2018-07-29.
@@ -77,8 +77,9 @@ class Plotter(scene: Scene, camera: Camera) extends ModelComponent[Action] {
       repositionRegions()
 
 
-      val gui = DatGui(scatterPlot, regions(i).maybeGetAxes().get, this)
-      regions(i).gui = Some(gui)
+      //val gui = DatGui(scatterPlot, regions(i).maybeGetAxes().get, this)
+      val gui = new SettingsGui(scatterPlot, regions(i).maybeGetAxes().get, this)
+      //regions(i).gui = Some(gui)
       //regions(i).add(gui.object3D)
       scene.add(gui.object3D)
       gui.object3D.position.setX(regions(i).object3D.position.x)
@@ -90,7 +91,7 @@ class Plotter(scene: Scene, camera: Camera) extends ModelComponent[Action] {
 
       addPlot(scatterPlot)
       addAxes(regions(i).maybeGetAxes().get)
-      addGUI(gui)
+      //addGUI(gui)
 
     }
   }

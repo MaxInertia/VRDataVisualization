@@ -32,18 +32,12 @@ class DatGuiW(title: String, xInit: Double, yInit: Double, zInit: Double) {
   }
 
   def addCheckbox(something: js.Object, id: String, description: String): Unit = {
-    //val idx = object3D.children(0).children.length
     object3D.add(something, id).name(description)
   }
 
-  def addDropdown(something: js.Object, id: String, options: js.Array[String], description: String): GuiComponent = {
-    //val idx = object3D.children(0).children.length
-    object3D.addDropdown(something, id, options)//.name(description)
-    //WButton(idx, object3D).setLabel_Description(id)
-    //object3D.children(0).children(idx).asInstanceOf[js.Dynamic].updateLabel(id)
-    //object3D.children(0).children(idx).asInstanceOf[js.Dynamic].name(id)
-
-    //object3D.children(0).children(idx).name = id
+  def addDropdown(something: js.Object, id: String, options: js.Array[String]): GuiComponent = {
+    //object3D.addDropdown(something, id, options)
+    object3D.add(something, id, options)
   }
 
   def setVisible(vis: Boolean): Unit = {
