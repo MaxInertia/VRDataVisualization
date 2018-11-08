@@ -1,6 +1,7 @@
 package vrdv.obj3D
 
 import facade.Dat
+import util.Log
 import vrdv.input.InputDetails
 import vrdv.model.Plotter
 import vrdv.obj3D.plots.{CoordinateAxes, Plot3D}
@@ -62,11 +63,15 @@ class SettingsGui(plot: Plot3D, axes: CoordinateAxes,plotter: Plotter)
   setDefaultPosition()
 
   def setDefaultPosition(): Unit = {
-    val xPosDefault = axes.position.x - 2.0
-    val yPosDefault = axes.position.y + 2.0
-    val zPosDefault = axes.position.z
+    val xPosDefault: Double = axes.position.x - 2.0
+    val yPosDefault: Double = axes.position.y + 2.0
+    val zPosDefault: Double = axes.position.z
 
-    object3D.position.set(xPosDefault, yPosDefault, zPosDefault)
-    object3D.updateMatrix()
+    Log.show("Setting GUI position to: (" + xPosDefault + ", " + yPosDefault + ", " + zPosDefault + ")")
+
+    //object3D.position.set(xPosDefault, yPosDefault, zPosDefault)
+    object3D.position.x = xPosDefault
+    object3D.position.y = yPosDefault
+    object3D.position.z = zPosDefault
   }
 }
