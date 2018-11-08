@@ -161,18 +161,12 @@ abstract class OculusController(vrc: VRController) extends input.Device {
       inputDetails.arrow.visible = true
       inputParser.passInput(new Point(Some(vrc), myCID) {
         rc = inputDetails
-        magnitude = 1.0
-        persist = true
+        persist = isTouched(event.target)
       })
     })
 
     setEventListener(Input.ThumbRest_TouchEnded, (event: Event) => {
       inputDetails.arrow.visible = false
-      inputParser.passInput(new Point(Some(vrc), myCID) {
-        rc = inputDetails
-        magnitude = 0.0
-        persist = false
-      })
     })
 
     setAxesEventListener(Input.Axes_Changed, (event: AxesChangedEvent) => {

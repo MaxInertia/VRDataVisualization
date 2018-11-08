@@ -38,10 +38,10 @@ package object oculus {
       val Thumbstick_PressEnded: String = "thumbstick press ended"
       val Thumbstick_TouchBegan: String = "thumbstick touch began"
       val Thumbstick_TouchEnded: String = "thumbstick touch ended"
-      val ThumbRest_TouchBegan: String = "thumbrest touch began"
-      val ThumbRest_TouchEnded: String = "thumbrest touch ended"
-      val Menu_PressBegan: String = "menu press began"
-      val Menu_PressEnded: String = "menu press ended"
+      //val ThumbRest_TouchBegan: String = "thumbrest touch began"
+      //val ThumbRest_TouchEnded: String = "thumbrest touch ended"
+      //val Menu_PressBegan: String = "menu press began"
+      //val Menu_PressEnded: String = "menu press ended"
     }
 
     object Right {
@@ -58,8 +58,8 @@ package object oculus {
       val Thumbstick_PressEnded: String = "thumbstick press ended"
       val Thumbstick_TouchBegan: String = "thumbstick touch began"
       val Thumbstick_TouchEnded: String = "thumbstick touch ended"
-      val ThumbRest_TouchBegan: String = "thumbrest touch began"
-      val ThumbRest_TouchEnded: String = "thumbrest touch ended"
+      //val ThumbRest_TouchBegan: String = "thumbrest touch began"
+      //val ThumbRest_TouchEnded: String = "thumbrest touch ended"
     }
 
     // These touch events for Oculus Controls are not registering. (Firefox 61.0.1)
@@ -71,5 +71,8 @@ package object oculus {
 
   def primaryValue(target: Any): Double = target
     .asInstanceOf[js.Dynamic].getButton(1).value.asInstanceOf[Double]
+
+  def isTouched(target: Any): Boolean = target
+    .asInstanceOf[js.Dynamic].getButton(1).isTouched.asInstanceOf[Boolean]
 
 }

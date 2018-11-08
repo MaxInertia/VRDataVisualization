@@ -65,6 +65,7 @@ class PlotterModelManager extends ModelManager[Action, Result] with Room  {
     case p: input.Point => // ==============
       lastPoint(p.cid) = p
       lastPress(p.cid).persist = false
+      //Possibly remove persist here to get it to work on thumbrest?
       if(p.persist) {
         if(p.source.nonEmpty) plotter.hoverAction(p.rc.updateRaycaster(p.source.get), select = false)
         else {
