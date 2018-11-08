@@ -30,6 +30,8 @@ class Plotter(scene: Scene, camera: Camera) extends ModelComponent[Action] {
 
   def regions: Array[Region] = REGIONS
 
+  def getData: Array[Data] = DATA(0)
+
   def numOccupied(): Int = regions.length
   def isFull: Boolean = numOccupied() == 4
 
@@ -220,6 +222,8 @@ class Plotter(scene: Scene, camera: Camera) extends ModelComponent[Action] {
   }
 
   def setVisiblePointRange(start: Int, end: Int): Unit = {
+    //TODO Get any (including none) plot2Ds here and adjust them
+    /*
     val plot2D = PLOT(1)
     Log.show("Position:")
     Log.show(plot2D.getPoints.position)
@@ -236,12 +240,14 @@ class Plotter(scene: Scene, camera: Camera) extends ModelComponent[Action] {
     val dist2FirstVisible = 1.0 / plot2D.visiblePoints * start
     points.translateX(prevDist2FirstVisible - dist2FirstVisible)
 
+
     // 2. Scale plot (x) proportional to | end - start |
     Log.show("Scale: ")
     Log.show(points.scale)
     val scaleChange = (1.0*(prevEnd - prevStart)) / (1.0*(end - start))
     Log.show(s"Scale Change: $scaleChange")
     points.scale.setX(scaleChange * points.scale.x)
+    */
   }
 
   // Applies an axis change. Changes (1) plot point positions, (2) axes titles, and (3) gui labels

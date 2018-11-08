@@ -15,8 +15,15 @@ class InitialMenu(plotter: Plotter)
 
   override def setVisible(vis: Boolean): Unit = super.setVisible(vis)
 
-  addButton(() => { plotter.newPlot3DWithData; setVisible(false) }, "Create", "Graph 1")
-  addButton(() => { plotter.newPlot3DWithData; setVisible(false) }, "Create", "Graph 2")
-  addButton(() => { plotter.newPlot3DWithData; setVisible(false) }, "Create", "Graph 3")
+  def addPlot: Unit = {
+    if(object3D.visible) {
+      plotter.newPlot3DWithData
+      setVisible(false)
+    }
+  }
+
+  addButton(() => { addPlot }, "Create", "Graph 1")
+  addButton(() => { addPlot }, "Create", "Graph 2")
+  addButton(() => { addPlot }, "Create", "Graph 3")
 
 }

@@ -32,7 +32,7 @@ object Dat {
     def addCheckbox(something: js.Object, id: String): Unit = js.native
     def addButton(fn: js.Function, id: String = "Button"): Unit = js.native
     def addButton(id: String, fn: js.Function): Unit = js.native
-    def addDropdown(something: js.Object, id: String, options: js.Object): GuiComponent = js.native
+    def addDropdown(something: js.Object, id: String, options: js.Array[String]): GuiComponent = js.native
     def open(): Unit = js.native
     def close(): Unit = js.native
     def removeFolder(gui: GUI): Unit = js.native
@@ -60,6 +60,7 @@ object Dat {
   @js.native
   trait GuiComponent extends Object3D {
     def name(name: String): GuiSlider = js.native
+    def onChange(callback: js.Function): GuiComponent = js.native
   }
 
   @js.native
