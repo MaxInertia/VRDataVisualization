@@ -18,7 +18,9 @@ class InitialMenu(plotter: Plotter)
   def addPlot: Unit = {
     if(object3D.visible) {
       plotter.initPlot3DWithData
-      setVisible(false)
+      //setVisible(false)
+      object3D.position.set(2, 1, 0)
+      object3D.rotation.y = -3.14 / 2.0
     }
   }
 

@@ -72,14 +72,20 @@ class SettingsGui(plot: Plot, axes: CoordinateAxes,plotter: Plotter)
         plotter.replacePlot(attachedPlot, plotter.newPlot3DWithData(xCol, yCol, zCol))
         attachedPlot = plotter.getPlot(plotIndex)
         val range = getRange
-        attachedPlot.setVisiblePointRange(range.start, range.end)
+        //attachedPlot.setVisiblePointRange(range.start, range.end)
+        xDropdown.visible = true
+        yDropdown.visible = true
+        zDropdown.visible = true
       }
       case "2D Scatter" => {
         val columnID = axisTitles.indexOf(axisData.asInstanceOf[js.Dynamic].selectDynamic("yAxis"))
         plotter.replacePlot(attachedPlot, plotter.newPlot2DWithData(columnID))
         attachedPlot = plotter.getPlot(plotIndex)
         val range = getRange
-        plotter.setVisiblePointRange(range.start, range.end)
+        //plotter.setVisiblePointRange(range.start, range.end)
+        xDropdown.visible = false
+        yDropdown.visible = true
+        zDropdown.visible = false
       }
     }
   }
@@ -99,9 +105,9 @@ class SettingsGui(plot: Plot, axes: CoordinateAxes,plotter: Plotter)
   val axesFolder = new DatGuiW("Select Data", 0,0,0)
   var axisTitles: js.Array[String] = js.Array()
   for(d <- plotter.getData.map(_.id)) axisTitles = axisTitles :+ d
-  axesFolder.addDropdown(axisData, "xAxis", axisTitles).onChange(() => callForAxisUpdate(0))
-  axesFolder.addDropdown(axisData, "yAxis", axisTitles).onChange(() => callForAxisUpdate(1))
-  axesFolder.addDropdown(axisData, "zAxis", axisTitles).onChange(() => callForAxisUpdate(2))
+  val xDropdown = axesFolder.addDropdown(axisData, "xAxis", axisTitles).onChange(() => callForAxisUpdate(0))
+  val yDropdown = axesFolder.addDropdown(axisData, "yAxis", axisTitles).onChange(() => callForAxisUpdate(1))
+  val zDropdown = axesFolder.addDropdown(axisData, "zAxis", axisTitles).onChange(() => callForAxisUpdate(2))
   object3D.addFolder(axesFolder.object3D)
 
   axesFolder.object3D.open()
@@ -126,16 +132,7 @@ class SettingsGui(plot: Plot, axes: CoordinateAxes,plotter: Plotter)
     .step(getFilterStep).name("Start index")
   val filterHighSlider = filterFolder.object3D.add(filterRange, "End", 0, attachedPlot.numPoints - 1)
     .step(getFilterStep).name("End index")
-  filterFolder.addButton(() => attachedPlot match {
-    case sp3d: ScatterPlot ⇒
-      val range = getRange
-      sp3d.setVisiblePointRange(range.start, range.end)
-      plotter.setVisiblePointRange(range.start, range.end)
-    case _: ScatterPlot2D =>
-      val range = getRange
-      plotter.setVisiblePointRange(range.start, range.end)
-    case sm: ShadowManifold ⇒
-  }, "Filter", "Time Filter")
+  filterFolder.addButton(() => applyFilter, "Filter", "Time Filter")
   object3D.addFolder(filterFolder.object3D)
   filterFolder.object3D.open()
 
@@ -149,21 +146,34 @@ class SettingsGui(plot: Plot, axes: CoordinateAxes,plotter: Plotter)
       if(filterRange.asInstanceOf[js.Dynamic].selectDynamic("Snap 10").asInstanceOf[Boolean]) 10 else 1
   }
 
+  def applyFilter = {
+    attachedPlot match {
+      case sp3d: ScatterPlot ⇒
+        val range = getRange
+        sp3d.setVisiblePointRange(range.start, range.end)
+        plotter.setVisiblePointRange(range.start, range.end)
+      case _: ScatterPlot2D =>
+        val range = getRange
+        plotter.setVisiblePointRange(range.start, range.end)
+      case sm: ShadowManifold ⇒
+    }
+  }
 
-  //Positioning
+  //Reset button
+  //TODO Reset Button
+  //addButton(() => resetToDefaults, "Reset", "Reset to Defaults")
 
-  setDefaultPosition()
+  def resetToDefaults = {
+    //TODO needs work: controls don't reset display
+    Log.show("Reset to Defaults Button pressed.")
+    filterRange.asInstanceOf[js.Dynamic].updateDynamic("Start")(0)
+    filterRange.asInstanceOf[js.Dynamic].updateDynamic("End")(attachedPlot.numPoints - 1)
+    applyFilter
 
-  def setDefaultPosition(): Unit = {
-    val xPosDefault: Double = axes.position.x - 2.0
-    val yPosDefault: Double = axes.position.y + 2.0
-    val zPosDefault: Double = axes.position.z
-
-    Log.show("Setting GUI position to: (" + xPosDefault + ", " + yPosDefault + ", " + zPosDefault + ")")
-
-    //object3D.position.set(xPosDefault, yPosDefault, zPosDefault)
-    object3D.position.x = xPosDefault
-    object3D.position.y = yPosDefault
-    object3D.position.z = zPosDefault
+    val plotIndex = plotter.getPlotIndex(attachedPlot)
+    Log.show("[SettingsGui] requesting axis change plotIndex = " + plotIndex)
+    plotter.requestAxisChange(plotIndex, 0, 0)
+    plotter.requestAxisChange(plotIndex, 1, 1)
+    plotter.requestAxisChange(plotIndex, 2, 2)
   }
 }

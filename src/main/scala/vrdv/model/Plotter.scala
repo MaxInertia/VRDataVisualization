@@ -96,9 +96,9 @@ class Plotter(scene: Scene, camera: Camera) extends ModelComponent[Action] {
       //regions(i).gui = Some(gui)
       //regions(i).add(gui.object3D)
       scene.add(gui.object3D)
-      gui.object3D.position.setX(regions(i).object3D.position.x)
-      gui.object3D.position.setY(regions(i).object3D.position.y + 1.0)
-      gui.object3D.position.setZ(regions(i).object3D.position.z)
+      gui.object3D.position.setX(regions(i).object3D.position.x - 0.5)
+      gui.object3D.position.setY(regions(i).object3D.position.y + 0.5)
+      gui.object3D.position.setZ(regions(i).object3D.position.z + 1.0)
 
       //gui.object3D.rotateY(3.14 / 4)
 
@@ -254,6 +254,7 @@ class Plotter(scene: Scene, camera: Camera) extends ModelComponent[Action] {
 
     for(plot <- PLOT) {
       plot match {
+          //TODO Case for Plot3D
         case plot2D: TimeSeriesPlot2D => {
           Log.show("Position:")
           Log.show(plot2D.getPoints.position)
@@ -278,6 +279,7 @@ class Plotter(scene: Scene, camera: Camera) extends ModelComponent[Action] {
           Log.show(s"Scale Change: $scaleChange")
           points.scale.setX(scaleChange * points.scale.x)
         }
+        case _: Any =>
       }
     }
   }
@@ -287,8 +289,6 @@ class Plotter(scene: Scene, camera: Camera) extends ModelComponent[Action] {
     Log.show("[requestAxisChange] start")
     if(columnIndex >= DATA(0).length) return
 
-    Log.show("[requestAxisChange] getting axes from region")
-    //AXES(plotIndex) = regions(plotIndex).maybeGetAxes().get
     Log.show("[requestAxisChange] getting axes from Plotter plotIndex = " + plotIndex)
     val axes: CoordinateAxes = AXES(plotIndex)
     //val gui: DatGui = GUI(plotIndex)
@@ -466,16 +466,31 @@ class Plotter(scene: Scene, camera: Camera) extends ModelComponent[Action] {
       case 1 =>
         getPos(0).set(0, 1, -2) // north
       case 2 =>
+        /*
         getPos(0).set(-1, 1, -1) // north west
         getPos(1).set(1, 1, -1) // north east
+        */
+        getPos(0).set(0, 1, -2) // north
+        getPos(1).set(1.5, 1, -2) // north east
       case 3 =>
+        /*
         getPos(0).set(-1, 1, -1) // north west
         getPos(1).set(1, 1, -1) // north east
         getPos(2).set(-2, 1, 0) // west
+        */
+        getPos(0).set(0, 1, -2) // north
+        getPos(1).set(1.5, 1, -2) // north east
+        getPos(2).set(-1.5, 1, -2) // north west
       case 4 =>
+        /*
         getPos(0).set(-1, 1, -1) // north west
         getPos(1).set(1, 1, -1) // north east
         getPos(2).set(-2, 1, 0) // west
+        getPos(3).set(2, 1, 0) // east
+        */
+        getPos(0).set(0, 1, -2) // north
+        getPos(1).set(1.5, 1, -2) // north east
+        getPos(2).set(-1.5, 1, -2) // north west
         getPos(3).set(2, 1, 0) // east
       case _ => // Undefined for more regions
     }
