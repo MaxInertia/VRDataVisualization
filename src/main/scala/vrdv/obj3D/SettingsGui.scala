@@ -87,6 +87,23 @@ class SettingsGui(plot: Plot, axes: CoordinateAxes,plotter: Plotter)
         yDropdown.visible = true
         zDropdown.visible = false
       }
+      case "Shadow Manifold" => {
+        val columnID = axisTitles.indexOf(axisData.asInstanceOf[js.Dynamic].selectDynamic("xAxis"))
+        plotter.replacePlot(attachedPlot, plotter.newShadowManifoldWithData(columnID, getTau))
+        attachedPlot = plotter.getPlot(plotIndex)
+        val range = getRange
+        //plotter.setVisiblePointRange(range.start, range.end)
+        xDropdown.visible = true
+        yDropdown.visible = false
+        zDropdown.visible = false
+
+        /*
+        AXES(plotIndex) match {
+          case a2D: CoordinateAxes2D ⇒ a2D.setAxesTitles(newSM.xVar, newSM.yVar)
+          case a3D: CoordinateAxes3D ⇒ a3D.setAxesTitles(newSM.xVar, newSM.yVar, newSM.zVar)
+        }
+        */
+      }
     }
   }
 
@@ -123,6 +140,18 @@ class SettingsGui(plot: Plot, axes: CoordinateAxes,plotter: Plotter)
     Log.show("[SettingsGui] requesting axis change plotIndex = " + plotIndex)
     plotter.requestAxisChange(plotIndex, id, columnID)
   }
+
+  //Embedding Folder
+  val embeddingFolder = new DatGuiW("Embedding", 0,0,0)
+  embeddingFolder.object3D.add(rawTau, "TauOnes", 0, 10).step(1).name("Tau Ones")
+  embeddingFolder.object3D.add(rawTau, "TauTens", 0, 90).step(10).name("Tau Tens")
+  embeddingFolder.object3D.add(rawTau, "TauHundreds", 0, 900).step(100).name("Tau Hundreds")
+  embeddingFolder.addButton(() => plot match {
+    case sm: ShadowManifold ⇒ plotter.requestEmbedding(XAxis, sm.data.columnNumber, getTau)//, 1)
+    case sp: ScatterPlot ⇒ plotter.requestEmbedding(XAxis, sp.viewing(XAxis), getTau)//, 1)
+  }, "Embed!", "Embed Shadow Manifold")
+  object3D.addFolder(embeddingFolder.object3D)
+  embeddingFolder.object3D.open()
 
   //Filter Folder
   val filterFolder = new DatGuiW("Time Filter", 0, 0, 0)

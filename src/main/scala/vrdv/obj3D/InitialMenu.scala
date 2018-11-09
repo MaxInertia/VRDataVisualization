@@ -28,4 +28,6 @@ class InitialMenu(plotter: Plotter)
   addButton(() => { addPlot }, "Create", "Graph 2")
   addButton(() => { addPlot }, "Create", "Graph 3")
 
+  addButton(() => {plotter.toggleGuiVisibility}, "Hide", "Hide GUI")
+
 }

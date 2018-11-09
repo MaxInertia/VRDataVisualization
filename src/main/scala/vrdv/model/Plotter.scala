@@ -18,9 +18,9 @@ class Plotter(scene: Scene, camera: Camera) extends ModelComponent[Action] {
   private var REGIONS: Array[Region] = Array()
   private var PLOT: Array[Plot] = Array()
   private var AXES: Array[CoordinateAxes] = Array()
-  private var GUI: Array[DatGui] = Array()
+  private var GUI: Array[DatGuiW] = Array()
 
-  def addGUI(gui: DatGui): Unit = GUI = GUI :+ gui
+  def addGUI(gui: DatGuiW): Unit = GUI = GUI :+ gui
   def addPlot(plot: Plot): Unit = PLOT = PLOT :+ plot
   def addAxes(axes: CoordinateAxes): Unit = AXES = AXES :+ axes
   def addRegion(r: Region): Unit = {
@@ -40,9 +40,7 @@ class Plotter(scene: Scene, camera: Camera) extends ModelComponent[Action] {
   /*---- New 2018-11-02 ----*/
 
   def getData: Array[Data] = DATA(0)
-  def getPlotIndex(plot: Plot): Int = {
-    PLOT.indexOf(plot)
-  }
+  def getPlotIndex(plot: Plot): Int = PLOT.indexOf(plot)
   def getPlot(index: Int): Plot = PLOT(index)
   def replacePlot(oldPlot: Plot, newPlot: Plot): Unit = {
     val idx = getPlotIndex(oldPlot)
@@ -57,6 +55,9 @@ class Plotter(scene: Scene, camera: Camera) extends ModelComponent[Action] {
 
   def toggleGuiVisibility: Unit = {
     Log.show("Toggle GUI visibility.")
+    val vis = !GUI(0).object3D.visible
+    for(gui <- GUI) gui.setVisible(vis)
+    //initialMenu.setVisible(vis)
   }
 
   def setupData(data: Array[Data], pointColor: Double = CustomColors.BLUE_HUE_SHIFT): Unit = {
@@ -93,6 +94,7 @@ class Plotter(scene: Scene, camera: Camera) extends ModelComponent[Action] {
 
       //val gui = DatGui(scatterPlot, regions(i).maybeGetAxes().get, this)
       val gui = new SettingsGui(scatterPlot, regions(i).maybeGetAxes().get, this)
+      addGUI(gui)
       //regions(i).gui = Some(gui)
       //regions(i).add(gui.object3D)
       scene.add(gui.object3D)
@@ -126,6 +128,62 @@ class Plotter(scene: Scene, camera: Camera) extends ModelComponent[Action] {
     val plot2D = TimeSeriesPlot2D(xs)
     plot2D
   }
+
+  def newShadowManifoldWithData(columnNumber: Int, tau: Int = 1): Plot = {
+    val data = DATA(0)
+    val pointColor = CustomColors.BLUE_HUE_SHIFT
+    val scatterPlot: ScatterPlot = ScatterPlot(data, Res.getLastLoadedTextureID, pointColor)
+    scatterPlot.switchAxis(0, data(columnNumber), true)
+    scatterPlot.switchAxis(1, data(columnNumber), true)
+    scatterPlot.switchAxis(2, data(columnNumber), true)
+
+    val newSM: ShadowManifold = ShadowManifold.fromScatterPlot(scatterPlot)(tau, 0).get
+    newSM.fixScale()
+    newSM.setVisiblePointRange(0, newSM.numPoints - 2 * tau)
+    newSM.requestFullGeometryUpdate()
+
+    newSM
+  }
+
+  /*
+  def requestEmbedding(axisID: AxisID, columnIndex: Int, tau: Int, plotIndex: Int = 0): Unit = {
+    Log.show("[Plotter.requestEmbedding()]")
+
+    /*var regionCreated: Boolean = false
+    if (plotIndex >= PLOT.length) {
+      regionCreated = true
+      val i = regions.length
+      addRegion(Region(i))
+      repositionRegions()
+    }*/
+
+    val maybeNewSM: Option[ShadowManifold] =
+      PLOT(plotIndex) match {
+        case sm: ShadowManifold =>
+          Log.show(s"embedding from SM->SM with columnIndex: $columnIndex (id: ${DATA(0)(columnIndex).id})")
+          ShadowManifold.fromShadowManifold(sm)(tau)
+        case sp: ScatterPlot => ShadowManifold.fromScatterPlot(sp)(tau, axisID)
+      }
+
+    if (maybeNewSM.isEmpty) {
+      Log.show("[Plotter.requestEmbedding()] maybeNewSM.isEmpty == true")
+      return
+    }
+
+    val newSM: ShadowManifold = maybeNewSM.get
+    PLOT(plotIndex) = newSM
+    newSM.fixScale()
+    newSM.setVisiblePointRange(0, newSM.numPoints - 2 * tau)
+    newSM.requestFullGeometryUpdate()
+
+    Log.show(s"[Plotter.requestEmbedding()] (x, y, z) = (${newSM.xVar}, ${newSM.yVar}, ${newSM.zVar})")
+
+    AXES(plotIndex) match {
+      case a2D: CoordinateAxes2D ⇒ a2D.setAxesTitles(newSM.xVar, newSM.yVar)
+      case a3D: CoordinateAxes3D ⇒ a3D.setAxesTitles(newSM.xVar, newSM.yVar, newSM.zVar)
+    }
+  } // -- eof
+   */
 
   /*---- End New ----*/
 
@@ -195,6 +253,7 @@ class Plotter(scene: Scene, camera: Camera) extends ModelComponent[Action] {
     * @param plot Some instance of a class that implements trait Plot.
     * @return The region the plot was added to if successful, otherwise None.
     */
+
   def addPlot3DToRegion(plot: Plot3D): Unit = {
     Log("[Regions] - Adding 3D plot to new region")
     val i = regions.length
@@ -208,7 +267,7 @@ class Plotter(scene: Scene, camera: Camera) extends ModelComponent[Action] {
 
     addPlot(plot)
     addAxes(regions(i).maybeGetAxes().get)
-    addGUI(gui)
+    //addGUI(gui)
   }
 
   /**
@@ -297,10 +356,11 @@ class Plotter(scene: Scene, camera: Camera) extends ModelComponent[Action] {
     Log.show("[requestAxisChange] matching PLOT(plotIndex)")
     PLOT(plotIndex) match {
       case sm: ShadowManifold ⇒
+        val tau = sm.tau
         val sp: ScatterPlot = ScatterPlot.fromShadowManifold(sm)
-        PLOT(plotIndex) = sp
         sp.switchAxis(axisID, DATA(0)(columnIndex)) // assuming a single data source
-        plot = sp
+        plot = ShadowManifold.fromScatterPlot(sp)(tau).get
+        PLOT(plotIndex) = plot
 
       case _: ScatterPlot ⇒
         plot = PLOT(plotIndex).asInstanceOf[ScatterPlot]
