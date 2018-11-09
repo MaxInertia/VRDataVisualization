@@ -4,12 +4,14 @@ import facade.Dat
 import util.Log
 import vrdv.input.InputDetails
 import vrdv.model.Plotter
-import vrdv.obj3D.plots.{CoordinateAxes, Plot3D, ScatterPlot, ShadowManifold}
+import vrdv.obj3D.plots.{CoordinateAxes, Plot3D, Plot, ScatterPlot, ShadowManifold}
 
 import scala.scalajs.js
 
-class SettingsGui(plot: Plot3D, axes: CoordinateAxes,plotter: Plotter)
+class SettingsGui(plot: Plot, axes: CoordinateAxes,plotter: Plotter)
   extends DatGuiW("Graph Settings", axes.position.x - 2.0, axes.position.y + 2.0, axes.position.z){
+
+  var attachedPlot = plot
 
   override def setVisible(vis: Boolean): Unit = super.setVisible(vis)
 
@@ -20,7 +22,9 @@ class SettingsGui(plot: Plot3D, axes: CoordinateAxes,plotter: Plotter)
 
   val filterRange: js.Object = js.Dynamic.literal(
     "Start" → 0,
-    "End" → 0
+    "End" → 0,
+    "Snap 10" → false,
+    "Snap 100" → false
   )
 
   val raycasterThresholds: js.Object = js.Dynamic.literal(
@@ -29,9 +33,9 @@ class SettingsGui(plot: Plot3D, axes: CoordinateAxes,plotter: Plotter)
   )
 
   val axisData: js.Object = js.Dynamic.literal(
-    "xAxis" → plot.xVar,
-    "yAxis" → plot.yVar,
-    "zAxis" → plot.zVar
+    "xAxis" → attachedPlot.xVar,
+    "yAxis" → attachedPlot.yVar,
+    "zAxis" → attachedPlot.asInstanceOf[Plot3D].zVar
   )
 
   val plotType: js.Object = js.Dynamic.literal(
@@ -53,10 +57,24 @@ class SettingsGui(plot: Plot3D, axes: CoordinateAxes,plotter: Plotter)
   def getLeftThreshold: Float = raycasterThresholds.asInstanceOf[js.Dynamic].selectDynamic("Left").asInstanceOf[Float]
   def getRightThreshold: Float = raycasterThresholds.asInstanceOf[js.Dynamic].selectDynamic("Right").asInstanceOf[Float]
 
-  //def getAxisDataValue(axis: )
-
   val graphTypeDropdown = addDropdown(plotType, "Graph Type", plotTypeOptions)
-  graphTypeDropdown.onChange(() => {Log.show("Graph type menu changed.")})
+    .onChange(() => {Log.show("Graph type menu changed."); changeGraphType})
+
+  def changeGraphType: Unit = {
+    val gtString = plotType.asInstanceOf[js.Dynamic].selectDynamic("Graph Type").asInstanceOf[String]
+    val plotIndex = plotter.getPlotIndex(attachedPlot)
+
+    gtString match {
+      case "3D Scatter" => {
+
+      }
+      case "2D Scatter" => {
+        val columnID = axisTitles.indexOf(axisData.asInstanceOf[js.Dynamic].selectDynamic("xAxis"))
+        plotter.replacePlot(attachedPlot, plotter.newPlot2DWithData(columnID))
+        attachedPlot = plotter.getPlot(plotIndex)
+      }
+    }
+  }
 
   /*
   //Raycaster Thresholds Folder
@@ -73,17 +91,34 @@ class SettingsGui(plot: Plot3D, axes: CoordinateAxes,plotter: Plotter)
   val axesFolder = new DatGuiW("Select Data", 0,0,0)
   var axisTitles: js.Array[String] = js.Array()
   for(d <- plotter.getData.map(_.id)) axisTitles = axisTitles :+ d
-  axesFolder.object3D.add(axisData, "xAxis", axisTitles)
-  axesFolder.object3D.add(axisData, "yAxis", axisTitles)
-  axesFolder.object3D.add(axisData, "zAxis", axisTitles)
+  axesFolder.addDropdown(axisData, "xAxis", axisTitles).onChange(() => callForAxisUpdate(0))
+  axesFolder.addDropdown(axisData, "yAxis", axisTitles).onChange(() => callForAxisUpdate(1))
+  axesFolder.addDropdown(axisData, "zAxis", axisTitles).onChange(() => callForAxisUpdate(2))
   object3D.addFolder(axesFolder.object3D)
+
   axesFolder.object3D.open()
+
+  def callForAxisUpdate(id: Int): Unit = {
+    val axisString = id match {
+      case 0 => "xAxis"
+      case 1 => "yAxis"
+      case 2 => "zAxis"
+    }
+    val columnID = axisTitles.indexOf(axisData.asInstanceOf[js.Dynamic].selectDynamic(axisString))
+    val plotIndex = plotter.getPlotIndex(attachedPlot)
+    Log.show("[SettingsGui] requesting axis change plotIndex = " + plotIndex)
+    plotter.requestAxisChange(plotIndex, id, columnID)
+  }
 
   //Filter Folder
   val filterFolder = new DatGuiW("Time Filter", 0, 0, 0)
-  filterFolder.object3D.add(filterRange, "Start", 0, plot.numPoints - 1).step(1).name("Start index")
-  filterFolder.object3D.add(filterRange, "End", 0, plot.numPoints - 1).step(1).name("End index")
-  filterFolder.addButton(() => plot match {
+  filterFolder.addCheckbox(filterRange, "Snap 10", "Snap to 10").onChange(() => setFilterStep)
+  filterFolder.addCheckbox(filterRange, "Snap 100", "Snap to 100").onChange(() => setFilterStep)
+  val filterLowSlider = filterFolder.object3D.add(filterRange, "Start", 0, attachedPlot.numPoints - 1)
+    .step(getFilterStep).name("Start index")
+  val filterHighSlider = filterFolder.object3D.add(filterRange, "End", 0, attachedPlot.numPoints - 1)
+    .step(getFilterStep).name("End index")
+  filterFolder.addButton(() => attachedPlot match {
     case sp: ScatterPlot ⇒
       val range = getRange
       sp.setVisiblePointRange(range.start, range.end)
@@ -92,6 +127,17 @@ class SettingsGui(plot: Plot3D, axes: CoordinateAxes,plotter: Plotter)
   }, "Filter", "Time Filter")
   object3D.addFolder(filterFolder.object3D)
   filterFolder.object3D.open()
+
+  def setFilterStep: Unit = {
+    filterLowSlider.step(getFilterStep)
+    filterHighSlider.step(getFilterStep)
+  }
+
+  def getFilterStep: Int = {
+    if(filterRange.asInstanceOf[js.Dynamic].selectDynamic("Snap 100").asInstanceOf[Boolean]) 100 else
+      if(filterRange.asInstanceOf[js.Dynamic].selectDynamic("Snap 10").asInstanceOf[Boolean]) 10 else 1
+  }
+
 
   //Positioning
 

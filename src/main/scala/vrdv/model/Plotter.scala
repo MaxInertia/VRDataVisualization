@@ -30,8 +30,6 @@ class Plotter(scene: Scene, camera: Camera) extends ModelComponent[Action] {
 
   def regions: Array[Region] = REGIONS
 
-  def getData: Array[Data] = DATA(0)
-
   def numOccupied(): Int = regions.length
   def isFull: Boolean = numOccupied() == 4
 
@@ -40,6 +38,20 @@ class Plotter(scene: Scene, camera: Camera) extends ModelComponent[Action] {
   // ------ Plot stuff
 
   /*---- New 2018-11-02 ----*/
+
+  def getData: Array[Data] = DATA(0)
+  def getPlotIndex(plot: Plot): Int = {
+    PLOT.indexOf(plot)
+  }
+  def getPlot(index: Int): Plot = PLOT(index)
+  def replacePlot(oldPlot: Plot, newPlot: Plot): Unit = {
+    val idx = getPlotIndex(oldPlot)
+    Log.show("[Plotter] replacing plot, idx = " + idx)
+    regions(idx).addPlot(newPlot)
+    AXES(idx) = regions(idx).maybeGetAxes().get
+    PLOT(idx) = newPlot
+    Log.show("[Plotter] index of new plot = " + getPlotIndex(newPlot))
+  }
 
   private val initialMenu = new InitialMenu(this)
 
@@ -96,6 +108,12 @@ class Plotter(scene: Scene, camera: Camera) extends ModelComponent[Action] {
       //addGUI(gui)
 
     }
+  }
+
+  def newPlot2DWithData(columnNumber: Int): Plot = {
+    val xs = DATA(0)(columnNumber)
+    val plot2D = TimeSeriesPlot2D(xs)
+    plot2D
   }
 
   /*---- End New ----*/
@@ -255,10 +273,14 @@ class Plotter(scene: Scene, camera: Camera) extends ModelComponent[Action] {
     Log.show("[requestAxisChange] start")
     if(columnIndex >= DATA(0).length) return
 
+    Log.show("[requestAxisChange] getting axes from region")
+    //AXES(plotIndex) = regions(plotIndex).maybeGetAxes().get
+    Log.show("[requestAxisChange] getting axes from Plotter plotIndex = " + plotIndex)
     val axes: CoordinateAxes = AXES(plotIndex)
-    val gui: DatGui = GUI(plotIndex)
-    var plot: Plot3D = null
+    //val gui: DatGui = GUI(plotIndex)
+    var plot: Plot = null
 
+    Log.show("[requestAxisChange] matching PLOT(plotIndex)")
     PLOT(plotIndex) match {
       case sm: ShadowManifold ⇒
         val sp: ScatterPlot = ScatterPlot.fromShadowManifold(sm)
@@ -269,20 +291,31 @@ class Plotter(scene: Scene, camera: Camera) extends ModelComponent[Action] {
       case _: ScatterPlot ⇒
         plot = PLOT(plotIndex).asInstanceOf[ScatterPlot]
         plot.asInstanceOf[ScatterPlot].switchAxis(axisID, DATA(0)(columnIndex)) // assuming a single data source
-        gui.updateFolderLabels(plot.xVar, plot.yVar, plot.zVar)
+        //gui.updateFolderLabels(plot.xVar, plot.yVar, plot.zVar)
 
-      //case _: ScatterPlot2D ⇒
+      case _: ScatterPlot2D ⇒
+        plot = PLOT(plotIndex).asInstanceOf[ScatterPlot2D]
+        plot.asInstanceOf[ScatterPlot2D].switchAxis(axisID, DATA(0)(columnIndex))
     }
 
-    gui.updateFolderLabels(plot.xVar, plot.yVar, plot.zVar)
-    axes.asInstanceOf[CoordinateAxes3D].setAxesTitles(plot.xVar, plot.yVar, plot.zVar)
+    //gui.updateFolderLabels(plot.xVar, plot.yVar, plot.zVar)
+    plot match {
+      case _: Plot3D =>
+        axes.asInstanceOf[CoordinateAxes3D].setAxesTitles(plot.xVar, plot.yVar, plot.asInstanceOf[Plot3D].zVar)
+      case _: Plot2D =>
+        axes.asInstanceOf[CoordinateAxes2D].setAxesTitles(plot.xVar, plot.yVar)
+    }
 
+
+    /*
     // We set the new variable bound to the 3D Plots x axis to the 2D plots y axes
     if(axisID == XAxis) {
       PLOT(plotIndex + 1).asInstanceOf[ScatterPlot2D].switchAxis(YAxis, DATA(0)(columnIndex))
       AXES(plotIndex + 1).asInstanceOf[CoordinateAxes2D].setAxisTitle(DATA(0)(columnIndex).id, YAxis)
     }
+    */
 
+    Log.show("[requestAxisChange] Updating axis titles...")
     AXES(plotIndex) match {
 
       case a2D: CoordinateAxes2D ⇒
@@ -295,13 +328,13 @@ class Plotter(scene: Scene, camera: Camera) extends ModelComponent[Action] {
         axisID match { // Currently viewing a scatter-plot, so we can settle with modifying a single axis
           case XAxis =>
             a3D.setAxisTitle(plot.xVar, XAxis)
-            gui.updateFolderLabels(x = plot.xVar)
+            //gui.updateFolderLabels(x = plot.xVar)
           case YAxis =>
             a3D.setAxisTitle(plot.yVar, YAxis)
-            gui.updateFolderLabels(y = plot.yVar)
+            //gui.updateFolderLabels(y = plot.yVar)
           case ZAxis =>
-            a3D.setAxisTitle(plot.zVar, ZAxis)
-            gui.updateFolderLabels(z = plot.zVar)
+            a3D.setAxisTitle(plot.asInstanceOf[Plot3D].zVar, ZAxis)
+            //gui.updateFolderLabels(z = plot.zVar)
         }
 
     }

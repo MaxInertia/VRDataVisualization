@@ -31,7 +31,7 @@ class DatGuiW(title: String, xInit: Double, yInit: Double, zInit: Double) {
     WButton(idx, object3D).setLabels(name, description)
   }
 
-  def addCheckbox(something: js.Object, id: String, description: String): Unit = {
+  def addCheckbox(something: js.Object, id: String, description: String): GuiComponent = {
     object3D.add(something, id).name(description)
   }
 
