@@ -40,7 +40,7 @@ object Dat {
 
   @js.native
   trait GuiSlider extends GuiComponent {
-    def  listen(): GuiComponent = js.native
+    def listen(): GuiSlider = js.native
     def min(n: Double): GuiSlider = js.native
     def max(n: Double): GuiSlider = js.native
     def step(n: Double): GuiSlider = js.native
@@ -60,7 +60,7 @@ object Dat {
 
   @js.native
   trait GuiComponent extends Object3D {
-    def name(name: String): GuiComponent = js.native
+    def name(name: String): GuiSlider = js.native
     def onChange(callback: js.Function): GuiComponent = js.native
   }
 
