@@ -1,6 +1,6 @@
 package vrdv.obj3D
 
-import facade.Dat
+import facade.Dat._
 import util.Log
 import vrdv.input.InputDetails
 import vrdv.model.Plotter
@@ -8,7 +8,7 @@ import vrdv.obj3D.plots._
 
 import scala.scalajs.js
 
-class SettingsGui(plot: Plot, axes: CoordinateAxes,plotter: Plotter)
+class SettingsGui(plot: Plot, axes: CoordinateAxes, plotter: Plotter)
   extends DatGuiW("Graph Settings", axes.position.x - 2.0, axes.position.y + 2.0, axes.position.z){
 
   var attachedPlot = plot
@@ -157,10 +157,10 @@ class SettingsGui(plot: Plot, axes: CoordinateAxes,plotter: Plotter)
   val filterFolder = new DatGuiW("Time Filter", 0, 0, 0)
   filterFolder.addCheckbox(filterRange, "Snap 10", "Snap to 10").onChange(() => setFilterStep)
   filterFolder.addCheckbox(filterRange, "Snap 100", "Snap to 100").onChange(() => setFilterStep)
-  val filterLowSlider = filterFolder.object3D.add(filterRange, "Start", 0, attachedPlot.numPoints - 1)
-    .step(getFilterStep).name("Start index")
-  val filterHighSlider = filterFolder.object3D.add(filterRange, "End", 0, attachedPlot.numPoints - 1)
-    .step(getFilterStep).name("End index")
+  val filterLowSlider: GuiSlider = filterFolder.object3D.add(filterRange, "Start", 0, attachedPlot.numPoints - 1)
+    .step(getFilterStep).name("Start index").asInstanceOf[GuiSlider]
+  val filterHighSlider: GuiSlider = filterFolder.object3D.add(filterRange, "End", 0, attachedPlot.numPoints - 1)
+    .step(getFilterStep).name("End index").asInstanceOf[GuiSlider]
   filterFolder.addButton(() => applyFilter, "Filter", "Time Filter")
   object3D.addFolder(filterFolder.object3D)
   filterFolder.object3D.open()

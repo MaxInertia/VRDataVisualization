@@ -39,6 +39,13 @@ class Plotter(scene: Scene, camera: Camera) extends ModelComponent[Action] {
 
   /*---- New 2018-11-02 ----*/
 
+  //TODO Maybe don't filter these and check for isDefined when accessing?
+  def getPlots: Array[Plot] = regions.map(_.maybeGetPlot()).filter(_.isDefined).map(_.get)
+  def getAxes: Array[CoordinateAxes] = regions.map(_.maybeGetAxes()).filter(_.isDefined).map(_.get)
+
+  def maybeGetRegionForPlot(plot: Plot): Option[Region] =
+    Option(regions.filter(r => r.maybeGetPlot().getOrElse(Unit) == plot)(0))
+
   def getData: Array[Data] = DATA(0)
   def getPlotIndex(plot: Plot): Int = PLOT.indexOf(plot)
   def getPlot(index: Int): Plot = PLOT(index)

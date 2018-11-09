@@ -16,6 +16,8 @@ case class Region(id: Int, object3D: Object3D = new Object3D()) {
   var gui: Option[DatGui] = None
   obj3D.setMoveable(object3D)
 
+  def maybeGetPlot(): Option[Plot] = plot
+
   private var maybeAxes: Option[CoordinateAxes] = None
   def maybeGetAxes(): Option[CoordinateAxes] = maybeAxes
 
