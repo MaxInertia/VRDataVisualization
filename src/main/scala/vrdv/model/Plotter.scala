@@ -75,7 +75,7 @@ class Plotter(scene: Scene, camera: Camera) extends ModelComponent[Action] {
     }
   }
 
-  def newPlot3DWithData: Unit = {
+  def initPlot3DWithData: Unit = {
     val data = DATA(0)
     val pointColor = CustomColors.BLUE_HUE_SHIFT
 
@@ -108,6 +108,17 @@ class Plotter(scene: Scene, camera: Camera) extends ModelComponent[Action] {
       //addGUI(gui)
 
     }
+  }
+
+  def newPlot3DWithData(xCol: Int, yCol: Int, zCol: Int): Plot = {
+    val data = DATA(0)
+    val pointColor = CustomColors.BLUE_HUE_SHIFT
+    val scatterPlot: ScatterPlot = ScatterPlot(data, Res.getLastLoadedTextureID, pointColor)
+    scatterPlot.switchAxis(0, data(xCol), true)
+    scatterPlot.switchAxis(1, data(yCol), true)
+    scatterPlot.switchAxis(2, data(zCol), true)
+
+    scatterPlot
   }
 
   def newPlot2DWithData(columnNumber: Int): Plot = {
@@ -240,32 +251,35 @@ class Plotter(scene: Scene, camera: Camera) extends ModelComponent[Action] {
   }
 
   def setVisiblePointRange(start: Int, end: Int): Unit = {
-    //TODO Get any (including none) plot2Ds here and adjust them
-    /*
-    val plot2D = PLOT(1)
-    Log.show("Position:")
-    Log.show(plot2D.getPoints.position)
-    val prevStart = plot2D.firstVisiblePointIndex
-    val prevEnd = plot2D.visiblePoints + prevStart
-    plot2D.setVisiblePointRange(start, end)
 
-    // 1. Shift plot (-x) proportional to |start|
-    val numPoints = plot2D.numPoints
-    val points = plot2D.getPoints
-    val deltaT = 1.0 / numPoints // distance between points along x-axis
+    for(plot <- PLOT) {
+      plot match {
+        case plot2D: TimeSeriesPlot2D => {
+          Log.show("Position:")
+          Log.show(plot2D.getPoints.position)
+          val prevStart = plot2D.firstVisiblePointIndex
+          val prevEnd = plot2D.visiblePoints + prevStart
+          plot2D.setVisiblePointRange(start, end)
 
-    val prevDist2FirstVisible = 1.0 / (prevEnd - prevStart) * prevStart
-    val dist2FirstVisible = 1.0 / plot2D.visiblePoints * start
-    points.translateX(prevDist2FirstVisible - dist2FirstVisible)
+          // 1. Shift plot (-x) proportional to |start|
+          val numPoints = plot2D.numPoints
+          val points = plot2D.getPoints
+          val deltaT = 1.0 / numPoints // distance between points along x-axis
+
+          val prevDist2FirstVisible = 1.0 / (prevEnd - prevStart) * prevStart
+          val dist2FirstVisible = 1.0 / plot2D.visiblePoints * start
+          points.translateX(prevDist2FirstVisible - dist2FirstVisible)
 
 
-    // 2. Scale plot (x) proportional to | end - start |
-    Log.show("Scale: ")
-    Log.show(points.scale)
-    val scaleChange = (1.0*(prevEnd - prevStart)) / (1.0*(end - start))
-    Log.show(s"Scale Change: $scaleChange")
-    points.scale.setX(scaleChange * points.scale.x)
-    */
+          // 2. Scale plot (x) proportional to | end - start |
+          Log.show("Scale: ")
+          Log.show(points.scale)
+          val scaleChange = (1.0 * (prevEnd - prevStart)) / (1.0 * (end - start))
+          Log.show(s"Scale Change: $scaleChange")
+          points.scale.setX(scaleChange * points.scale.x)
+        }
+      }
+    }
   }
 
   // Applies an axis change. Changes (1) plot point positions, (2) axes titles, and (3) gui labels

@@ -4,7 +4,7 @@ import facade.Dat
 import util.Log
 import vrdv.input.InputDetails
 import vrdv.model.Plotter
-import vrdv.obj3D.plots.{CoordinateAxes, Plot3D, Plot, ScatterPlot, ShadowManifold}
+import vrdv.obj3D.plots._
 
 import scala.scalajs.js
 
@@ -66,12 +66,20 @@ class SettingsGui(plot: Plot, axes: CoordinateAxes,plotter: Plotter)
 
     gtString match {
       case "3D Scatter" => {
-
+        val xCol = axisTitles.indexOf(axisData.asInstanceOf[js.Dynamic].selectDynamic("xAxis"))
+        val yCol = axisTitles.indexOf(axisData.asInstanceOf[js.Dynamic].selectDynamic("yAxis"))
+        val zCol = axisTitles.indexOf(axisData.asInstanceOf[js.Dynamic].selectDynamic("zAxis"))
+        plotter.replacePlot(attachedPlot, plotter.newPlot3DWithData(xCol, yCol, zCol))
+        attachedPlot = plotter.getPlot(plotIndex)
+        val range = getRange
+        attachedPlot.setVisiblePointRange(range.start, range.end)
       }
       case "2D Scatter" => {
-        val columnID = axisTitles.indexOf(axisData.asInstanceOf[js.Dynamic].selectDynamic("xAxis"))
+        val columnID = axisTitles.indexOf(axisData.asInstanceOf[js.Dynamic].selectDynamic("yAxis"))
         plotter.replacePlot(attachedPlot, plotter.newPlot2DWithData(columnID))
         attachedPlot = plotter.getPlot(plotIndex)
+        val range = getRange
+        plotter.setVisiblePointRange(range.start, range.end)
       }
     }
   }
@@ -119,9 +127,12 @@ class SettingsGui(plot: Plot, axes: CoordinateAxes,plotter: Plotter)
   val filterHighSlider = filterFolder.object3D.add(filterRange, "End", 0, attachedPlot.numPoints - 1)
     .step(getFilterStep).name("End index")
   filterFolder.addButton(() => attachedPlot match {
-    case sp: ScatterPlot ⇒
+    case sp3d: ScatterPlot ⇒
       val range = getRange
-      sp.setVisiblePointRange(range.start, range.end)
+      sp3d.setVisiblePointRange(range.start, range.end)
+      plotter.setVisiblePointRange(range.start, range.end)
+    case _: ScatterPlot2D =>
+      val range = getRange
       plotter.setVisiblePointRange(range.start, range.end)
     case sm: ShadowManifold ⇒
   }, "Filter", "Time Filter")

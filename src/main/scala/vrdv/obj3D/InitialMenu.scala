@@ -17,7 +17,7 @@ class InitialMenu(plotter: Plotter)
 
   def addPlot: Unit = {
     if(object3D.visible) {
-      plotter.newPlot3DWithData
+      plotter.initPlot3DWithData
       setVisible(false)
     }
   }
