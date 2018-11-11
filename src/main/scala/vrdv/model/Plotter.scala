@@ -1,5 +1,6 @@
 package vrdv.model
 
+import facade.IFThree.IntersectionExt
 import org.scalajs.threejs.{Camera, Intersection, Scene, Vector3}
 import resources.{Data, Res}
 import util.Log
@@ -294,23 +295,34 @@ class Plotter(scene: Scene, camera: Camera) extends ModelComponent[Action] {
         val intersects: scalajs.js.Array[Intersection] = laser.rayCaster.intersectObject(plot.getPoints)
         // If intersections exist apply interaction behaviour
         if (intersects.nonEmpty) {
-          // Apply highlighting to the first point intersected if it's visible
-          val interactionFound = Interactions.on(plot, intersects, select)
-          if(interactionFound) {
-            // Assumes if this region has a plot, all previous regions have a plot
-            var h = 2
-            var q = (index + 1) % PLOT.length
-            while(q != index) {
-              Interactions.on(PLOT(q), intersects, select)
-              q = (index + h) % PLOT.length
-              h += 1
-            }
-            //if(PLOT.length > 2) Interactions.on(PLOT(2), intersects, select)
 
-            // Shrink laser so endpoint is on the intersected point
-            laser.updateLengthScale(intersects(0).distance)
-            return
-          } // else that point was not visible, continue...
+          var pindex: Int = -1
+          for(i ← intersects.indices if pindex == -1) {
+            val pi = intersects(i).asInstanceOf[IntersectionExt].index
+            if(pi >= plot.firstVisiblePointIndex && pi < plot.firstVisiblePointIndex + plot.visiblePoints) {
+              pindex = i
+            }
+          }
+          if(pindex != -1) {
+
+            // Apply highlighting to the first point intersected if it's visible
+            val interactionFound = Interactions.on(plot, intersects, select, pindex)
+            if (interactionFound) {
+              // Assumes if this region has a plot, all previous regions have a plot
+              var h = 2
+              var q = (index + 1) % PLOT.length
+              while (q != index) {
+                Interactions.on(PLOT(q), intersects, select, pindex)
+                q = (index + h) % PLOT.length
+                h += 1
+              }
+              //if(PLOT.length > 2) Interactions.on(PLOT(2), intersects, select)
+
+              // Shrink laser so endpoint is on the intersected point
+              laser.updateLengthScale(intersects(pindex).distance)
+              return
+            } // else that point was not visible, continue...
+          }
         }
       }
     }

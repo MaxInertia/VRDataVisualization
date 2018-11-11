@@ -13,15 +13,14 @@ import vrdv.obj3D.plots.{Plot, PointOperations}
   * Created by Dorian Thiessen on 2018-04-07.
   */
 trait Interactions[T] {
-  def onIntersection(entity: T, intersections: scalajs.js.Array[Intersection], option: Boolean): Boolean
+  def onIntersection(entity: T, intersections: scalajs.js.Array[Intersection], option: Boolean, i: Int): Boolean
 }
 
 object Interactions {
   implicit object PlotInteractions extends Interactions[Plot] {
 
-    override def onIntersection(entity: Plot, intersection: scalajs.js.Array[Intersection], selecting: Boolean): Boolean = {
-      val index = intersection(0).asInstanceOf[IntersectionExt].index
-      if(index >= entity.visiblePoints) return false
+    override def onIntersection(entity: Plot, intersection: scalajs.js.Array[Intersection], selecting: Boolean, pindex: Int = 0): Boolean = {
+      val index = intersection(pindex).asInstanceOf[IntersectionExt].index
 
       var oldIndexMaybe = entity.highlightedPointIndex
 
@@ -50,8 +49,8 @@ object Interactions {
     }
   }
 
-  def on[T: Interactions](entity: T, intersections: scalajs.js.Array[Intersection], option: Boolean): Boolean = {
-    implicitly[Interactions[T]].onIntersection(entity, intersections, option)
+  def on[T: Interactions](entity: T, intersections: scalajs.js.Array[Intersection], option: Boolean, int: Int): Boolean = {
+    implicitly[Interactions[T]].onIntersection(entity, intersections, option, int)
   }
 
 }

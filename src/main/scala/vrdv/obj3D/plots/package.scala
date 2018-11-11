@@ -57,7 +57,7 @@ package object plots {
     def setVisiblePointRange(first: Int, last: Int): Unit = {
       firstVisiblePointIndex = first
       visiblePoints = last - first
-      getGeometry.asInstanceOf[js.Dynamic].setDrawRange(first, last)
+      getGeometry.asInstanceOf[js.Dynamic].setDrawRange(first, visiblePoints)
     }
 
     /**
