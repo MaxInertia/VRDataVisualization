@@ -1,7 +1,8 @@
 package vrdv.obj3D.plots
 
-import resources.Data
+import resources.{Data, Res}
 import util.{Log, ScaleCenterProperties, Stats}
+import vrdv.obj3D.CustomColors
 
 import scala.scalajs.js
 import scala.scalajs.js.typedarray.Float32Array
@@ -49,9 +50,45 @@ case class ShadowManifold(var data: Data, var tau: Int, var scp: ScaleCenterProp
 
     scp = PointOperations.confineToRegion3D(points, (minX, minY, minZ), (maxX, maxY, maxZ))
   }
+
+  def switchAxis(axisID: AxisID, newColumn: Data, newTau: Int): Unit = {
+    assert(axisID == XAxis, s"[ShadowManifold] [switchAxis] - Attempted switching invalid axis: $axisID")
+    Log.show("[ShadowManifold] [switchAxis]")
+    varName = newColumn.id
+    data = newColumn
+
+    tau = newTau
+
+    updateEmbedding(tau)
+  }
+
+  def updateEmbedding(newTau: Int): Unit = {
+    Log.show("[ShadowManifold] [updateEmbedding] tau = " + tau + ", newTau = " + newTau)
+    val positionsAttr = PointsUtils.positions(getPoints)
+    val positionsArr = positionsAttr.array.asInstanceOf[Float32Array]
+
+    val firstIndex = 2 * newTau // (E - 1) * Tau
+    if(firstIndex >= positionsArr.length*3) {
+      Log.show("[ShadowManifold] [updateEmbedding] tau too high to generate shadow manifold")
+      return
+    } // Hard fail - tau too high to generate shadow manifold
+    for(pointIndex <- firstIndex until varValues.length) {
+      for(dimension <- 0 to 2) positionsArr((pointIndex - firstIndex)*3 + dimension) = varValues(pointIndex - newTau*dimension).toFloat
+    }
+
+    Log.show(s"[ShadowManifold] [updateEmbedding] Shadow Manifold made with variable[$varName] with newTau $newTau has ${varValues.length - firstIndex} points.")
+
+    fixScale()
+
+    getPositions.needsUpdate = true
+    requestFullGeometryUpdate()
+  }
 }
 
 object ShadowManifold {
+  def apply(data: Data, tau: Int): ShadowManifold = {
+    apply(data, Res.getLastLoadedTextureID, CustomColors.BLUE_HUE_SHIFT, tau)
+  }
 
   def apply(data: Data, texture: Int, hue: Double, tau: Int = 1): ShadowManifold = {
     val (points, props, vStats): (Points, ScaleCenterProperties, Array[Stats]) = PointsBuilder()

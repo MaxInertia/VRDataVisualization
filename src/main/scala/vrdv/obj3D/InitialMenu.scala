@@ -1,6 +1,6 @@
 package vrdv.obj3D
 
-import facade.Dat.{GuiComponent, GuiDropdown}
+import facade.Dat.{GuiComponent, GuiDropdown, GuiSlider}
 import util.Log
 import vrdv.model.Plotter
 
@@ -18,9 +18,10 @@ class InitialMenu(plotter: Plotter)
   def addPlot: Unit = {
     if(object3D.visible) {
       plotter.initPlot3DWithData
-      //setVisible(false)
-      object3D.position.set(2, 1, 0)
-      object3D.rotation.y = -3.14 / 2.0
+      if(plotter.getPlots.length == 3) setVisible(false)
+      //object3D.position.set(2, 1, 0)
+      //object3D.rotation.y = -3.14 / 2.0
+      plotter.showGlobalMenu
     }
   }
 
@@ -28,6 +29,6 @@ class InitialMenu(plotter: Plotter)
   addButton(() => { addPlot }, "Create", "Graph 2")
   addButton(() => { addPlot }, "Create", "Graph 3")
 
-  addButton(() => {plotter.toggleGuiVisibility}, "Hide", "Hide GUI")
+  //addButton(() => {plotter.toggleGuiVisibility}, "Hide", "Hide GUI")
 
 }

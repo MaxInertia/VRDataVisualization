@@ -37,12 +37,15 @@ case class Region(id: Int, object3D: Object3D = new Object3D()) {
     // Remove previous plot if it exists and add the new one
     if(plot.nonEmpty) {
       remove(plot.get.getPoints)
-      Log.show("[Region] clearing region...")
-      for(c <- object3D.children) {object3D.remove(c)}
+      Log.show("[Region] clearing region " + id)
+      for(c <- object3D.children) {if(Option(c).isDefined) object3D.remove(c)}
     }
+
+    Log.show(("[Region] Adding plot..."))
     plot = Some(p)
     object3D.add(p.getPoints)
 
+    Log.show(("[Region] Adding axes..."))
     maybeAxes = Some(axes)
     add(axes)
   }

@@ -2,11 +2,11 @@ package vrdv.model
 
 import org.scalajs.threejs.{Camera, Intersection, Scene, Vector3}
 import resources.{Data, Res}
-import util.Log
+import util.{Log, ScaleCenterProperties}
 import vrdv.input.{Action, InputDetails, Interactions}
 import vrdv.obj3D.displays.{CSC_DefaultConfig, ColumnSelectionConsole}
 import vrdv.obj3D.plots._
-import vrdv.obj3D.{CustomColors, DatGui, DatGuiW, SettingsGui, InitialMenu, Region}
+import vrdv.obj3D._
 
 /**
   * Created by Dorian Thiessen on 2018-07-29.
@@ -47,7 +47,8 @@ class Plotter(scene: Scene, camera: Camera) extends ModelComponent[Action] {
     Option(regions.filter(r => r.maybeGetPlot().getOrElse(Unit) == plot)(0))
 
   def getData: Array[Data] = DATA(0)
-  def getPlotIndex(plot: Plot): Int = PLOT.indexOf(plot)
+  //def getPlotIndex(plot: Plot): Int = PLOT.indexOf(plot)
+  def getPlotIndex(plot: Plot): Int = getPlots.indexOf(plot)
   def getPlot(index: Int): Plot = PLOT(index)
   def replacePlot(oldPlot: Plot, newPlot: Plot): Unit = {
     val idx = getPlotIndex(oldPlot)
@@ -59,6 +60,15 @@ class Plotter(scene: Scene, camera: Camera) extends ModelComponent[Action] {
   }
 
   private val initialMenu = new InitialMenu(this)
+  private var globalMenu: GlobalMenu = null
+
+  def showGlobalMenu: Unit = {
+    if(globalMenu == null) {
+      globalMenu = new GlobalMenu(this)
+      scene.add(globalMenu.object3D)
+    }
+    globalMenu.setVisible(true)
+  }
 
   def toggleGuiVisibility: Unit = {
     Log.show("Toggle GUI visibility.")
@@ -76,10 +86,7 @@ class Plotter(scene: Scene, camera: Camera) extends ModelComponent[Action] {
       scene.add(initialMenu.object3D)
 
     } else {
-      val i = data.length - 1
-      val shadowManifold: ShadowManifold = ShadowManifold(data(i), Res.getLastLoadedTextureID, pointColor)
-      addPlot3DToRegion(shadowManifold)
-      plot2D(false)
+      Log.show("[Plotter] [setupData] Error: less than 3 columns in dataset.")
     }
   }
 
@@ -101,7 +108,9 @@ class Plotter(scene: Scene, camera: Camera) extends ModelComponent[Action] {
 
       //val gui = DatGui(scatterPlot, regions(i).maybeGetAxes().get, this)
       val gui = new SettingsGui(scatterPlot, regions(i).maybeGetAxes().get, this)
+      //TODO Fix This
       addGUI(gui)
+      //TODO add Gui to Region
       //regions(i).gui = Some(gui)
       //regions(i).add(gui.object3D)
       scene.add(gui.object3D)
@@ -112,6 +121,7 @@ class Plotter(scene: Scene, camera: Camera) extends ModelComponent[Action] {
       //gui.object3D.rotateY(3.14 / 4)
 
 
+      //TODO Fix This
       addPlot(scatterPlot)
       addAxes(regions(i).maybeGetAxes().get)
       //addGUI(gui)
@@ -138,13 +148,8 @@ class Plotter(scene: Scene, camera: Camera) extends ModelComponent[Action] {
 
   def newShadowManifoldWithData(columnNumber: Int, tau: Int = 1): Plot = {
     val data = DATA(0)
-    val pointColor = CustomColors.BLUE_HUE_SHIFT
-    val scatterPlot: ScatterPlot = ScatterPlot(data, Res.getLastLoadedTextureID, pointColor)
-    scatterPlot.switchAxis(0, data(columnNumber), true)
-    scatterPlot.switchAxis(1, data(columnNumber), true)
-    scatterPlot.switchAxis(2, data(columnNumber), true)
 
-    val newSM: ShadowManifold = ShadowManifold.fromScatterPlot(scatterPlot)(tau, 0).get
+    val newSM: ShadowManifold = ShadowManifold(data(columnNumber), tau)
     newSM.fixScale()
     newSM.setVisiblePointRange(0, newSM.numPoints - 2 * tau)
     newSM.requestFullGeometryUpdate()
@@ -194,6 +199,7 @@ class Plotter(scene: Scene, camera: Camera) extends ModelComponent[Action] {
 
   /*---- End New ----*/
 
+  /*
   def plot2D3D(data: Array[Data], pointColor: Double = CustomColors.BLUE_HUE_SHIFT): Unit = {
     if (data.isEmpty) return
     DATA = DATA :+ data
@@ -291,6 +297,7 @@ class Plotter(scene: Scene, camera: Camera) extends ModelComponent[Action] {
     addPlot(plot)
     addAxes(regions(i).maybeGetAxes().get)
   }
+  */
 
   def update(): Unit = {
     for (r <- regions if r.maybeGetAxes().nonEmpty) {
@@ -318,7 +325,7 @@ class Plotter(scene: Scene, camera: Camera) extends ModelComponent[Action] {
 
   def setVisiblePointRange(start: Int, end: Int): Unit = {
 
-    for(plot <- PLOT) {
+    for(plot <- getPlots) {
       plot match {
           //TODO Case for Plot3D
         case plot2D: TimeSeriesPlot2D => {
@@ -345,7 +352,9 @@ class Plotter(scene: Scene, camera: Camera) extends ModelComponent[Action] {
           Log.show(s"Scale Change: $scaleChange")
           points.scale.setX(scaleChange * points.scale.x)
         }
-        case _: Any =>
+        case otherPlot: Plot => {
+          otherPlot.setVisiblePointRange(start, end)
+        }
       }
     }
   }
@@ -356,29 +365,23 @@ class Plotter(scene: Scene, camera: Camera) extends ModelComponent[Action] {
     if(columnIndex >= DATA(0).length) return
 
     Log.show("[requestAxisChange] getting axes from Plotter plotIndex = " + plotIndex)
-    val axes: CoordinateAxes = AXES(plotIndex)
+    //val axes: CoordinateAxes = AXES(plotIndex)
+    val axes: CoordinateAxes = getAxes(plotIndex)
     //val gui: DatGui = GUI(plotIndex)
-    var plot: Plot = null
+    var plot: Plot = getPlots(plotIndex)
 
-    Log.show("[requestAxisChange] matching PLOT(plotIndex)")
-    PLOT(plotIndex) match {
+    Log.show("[requestAxisChange] matching plot")
+     plot match {
       case sm: ShadowManifold ⇒
-        val tau = sm.tau
-        val sp: ScatterPlot = ScatterPlot.fromShadowManifold(sm)
-        sp.switchAxis(axisID, DATA(0)(columnIndex)) // assuming a single data source
-        plot = ShadowManifold.fromScatterPlot(sp)(tau).get
-        PLOT(plotIndex) = plot
-
-      case _: ScatterPlot ⇒
-        plot = PLOT(plotIndex).asInstanceOf[ScatterPlot]
-        plot.asInstanceOf[ScatterPlot].switchAxis(axisID, DATA(0)(columnIndex)) // assuming a single data source
-        //gui.updateFolderLabels(plot.xVar, plot.yVar, plot.zVar)
-
-      case _: ScatterPlot2D ⇒
-        plot = PLOT(plotIndex).asInstanceOf[ScatterPlot2D]
-        plot.asInstanceOf[ScatterPlot2D].switchAxis(axisID, DATA(0)(columnIndex))
+        sm.asInstanceOf[ShadowManifold].switchAxis(axisID, DATA(0)(columnIndex), sm.tau)
+        //sm.updateEmbedding()
+      case sp: ScatterPlot ⇒
+        sp.asInstanceOf[ScatterPlot].switchAxis(axisID, DATA(0)(columnIndex)) // assuming a single data source
+      case sp2D: ScatterPlot2D ⇒
+        sp2D.asInstanceOf[ScatterPlot2D].switchAxis(axisID, DATA(0)(columnIndex))
     }
 
+    Log.show("[requestAxisChange] setting axis titles")
     //gui.updateFolderLabels(plot.xVar, plot.yVar, plot.zVar)
     plot match {
       case _: Plot3D =>
@@ -386,7 +389,7 @@ class Plotter(scene: Scene, camera: Camera) extends ModelComponent[Action] {
       case _: Plot2D =>
         axes.asInstanceOf[CoordinateAxes2D].setAxesTitles(plot.xVar, plot.yVar)
     }
-
+    Log.show("[requestAxisChange] done changing axes")
 
     /*
     // We set the new variable bound to the 3D Plots x axis to the 2D plots y axes
@@ -396,6 +399,7 @@ class Plotter(scene: Scene, camera: Camera) extends ModelComponent[Action] {
     }
     */
 
+    /*
     Log.show("[requestAxisChange] Updating axis titles...")
     AXES(plotIndex) match {
 
@@ -419,7 +423,25 @@ class Plotter(scene: Scene, camera: Camera) extends ModelComponent[Action] {
         }
 
     }
+    */
   } // -- eof
+
+  def requestEmbeddingUpdate(plot: Plot, columnIndex: Int, tau: Int): Unit = {
+    Log.show("[Plotter] [requestEmbeddingUpdate] columnIndex = " + columnIndex + " tau = " + tau)
+    plot match {
+      case sm: ShadowManifold => sm.switchAxis(XAxis, getData(columnIndex), tau)
+      case sp: ScatterPlot => {
+        val newPlot: Plot = newShadowManifoldWithData(columnIndex, tau)
+        newPlot.asInstanceOf[ShadowManifold].updateEmbedding(tau)
+        replacePlot(sp, newPlot)
+      }
+    }
+
+    AXES(getPlotIndex(plot)) match {
+      case a2D: CoordinateAxes2D ⇒ a2D.setAxesTitles(plot.xVar, plot.yVar)
+      case a3D: CoordinateAxes3D ⇒ a3D.setAxesTitles(plot.xVar, plot.yVar, plot.asInstanceOf[ShadowManifold].zVar)
+    }
+  }
 
   def requestEmbedding(axisID: AxisID, columnIndex: Int, tau: Int, plotIndex: Int = 0): Unit = {
     Log.show("[Plotter.requestEmbedding()]")
@@ -458,7 +480,6 @@ class Plotter(scene: Scene, camera: Camera) extends ModelComponent[Action] {
       case a3D: CoordinateAxes3D ⇒ a3D.setAxesTitles(newSM.xVar, newSM.yVar, newSM.zVar)
     }
   } // -- eof
-
 
   // Point highlighting and such
 
