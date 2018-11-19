@@ -2,7 +2,7 @@ package vrdv.obj3D
 
 import facade.Dat._
 import util.Log
-import vrdv.input.InputDetails
+import vrdv.input._
 import vrdv.model.Plotter
 import vrdv.obj3D.plots._
 
@@ -50,17 +50,13 @@ class SettingsGui(plot: Plot, axes: CoordinateAxes, plotter: Plotter)
         val zCol = axisTitles.indexOf(axisData.asInstanceOf[js.Dynamic].selectDynamic("zAxis"))
         plotter.replacePlot(attachedPlot, plotter.newPlot3DWithData(xCol, yCol, zCol))
         attachedPlot = plotter.getPlot(plotIndex)
-        xDropdown.visible = true
-        yDropdown.visible = true
-        zDropdown.visible = true
+        updateFoldersForGraphType("3D Scatter")
       }
       case "2D Scatter" => {
         val columnID = axisTitles.indexOf(axisData.asInstanceOf[js.Dynamic].selectDynamic("yAxis"))
         plotter.replacePlot(attachedPlot, plotter.newPlot2DWithData(columnID))
         attachedPlot = plotter.getPlot(plotIndex)
-        xDropdown.visible = false
-        yDropdown.visible = true
-        zDropdown.visible = false
+        updateFoldersForGraphType("2D Scatter")
       }
       case "Shadow Manifold" => {
         val columnID = axisTitles.indexOf(axisData.asInstanceOf[js.Dynamic].selectDynamic("xAxis"))
@@ -68,9 +64,7 @@ class SettingsGui(plot: Plot, axes: CoordinateAxes, plotter: Plotter)
         sm.asInstanceOf[ShadowManifold].updateEmbedding(getTau)
         plotter.replacePlot(attachedPlot, sm)
         attachedPlot = plotter.getPlot(plotIndex)
-        xDropdown.visible = true
-        yDropdown.visible = false
-        zDropdown.visible = false
+        updateFoldersForGraphType("Shadow Manifold")
 
         /*
         AXES(plotIndex) match {
@@ -82,7 +76,47 @@ class SettingsGui(plot: Plot, axes: CoordinateAxes, plotter: Plotter)
     }
   }
 
-  //Axes Folder
+  def updateFoldersForGraphType(graphType: String = "3D Scatter"): Unit = {
+    //Remove any folders currently in the Gui
+    if(axesFolder.object3D.parent != null) {
+      axesFolder.object3D.parent.remove(axesFolder.object3D)
+    }
+    if(axesFolderXOnly.object3D.parent != null) {
+      axesFolderXOnly.object3D.parent.remove(axesFolderXOnly.object3D)
+    }
+    if(axesFolderYOnly.object3D.parent != null) {
+      axesFolderYOnly.object3D.parent.remove(axesFolderYOnly.object3D)
+    }
+    if(embeddingFolder.object3D.parent != null) {
+      embeddingFolder.object3D.parent.remove(embeddingFolder.object3D)
+    }
+
+    //setup correct folders for graph type
+    graphType match {
+      case "3D Scatter" =>
+        object3D.addFolder(axesFolder.object3D)
+        axesFolder.object3D.open()
+
+      case "2D Scatter" =>
+        object3D.addFolder(axesFolderYOnly.object3D)
+        axesFolderYOnly.object3D.close()
+        axesFolderYOnly.object3D.open()
+
+      case "Shadow Manifold" => {
+        object3D.addFolder(axesFolderXOnly.object3D)
+        axesFolderXOnly.object3D.open()
+        object3D.addFolder(embeddingFolder.object3D)
+        embeddingFolder.object3D.open()
+      }
+    }
+
+    object3D.close()
+    object3D.open()
+
+
+  }
+
+  //Axes Folder XYZ
   val axesFolder = new DatGuiW("Select Data", 0,0,0)
   var axisTitles: js.Array[String] = js.Array()
   for(d <- plotter.getData.map(_.id)) axisTitles = axisTitles :+ d
@@ -90,8 +124,19 @@ class SettingsGui(plot: Plot, axes: CoordinateAxes, plotter: Plotter)
   val yDropdown = axesFolder.addDropdown(axisData, "yAxis", axisTitles).onChange(() => callForAxisUpdate(1))
   val zDropdown = axesFolder.addDropdown(axisData, "zAxis", axisTitles).onChange(() => callForAxisUpdate(2))
   object3D.addFolder(axesFolder.object3D)
-
   axesFolder.object3D.open()
+
+  //Axes Folder X Only
+  val axesFolderXOnly = new DatGuiW("Select Data", 0,0,0)
+  axesFolderXOnly.addDropdown(axisData, "xAxis", axisTitles).onChange(() => callForAxisUpdate(0))
+  //object3D.addFolder(axesFolderXOnly.object3D)
+  axesFolderXOnly.object3D.open()
+
+  //Axes Folder Y Only
+  val axesFolderYOnly = new DatGuiW("Select Data", 0,0,0)
+  axesFolderYOnly.addDropdown(axisData, "yAxis", axisTitles).onChange(() => callForAxisUpdate(1))
+  //object3D.addFolder(axesFolderYOnly.object3D)
+  axesFolderYOnly.object3D.open()
 
   def callForAxisUpdate(id: Int): Unit = {
     val axisString = id match {
@@ -111,7 +156,7 @@ class SettingsGui(plot: Plot, axes: CoordinateAxes, plotter: Plotter)
   embeddingFolder.object3D.add(rawTau, "TauTens", 0, 90).step(10).name("Tau Tens")
   embeddingFolder.object3D.add(rawTau, "TauHundreds", 0, 900).step(100).name("Tau Hundreds")
   embeddingFolder.addButton(() => updateEmbedding, "Embed!", "Embed Shadow Manifold")
-  object3D.addFolder(embeddingFolder.object3D)
+  //object3D.addFolder(embeddingFolder.object3D)
   embeddingFolder.object3D.open()
 
   def updateEmbedding: Unit = {
