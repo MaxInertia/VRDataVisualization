@@ -19,8 +19,8 @@ class InitialMenu(plotter: Plotter)
     if(object3D.visible) {
       plotter.initPlot3DWithData
       if(plotter.getPlots.length == 3) setVisible(false)
-      //object3D.position.set(2, 1, 0)
-      //object3D.rotation.y = -3.14 / 2.0
+      object3D.position.set(-2, 1, 1)
+      object3D.rotation.y = 3.14 / 2.0
       plotter.showGlobalMenu
     }
   }

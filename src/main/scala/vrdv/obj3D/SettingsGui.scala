@@ -11,7 +11,7 @@ import scala.scalajs.js
 class SettingsGui(plot: Plot, axes: CoordinateAxes, plotter: Plotter)
   extends DatGuiW("Graph Settings", axes.position.x - 2.0, axes.position.y + 2.0, axes.position.z){
 
-  var attachedPlot = plot
+  var attachedPlot: Plot = plot
 
   override def setVisible(vis: Boolean): Unit = super.setVisible(vis)
 
@@ -37,9 +37,9 @@ class SettingsGui(plot: Plot, axes: CoordinateAxes, plotter: Plotter)
       rawTau.asInstanceOf[js.Dynamic].selectDynamic("TauHundreds").asInstanceOf[Int]
 
   val graphTypeDropdown = addDropdown(plotType, "Graph Type", plotTypeOptions)
-    .onChange(() => {Log.show("Graph type menu changed."); changeGraphType})
+    .onChange(() => {Log.show("Graph type menu changed."); changeGraphType()})
 
-  def changeGraphType: Unit = {
+  def changeGraphType(): Unit = {
     val gtString = plotType.asInstanceOf[js.Dynamic].selectDynamic("Graph Type").asInstanceOf[String]
     val plotIndex = plotter.getPlotIndex(attachedPlot)
 
@@ -78,6 +78,7 @@ class SettingsGui(plot: Plot, axes: CoordinateAxes, plotter: Plotter)
 
   def updateFoldersForGraphType(graphType: String = "3D Scatter"): Unit = {
     //Remove any folders currently in the Gui
+    /*
     if(axesFolder.object3D.parent != null) {
       axesFolder.object3D.parent.remove(axesFolder.object3D)
     }
@@ -90,22 +91,40 @@ class SettingsGui(plot: Plot, axes: CoordinateAxes, plotter: Plotter)
     if(embeddingFolder.object3D.parent != null) {
       embeddingFolder.object3D.parent.remove(embeddingFolder.object3D)
     }
+    */
 
     //setup correct folders for graph type
     graphType match {
-      case "3D Scatter" =>
-        object3D.addFolder(axesFolder.object3D)
-        axesFolder.object3D.open()
+      case "3D Scatter" => {
+        //object3D.addFolder(axesFolder.object3D)
+        //axesFolder.object3D.open()
+        xDropdown.visible = true
+        yDropdown.visible = true
+        zDropdown.visible = true
+        embeddingFolder.setVisible(false)
+        embeddingFolder.object3D.close()
+      }
 
-      case "2D Scatter" =>
-        object3D.addFolder(axesFolderYOnly.object3D)
-        axesFolderYOnly.object3D.close()
-        axesFolderYOnly.object3D.open()
+      case "2D Scatter" => {
+        //object3D.addFolder(axesFolderYOnly.object3D)
+        //axesFolderYOnly.object3D.close()
+        //axesFolderYOnly.object3D.open()
+        xDropdown.visible = false
+        yDropdown.visible = true
+        zDropdown.visible = false
+        embeddingFolder.setVisible(false)
+        embeddingFolder.object3D.close()
+      }
 
       case "Shadow Manifold" => {
-        object3D.addFolder(axesFolderXOnly.object3D)
-        axesFolderXOnly.object3D.open()
-        object3D.addFolder(embeddingFolder.object3D)
+        //object3D.addFolder(axesFolderXOnly.object3D)
+        //axesFolderXOnly.object3D.open()
+        //object3D.addFolder(embeddingFolder.object3D)
+        //embeddingFolder.object3D.open()
+        xDropdown.visible = true
+        yDropdown.visible = false
+        zDropdown.visible = false
+        embeddingFolder.setVisible(true)
         embeddingFolder.object3D.open()
       }
     }
@@ -156,8 +175,8 @@ class SettingsGui(plot: Plot, axes: CoordinateAxes, plotter: Plotter)
   embeddingFolder.object3D.add(rawTau, "TauTens", 0, 90).step(10).name("Tau Tens")
   embeddingFolder.object3D.add(rawTau, "TauHundreds", 0, 900).step(100).name("Tau Hundreds")
   embeddingFolder.addButton(() => updateEmbedding, "Embed!", "Embed Shadow Manifold")
-  //object3D.addFolder(embeddingFolder.object3D)
-  embeddingFolder.object3D.open()
+  object3D.addFolder(embeddingFolder.object3D)
+  embeddingFolder.object3D.close()
 
   def updateEmbedding: Unit = {
     Log.show("[SettingsGui] Updating embedding...")
